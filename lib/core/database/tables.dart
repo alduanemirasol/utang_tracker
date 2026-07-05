@@ -6,6 +6,7 @@ const String tablePayments = 'payments';
 const String columnId = 'id';
 const String columnCreatedAt = 'created_at';
 const String columnUpdatedAt = 'updated_at';
+const String columnDeletedAt = 'deleted_at';
 
 const String columnName = 'name';
 const String columnPhone = 'phone';
@@ -37,7 +38,8 @@ const String createCustomersTable = '''
     $columnPhone TEXT,
     $columnNotes TEXT,
     $columnCreatedAt TEXT NOT NULL,
-    $columnUpdatedAt TEXT NOT NULL
+    $columnUpdatedAt TEXT NOT NULL,
+    $columnDeletedAt TEXT
   )
 ''';
 
@@ -54,6 +56,7 @@ const String createDebtsTable = '''
     $columnNotes TEXT,
     $columnCreatedAt TEXT NOT NULL,
     $columnUpdatedAt TEXT NOT NULL,
+    $columnDeletedAt TEXT,
     FOREIGN KEY ($columnCustomerId) REFERENCES $tableCustomers($columnId)
   )
 ''';
@@ -67,6 +70,7 @@ const String createDebtItemsTable = '''
     $columnUnit TEXT NOT NULL,
     $columnUnitPrice REAL NOT NULL,
     $columnSubtotal REAL NOT NULL,
+    $columnDeletedAt TEXT,
     FOREIGN KEY ($columnDebtId) REFERENCES $tableDebts($columnId)
   )
 ''';
@@ -80,6 +84,7 @@ const String createPaymentsTable = '''
     $columnPaymentMethod TEXT NOT NULL,
     $columnNotes TEXT,
     $columnCreatedAt TEXT NOT NULL,
+    $columnDeletedAt TEXT,
     FOREIGN KEY ($columnDebtId) REFERENCES $tableDebts($columnId)
   )
 ''';
@@ -89,4 +94,23 @@ const List<String> allCreateStatements = [
   createDebtsTable,
   createDebtItemsTable,
   createPaymentsTable,
+];
+
+const String alterCustomersAddDeletedAt =
+    'ALTER TABLE $tableCustomers ADD COLUMN $columnDeletedAt TEXT';
+
+const String alterDebtsAddDeletedAt =
+    'ALTER TABLE $tableDebts ADD COLUMN $columnDeletedAt TEXT';
+
+const String alterDebtItemsAddDeletedAt =
+    'ALTER TABLE $tableDebtItems ADD COLUMN $columnDeletedAt TEXT';
+
+const String alterPaymentsAddDeletedAt =
+    'ALTER TABLE $tablePayments ADD COLUMN $columnDeletedAt TEXT';
+
+const List<String> migrationStatementsV2 = [
+  alterCustomersAddDeletedAt,
+  alterDebtsAddDeletedAt,
+  alterDebtItemsAddDeletedAt,
+  alterPaymentsAddDeletedAt,
 ];

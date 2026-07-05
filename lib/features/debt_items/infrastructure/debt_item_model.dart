@@ -9,6 +9,7 @@ class DebtItemModel {
   final String unit;
   final double unitPrice;
   final double subtotal;
+  final String? deletedAt;
 
   const DebtItemModel({
     required this.id,
@@ -18,6 +19,7 @@ class DebtItemModel {
     required this.unit,
     required this.unitPrice,
     required this.subtotal,
+    this.deletedAt,
   });
 
   factory DebtItemModel.fromMap(Map<String, dynamic> map) {
@@ -29,6 +31,7 @@ class DebtItemModel {
       unit: map[columnUnit] as String,
       unitPrice: (map[columnUnitPrice] as num).toDouble(),
       subtotal: (map[columnSubtotal] as num).toDouble(),
+      deletedAt: map[columnDeletedAt] as String?,
     );
   }
 
@@ -41,6 +44,7 @@ class DebtItemModel {
       columnUnit: unit,
       columnUnitPrice: unitPrice,
       columnSubtotal: subtotal,
+      columnDeletedAt: deletedAt,
     };
   }
 
@@ -53,6 +57,7 @@ class DebtItemModel {
       unit: unit,
       unitPrice: unitPrice,
       subtotal: subtotal,
+      deletedAt: deletedAt != null ? DateTime.parse(deletedAt!) : null,
     );
   }
 
@@ -65,6 +70,7 @@ class DebtItemModel {
       unit: entity.unit,
       unitPrice: entity.unitPrice,
       subtotal: entity.subtotal,
+      deletedAt: entity.deletedAt?.toUtc().toIso8601String(),
     );
   }
 }

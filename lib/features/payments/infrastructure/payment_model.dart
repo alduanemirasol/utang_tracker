@@ -10,6 +10,7 @@ class PaymentModel {
   final String paymentMethod;
   final String? notes;
   final String createdAt;
+  final String? deletedAt;
 
   const PaymentModel({
     required this.id,
@@ -19,6 +20,7 @@ class PaymentModel {
     required this.paymentMethod,
     this.notes,
     required this.createdAt,
+    this.deletedAt,
   });
 
   factory PaymentModel.fromMap(Map<String, dynamic> map) {
@@ -30,6 +32,7 @@ class PaymentModel {
       paymentMethod: map[columnPaymentMethod] as String,
       notes: map[columnNotes] as String?,
       createdAt: map[columnCreatedAt] as String,
+      deletedAt: map[columnDeletedAt] as String?,
     );
   }
 
@@ -42,6 +45,7 @@ class PaymentModel {
       columnPaymentMethod: paymentMethod,
       columnNotes: notes,
       columnCreatedAt: createdAt,
+      columnDeletedAt: deletedAt,
     };
   }
 
@@ -54,6 +58,7 @@ class PaymentModel {
       paymentMethod: PaymentMethod.fromString(paymentMethod),
       notes: notes,
       createdAt: DateTime.parse(createdAt),
+      deletedAt: deletedAt != null ? DateTime.parse(deletedAt!) : null,
     );
   }
 
@@ -66,6 +71,7 @@ class PaymentModel {
       paymentMethod: entity.paymentMethod.value,
       notes: entity.notes,
       createdAt: entity.createdAt.toUtc().toIso8601String(),
+      deletedAt: entity.deletedAt?.toUtc().toIso8601String(),
     );
   }
 }

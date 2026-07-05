@@ -6,14 +6,26 @@ class CustomerDataSource {
 
   CustomerDataSource(this.db);
 
-  Future<List<Map<String, dynamic>>> getAll() async {
-    return db.query(tableCustomers, orderBy: '$columnName ASC');
+  Future<List<Map<String, dynamic>>> getAll({String? query}) async {
+    if (query != null && query.isNotEmpty) {
+      return db.query(
+        tableCustomers,
+        where: '$columnDeletedAt IS NULL AND $columnName LIKE ?',
+        whereArgs: ['%$query%'],
+        orderBy: '$columnName ASC',
+      );
+    }
+    return db.query(
+      tableCustomers,
+      where: '$columnDeletedAt IS NULL',
+      orderBy: '$columnName ASC',
+    );
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
     final results = await db.query(
       tableCustomers,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
     return results.isNotEmpty ? results.first : null;
@@ -32,9 +44,11 @@ class CustomerDataSource {
     );
   }
 
-  Future<void> delete(String id) async {
-    await db.delete(
+  Future<void> delete(String id, String deletedAt, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.update(
       tableCustomers,
+      {columnDeletedAt: deletedAt},
       where: '$columnId = ?',
       whereArgs: [id],
     );

@@ -6,6 +6,7 @@ import 'package:utang_tracker/features/debt_items/domain/debt_item_repository.da
 import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_data_source.dart';
 import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_model.dart';
 import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
+import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class DebtItemRepositoryImpl implements DebtItemRepository {
   final DebtItemDataSource _dataSource;
@@ -84,8 +85,9 @@ class DebtItemRepositoryImpl implements DebtItemRepository {
       }
       final existingItem = DebtItemModel.fromMap(existingMap).toEntity();
 
+      final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
       await _db.transaction((txn) async {
-        await _dataSource.delete(id, txn);
+        await _dataSource.delete(id, now, txn);
         await _debtDataSource.recalculateFromItems(existingItem.debtId, txn);
       });
       return const Success(null);

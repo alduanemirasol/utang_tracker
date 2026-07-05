@@ -9,7 +9,7 @@ class PaymentDataSource {
   Future<List<Map<String, dynamic>>> getByDebtId(String debtId) async {
     return db.query(
       tablePayments,
-      where: '$columnDebtId = ?',
+      where: '$columnDebtId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [debtId],
       orderBy: '$columnPaymentDate DESC',
     );
@@ -18,7 +18,7 @@ class PaymentDataSource {
   Future<Map<String, dynamic>?> getById(String id) async {
     final results = await db.query(
       tablePayments,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
     return results.isNotEmpty ? results.first : null;
@@ -39,12 +39,25 @@ class PaymentDataSource {
     );
   }
 
-  Future<void> delete(String id, [Transaction? txn]) async {
+  Future<void> delete(String id, String deletedAt,
+      [Transaction? txn]) async {
     final conn = txn ?? db;
-    await conn.delete(
+    await conn.update(
       tablePayments,
+      {columnDeletedAt: deletedAt},
       where: '$columnId = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteByDebtId(String debtId, String deletedAt,
+      [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.update(
+      tablePayments,
+      {columnDeletedAt: deletedAt},
+      where: '$columnDebtId = ? AND $columnDeletedAt IS NULL',
+      whereArgs: [debtId],
     );
   }
 }

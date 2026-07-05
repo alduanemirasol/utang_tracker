@@ -6,6 +6,7 @@ import 'package:utang_tracker/features/payments/domain/payment_repository.dart';
 import 'package:utang_tracker/features/payments/infrastructure/payment_data_source.dart';
 import 'package:utang_tracker/features/payments/infrastructure/payment_model.dart';
 import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
+import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
   final PaymentDataSource _dataSource;
@@ -87,8 +88,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
       }
       final existingPayment = PaymentModel.fromMap(existingMap).toEntity();
 
+      final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
       await _db.transaction((txn) async {
-        await _dataSource.delete(id, txn);
+        await _dataSource.delete(id, now, txn);
         await _debtDataSource.recalculateFromPayments(
           existingPayment.debtId,
           txn,

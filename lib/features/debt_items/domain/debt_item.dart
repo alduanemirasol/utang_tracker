@@ -6,6 +6,7 @@ class DebtItem {
   final String unit;
   final double unitPrice;
   final double subtotal;
+  final DateTime? deletedAt;
 
   const DebtItem({
     required this.id,
@@ -15,6 +16,7 @@ class DebtItem {
     required this.unit,
     required this.unitPrice,
     required this.subtotal,
+    this.deletedAt,
   });
 
   DebtItem copyWith({
@@ -25,6 +27,8 @@ class DebtItem {
     String? unit,
     double? unitPrice,
     double? subtotal,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) {
     return DebtItem(
       id: id ?? this.id,
@@ -34,6 +38,7 @@ class DebtItem {
       unit: unit ?? this.unit,
       unitPrice: unitPrice ?? this.unitPrice,
       subtotal: subtotal ?? this.subtotal,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 

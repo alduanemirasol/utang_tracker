@@ -5,6 +5,7 @@ class Customer {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const Customer({
     required this.id,
@@ -13,6 +14,7 @@ class Customer {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   Customer copyWith({
@@ -22,8 +24,10 @@ class Customer {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
     bool clearPhone = false,
     bool clearNotes = false,
+    bool clearDeletedAt = false,
   }) {
     return Customer(
       id: id ?? this.id,
@@ -32,6 +36,7 @@ class Customer {
       notes: clearNotes ? null : (notes ?? this.notes),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 }

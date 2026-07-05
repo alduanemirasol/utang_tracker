@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:utang_tracker/core/database/tables.dart';
+import 'package:utang_tracker/features/debts/domain/debt_status.dart';
 import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class DebtDataSource {
@@ -7,22 +8,34 @@ class DebtDataSource {
 
   DebtDataSource(this.db);
 
-  Future<List<Map<String, dynamic>>> getAll({String? customerId}) async {
+  Future<List<Map<String, dynamic>>> getAll({
+    String? customerId,
+    DebtStatus? status,
+  }) async {
+    final conditions = <String>['$columnDeletedAt IS NULL'];
+    final args = <dynamic>[];
+
     if (customerId != null) {
-      return db.query(
-        tableDebts,
-        where: '$columnCustomerId = ?',
-        whereArgs: [customerId],
-        orderBy: '$columnTransactionDate DESC',
-      );
+      conditions.add('$columnCustomerId = ?');
+      args.add(customerId);
     }
-    return db.query(tableDebts, orderBy: '$columnTransactionDate DESC');
+    if (status != null) {
+      conditions.add('$columnStatus = ?');
+      args.add(status.value);
+    }
+
+    return db.query(
+      tableDebts,
+      where: conditions.join(' AND '),
+      whereArgs: args,
+      orderBy: '$columnTransactionDate DESC',
+    );
   }
 
   Future<Map<String, dynamic>?> getById(String id) async {
     final results = await db.query(
       tableDebts,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
     return results.isNotEmpty ? results.first : null;
@@ -41,11 +54,24 @@ class DebtDataSource {
     );
   }
 
-  Future<void> delete(String id) async {
-    await db.delete(
+  Future<void> delete(String id, String deletedAt, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.update(
       tableDebts,
+      {columnDeletedAt: deletedAt},
       where: '$columnId = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteByCustomerId(
+      String customerId, String deletedAt, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.update(
+      tableDebts,
+      {columnDeletedAt: deletedAt},
+      where: '$columnCustomerId = ? AND $columnDeletedAt IS NULL',
+      whereArgs: [customerId],
     );
   }
 
@@ -53,7 +79,7 @@ class DebtDataSource {
     final conn = txn ?? db;
 
     final itemResult = await conn.rawQuery(
-      'SELECT COALESCE(SUM($columnSubtotal), 0) as total FROM $tableDebtItems WHERE $columnDebtId = ?',
+      'SELECT COALESCE(SUM($columnSubtotal), 0) as total FROM $tableDebtItems WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
       [debtId],
     );
     final totalAmount = (itemResult.first['total'] as num).toDouble();
@@ -67,7 +93,6 @@ class DebtDataSource {
     final paidAmount = debtResult.isNotEmpty
         ? (debtResult.first[columnPaidAmount] as num).toDouble()
         : 0.0;
-
     final balance = totalAmount - paidAmount;
 
     String status;
@@ -97,7 +122,7 @@ class DebtDataSource {
     final conn = txn ?? db;
 
     final paymentResult = await conn.rawQuery(
-      'SELECT COALESCE(SUM($columnAmount), 0) as paid FROM $tablePayments WHERE $columnDebtId = ?',
+      'SELECT COALESCE(SUM($columnAmount), 0) as paid FROM $tablePayments WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
       [debtId],
     );
     final paidAmount = (paymentResult.first['paid'] as num).toDouble();

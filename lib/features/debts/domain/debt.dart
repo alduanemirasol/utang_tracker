@@ -12,6 +12,7 @@ class Debt {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const Debt({
     required this.id,
@@ -25,6 +26,7 @@ class Debt {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   Debt copyWith({
@@ -39,8 +41,10 @@ class Debt {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
     bool clearDueDate = false,
     bool clearNotes = false,
+    bool clearDeletedAt = false,
   }) {
     return Debt(
       id: id ?? this.id,
@@ -54,6 +58,7 @@ class Debt {
       notes: clearNotes ? null : (notes ?? this.notes),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 

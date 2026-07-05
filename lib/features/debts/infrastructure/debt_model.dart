@@ -14,6 +14,7 @@ class DebtModel {
   final String? notes;
   final String createdAt;
   final String updatedAt;
+  final String? deletedAt;
 
   const DebtModel({
     required this.id,
@@ -27,6 +28,7 @@ class DebtModel {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   factory DebtModel.fromMap(Map<String, dynamic> map) {
@@ -42,6 +44,7 @@ class DebtModel {
       notes: map[columnNotes] as String?,
       createdAt: map[columnCreatedAt] as String,
       updatedAt: map[columnUpdatedAt] as String,
+      deletedAt: map[columnDeletedAt] as String?,
     );
   }
 
@@ -58,6 +61,7 @@ class DebtModel {
       columnNotes: notes,
       columnCreatedAt: createdAt,
       columnUpdatedAt: updatedAt,
+      columnDeletedAt: deletedAt,
     };
   }
 
@@ -74,6 +78,7 @@ class DebtModel {
       notes: notes,
       createdAt: DateTime.parse(createdAt),
       updatedAt: DateTime.parse(updatedAt),
+      deletedAt: deletedAt != null ? DateTime.parse(deletedAt!) : null,
     );
   }
 
@@ -90,6 +95,7 @@ class DebtModel {
       notes: entity.notes,
       createdAt: entity.createdAt.toUtc().toIso8601String(),
       updatedAt: entity.updatedAt.toUtc().toIso8601String(),
+      deletedAt: entity.deletedAt?.toUtc().toIso8601String(),
     );
   }
 }

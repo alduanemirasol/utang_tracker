@@ -8,6 +8,7 @@ class Payment {
   final PaymentMethod paymentMethod;
   final String? notes;
   final DateTime createdAt;
+  final DateTime? deletedAt;
 
   const Payment({
     required this.id,
@@ -17,6 +18,7 @@ class Payment {
     required this.paymentMethod,
     this.notes,
     required this.createdAt,
+    this.deletedAt,
   });
 
   Payment copyWith({
@@ -27,7 +29,9 @@ class Payment {
     PaymentMethod? paymentMethod,
     String? notes,
     DateTime? createdAt,
+    DateTime? deletedAt,
     bool clearNotes = false,
+    bool clearDeletedAt = false,
   }) {
     return Payment(
       id: id ?? this.id,
@@ -37,6 +41,7 @@ class Payment {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       notes: clearNotes ? null : (notes ?? this.notes),
       createdAt: createdAt ?? this.createdAt,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 }

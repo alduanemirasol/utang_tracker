@@ -7,7 +7,7 @@ class GetCustomersUseCase {
 
   GetCustomersUseCase(this._repository);
 
-  Future<Result<List<Customer>>> execute() {
-    return _repository.getAll();
+  Future<Result<List<Customer>>> execute({String? query}) {
+    return _repository.getAll(query: query);
   }
 }
