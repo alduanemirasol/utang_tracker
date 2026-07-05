@@ -29,6 +29,19 @@ class PaymentRepositoryImpl implements PaymentRepository {
   }
 
   @override
+  Future<Result<Payment>> getById(String id) async {
+    try {
+      final map = await _dataSource.getById(id);
+      if (map == null) {
+        return Error(NotFoundFailure('Payment not found'));
+      }
+      return Success(PaymentModel.fromMap(map).toEntity());
+    } catch (e) {
+      return Error(DatabaseFailure('Failed to load payment: $e'));
+    }
+  }
+
+  @override
   Future<Result<List<Payment>>> getByDebtId(String debtId) async {
     try {
       final maps = await _dataSource.getByDebtId(debtId);
