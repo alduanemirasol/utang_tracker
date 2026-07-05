@@ -1,6 +1,5 @@
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' as p;
-
 import 'tables.dart';
 
 class AppDatabase {
@@ -16,7 +15,8 @@ class AppDatabase {
 
   Future<void> init() async {
     final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, 'utang_tracker.db');
+    final path = join(dbPath, 'utang_tracker.db');
+
     _db = await openDatabase(
       path,
       version: 1,
