@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'helpers/date_time_helper.dart';
 
 void main() {
+  DateTimeHelper.initialize();
   runApp(const MyApp());
 }
 
