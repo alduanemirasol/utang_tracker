@@ -1,0 +1,35 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as p;
+
+import 'tables.dart';
+
+class AppDatabase {
+  static final AppDatabase _instance = AppDatabase._();
+  factory AppDatabase() => _instance;
+  AppDatabase._();
+
+  Database? _db;
+  Database get db {
+    if (_db == null) throw StateError('Database not initialized');
+    return _db!;
+  }
+
+  Future<void> init() async {
+    final dbPath = await getDatabasesPath();
+    final path = p.join(dbPath, 'utang_tracker.db');
+    _db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        for (final stmt in allCreateStatements) {
+          await db.execute(stmt);
+        }
+      },
+    );
+  }
+
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
+  }
+}
