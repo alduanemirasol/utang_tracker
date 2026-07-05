@@ -65,6 +65,12 @@ Allowed values for `status`:
 | notes          | TEXT          | No       |
 | created_at     | DATETIME      | Yes      |
 
+Allowed values for `payment_method`:
+
+- CASH
+- GCASH
+- MAYA
+
 ---
 
 ## Relationships
