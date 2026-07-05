@@ -1,0 +1,40 @@
+import 'package:uuid/uuid.dart';
+import 'package:utang_tracker/core/errors/failure.dart';
+import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/helpers/date_time_helper.dart';
+import 'package:utang_tracker/features/payments/domain/payment.dart';
+import 'package:utang_tracker/features/payments/domain/payment_method.dart';
+import 'package:utang_tracker/features/payments/domain/payment_repository.dart';
+
+const _uuid = Uuid();
+
+class CreatePaymentUseCase {
+  final PaymentRepository _repository;
+
+  CreatePaymentUseCase(this._repository);
+
+  Future<Result<Payment>> execute({
+    required String debtId,
+    required double amount,
+    required DateTime paymentDate,
+    required PaymentMethod paymentMethod,
+    String? notes,
+  }) async {
+    if (amount <= 0) {
+      return Error(ValidationFailure('Amount must be greater than 0'));
+    }
+
+    final now = DateTimeHelper.createdAt();
+    final payment = Payment(
+      id: _uuid.v4(),
+      debtId: debtId,
+      amount: amount,
+      paymentDate: paymentDate,
+      paymentMethod: paymentMethod,
+      notes: notes?.trim(),
+      createdAt: now,
+    );
+
+    return _repository.create(payment);
+  }
+}

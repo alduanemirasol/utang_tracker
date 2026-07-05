@@ -21,9 +21,13 @@ class AppDatabase {
       path,
       version: 1,
       onCreate: (db, version) async {
+        await db.execute('PRAGMA foreign_keys = ON');
         for (final stmt in allCreateStatements) {
           await db.execute(stmt);
         }
+      },
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
       },
     );
   }
