@@ -44,7 +44,7 @@ class AppInput extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: AppFontSizes.sm,
-                fontWeight: AppFontWeights.semiBold,
+                fontWeight: AppFontWeights.semibold,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -53,7 +53,7 @@ class AppInput extends StatelessWidget {
                 ' *',
                 style: TextStyle(
                   fontSize: AppFontSizes.sm,
-                  fontWeight: AppFontWeights.semiBold,
+                  fontWeight: AppFontWeights.semibold,
                   color: AppColors.error,
                 ),
               ),

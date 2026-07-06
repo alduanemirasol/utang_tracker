@@ -42,8 +42,7 @@ class AppHeader extends StatelessWidget {
           ?center,
           if (rightIcon != null)
             IconButton(
-              icon: Icon(rightIcon,
-                  color: hasBg ? AppColors.onPrimary : null),
+              icon: Icon(rightIcon, color: hasBg ? AppColors.onPrimary : null),
               onPressed: onRightTap,
             ),
         ],
