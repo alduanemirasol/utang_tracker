@@ -12,7 +12,6 @@ import 'package:utang_tracker/features/customers/application/get_customer_summar
 import 'package:utang_tracker/features/customers/application/update_customer_use_case.dart';
 import 'package:utang_tracker/features/customers/application/delete_customer_use_case.dart';
 
-
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) {
   return CustomerRepositoryImpl(
     ref.read(customerDataSourceProvider),
@@ -22,7 +21,6 @@ final customerRepositoryProvider = Provider<CustomerRepository>((ref) {
     ref.read(databaseProvider),
   );
 });
-
 
 final createCustomerUseCaseProvider = Provider<CreateCustomerUseCase>((ref) {
   return CreateCustomerUseCase(ref.read(customerRepositoryProvider));
@@ -36,7 +34,8 @@ final getCustomerUseCaseProvider = Provider<GetCustomerUseCase>((ref) {
   return GetCustomerUseCase(ref.read(customerRepositoryProvider));
 });
 
-final getCustomerSummaryUseCaseProvider = Provider<GetCustomerSummaryUseCase>((ref) {
+final getCustomerSummaryUseCaseProvider =
+    Provider<GetCustomerSummaryUseCase>((ref) {
   return GetCustomerSummaryUseCase(ref.read(customerRepositoryProvider));
 });
 
@@ -47,7 +46,6 @@ final updateCustomerUseCaseProvider = Provider<UpdateCustomerUseCase>((ref) {
 final deleteCustomerUseCaseProvider = Provider<DeleteCustomerUseCase>((ref) {
   return DeleteCustomerUseCase(ref.read(customerRepositoryProvider));
 });
-
 
 class CustomerListNotifier extends AsyncNotifier<List<Customer>> {
   @override
@@ -60,7 +58,8 @@ class CustomerListNotifier extends AsyncNotifier<List<Customer>> {
   }
 
   Future<void> search(String query) async {
-    final result = await ref.read(getCustomersUseCaseProvider).execute(query: query);
+    final result =
+        await ref.read(getCustomersUseCaseProvider).execute(query: query);
     state = switch (result) {
       Success(data: final customers) => AsyncData(customers),
       Error(failure: final f) => AsyncError(f, StackTrace.current),
@@ -90,6 +89,7 @@ class CustomerListNotifier extends AsyncNotifier<List<Customer>> {
   }
 }
 
-final customerListProvider = AsyncNotifierProvider<CustomerListNotifier, List<Customer>>(
+final customerListProvider =
+    AsyncNotifierProvider<CustomerListNotifier, List<Customer>>(
   CustomerListNotifier.new,
 );

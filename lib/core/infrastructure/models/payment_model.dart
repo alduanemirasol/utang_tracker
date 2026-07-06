@@ -1,6 +1,6 @@
 import 'package:utang_tracker/core/database/tables.dart';
-import 'package:utang_tracker/features/payments/domain/payment.dart';
-import 'package:utang_tracker/features/payments/domain/payment_method.dart';
+import 'package:utang_tracker/core/domain/payment.dart';
+import 'package:utang_tracker/core/domain/payment_method.dart';
 
 class PaymentModel {
   final String id;

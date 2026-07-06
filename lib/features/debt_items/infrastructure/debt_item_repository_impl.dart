@@ -1,11 +1,12 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_item_data_source.dart';
+import 'package:utang_tracker/core/domain/debt_calculator.dart';
+import 'package:utang_tracker/core/domain/debt_item.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'package:utang_tracker/features/debt_items/domain/debt_item.dart';
+import 'package:utang_tracker/core/infrastructure/models/debt_item_model.dart';
 import 'package:utang_tracker/features/debt_items/domain/debt_item_repository.dart';
-import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_data_source.dart';
-import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_model.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
 import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class DebtItemRepositoryImpl implements DebtItemRepository {
@@ -21,7 +22,7 @@ class DebtItemRepositoryImpl implements DebtItemRepository {
       await _db.transaction((txn) async {
         final model = DebtItemModel.fromEntity(item);
         await _dataSource.insert(model.toMap(), txn);
-        await _debtDataSource.recalculateFromItems(item.debtId, txn);
+        await _recalculateDebtTotals(item.debtId, txn);
       });
       return Success(item);
     } catch (e) {
@@ -68,7 +69,7 @@ class DebtItemRepositoryImpl implements DebtItemRepository {
       await _db.transaction((txn) async {
         final model = DebtItemModel.fromEntity(updatedItem);
         await _dataSource.update(model.toMap(), txn);
-        await _debtDataSource.recalculateFromItems(updatedItem.debtId, txn);
+        await _recalculateDebtTotals(updatedItem.debtId, txn);
       });
       return Success(updatedItem);
     } catch (e) {
@@ -88,11 +89,34 @@ class DebtItemRepositoryImpl implements DebtItemRepository {
       final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
       await _db.transaction((txn) async {
         await _dataSource.delete(id, now, txn);
-        await _debtDataSource.recalculateFromItems(existingItem.debtId, txn);
+        await _recalculateDebtTotals(existingItem.debtId, txn);
       });
       return const Success(null);
     } catch (e) {
       return Error(DatabaseFailure('Failed to delete debt item: $e'));
     }
+  }
+
+  Future<void> _recalculateDebtTotals(String debtId, Transaction txn) async {
+    final totalAmount = await _debtDataSource.sumSubtotalsByDebtId(debtId, txn);
+    final paidAmount = await _debtDataSource.getPaidAmount(debtId);
+    final balance = DebtCalculator.calculateBalance(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+    );
+    final status = DebtCalculator.calculateStatus(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+    );
+    final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
+    await _debtDataSource.updateDebtTotals(
+      debtId: debtId,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      balance: balance,
+      status: status,
+      updatedAt: now,
+      txn: txn,
+    );
   }
 }

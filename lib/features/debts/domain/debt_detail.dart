@@ -1,6 +1,6 @@
-import 'debt.dart';
-import 'package:utang_tracker/features/debt_items/domain/debt_item.dart';
-import 'package:utang_tracker/features/payments/domain/payment.dart';
+import 'package:utang_tracker/core/domain/debt.dart';
+import 'package:utang_tracker/core/domain/debt_item.dart';
+import 'package:utang_tracker/core/domain/payment.dart';
 
 class DebtDetail {
   final Debt debt;

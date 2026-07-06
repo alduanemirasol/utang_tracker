@@ -1,16 +1,16 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_item_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/payment_data_source.dart';
+import 'package:utang_tracker/core/domain/debt.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'package:utang_tracker/features/debts/domain/debt.dart';
+import 'package:utang_tracker/core/infrastructure/models/debt_item_model.dart';
+import 'package:utang_tracker/core/infrastructure/models/debt_model.dart';
+import 'package:utang_tracker/core/infrastructure/models/payment_model.dart';
 import 'package:utang_tracker/features/debts/domain/debt_detail.dart';
 import 'package:utang_tracker/features/debts/domain/debt_repository.dart';
-import 'package:utang_tracker/features/debts/domain/debt_status.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_model.dart';
-import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_data_source.dart';
-import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_model.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_data_source.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_model.dart';
 import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class DebtRepositoryImpl implements DebtRepository {
@@ -38,9 +38,11 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<Result<List<Debt>>> getAll({String? customerId, DebtStatus? status}) async {
+  Future<Result<List<Debt>>> getAll(
+      {String? customerId, DebtStatus? status}) async {
     try {
-      final maps = await _debtDataSource.getAll(customerId: customerId, status: status);
+      final maps =
+          await _debtDataSource.getAll(customerId: customerId, status: status);
       final debts = maps.map((m) => DebtModel.fromMap(m).toEntity()).toList();
       return Success(debts);
     } catch (e) {
@@ -71,14 +73,12 @@ class DebtRepositoryImpl implements DebtRepository {
       final debt = DebtModel.fromMap(debtMap).toEntity();
 
       final itemMaps = await _debtItemDataSource.getByDebtId(id);
-      final items = itemMaps
-          .map((m) => DebtItemModel.fromMap(m).toEntity())
-          .toList();
+      final items =
+          itemMaps.map((m) => DebtItemModel.fromMap(m).toEntity()).toList();
 
       final paymentMaps = await _paymentDataSource.getByDebtId(id);
-      final payments = paymentMaps
-          .map((m) => PaymentModel.fromMap(m).toEntity())
-          .toList();
+      final payments =
+          paymentMaps.map((m) => PaymentModel.fromMap(m).toEntity()).toList();
 
       return Success(DebtDetail(debt: debt, items: items, payments: payments));
     } catch (e) {

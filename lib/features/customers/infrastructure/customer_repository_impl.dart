@@ -1,15 +1,14 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_item_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/payment_data_source.dart';
 import 'package:utang_tracker/core/database/tables.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/domain/customer_repository.dart';
-import 'package:utang_tracker/features/customers/domain/customer_summary.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_data_source.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_model.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
-import 'package:utang_tracker/features/debt_items/infrastructure/debt_item_data_source.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_data_source.dart';
 import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
@@ -64,39 +63,13 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
 
   @override
-  Future<Result<CustomerSummary>> getSummary(String id) async {
+  Future<Result<List<Map<String, dynamic>>>> getDebtsByCustomerId(
+      String customerId) async {
     try {
-      final customerMap = await _customerDataSource.getById(id);
-      if (customerMap == null) {
-        return Error(NotFoundFailure('Customer not found'));
-      }
-      final customer = CustomerModel.fromMap(customerMap).toEntity();
-
-      final debtMaps = await _debtDataSource.getAll(customerId: id);
-
-      int totalDebts = debtMaps.length;
-      double totalBalance =
-          debtMaps.fold(0.0, (sum, m) => sum + ((m[columnBalance] as num).toDouble()));
-      double totalPaid =
-          debtMaps.fold(0.0, (sum, m) => sum + ((m[columnPaidAmount] as num).toDouble()));
-      DateTime? lastTransactionDate;
-      if (debtMaps.isNotEmpty) {
-        final dates = debtMaps
-            .map((m) => DateTime.parse(m[columnTransactionDate] as String))
-            .toList()
-          ..sort();
-        lastTransactionDate = dates.last;
-      }
-
-      return Success(CustomerSummary(
-        customer: customer,
-        totalDebts: totalDebts,
-        totalBalance: totalBalance,
-        totalPaid: totalPaid,
-        lastTransactionDate: lastTransactionDate,
-      ));
+      final debtMaps = await _debtDataSource.getAll(customerId: customerId);
+      return Success(debtMaps);
     } catch (e) {
-      return Error(DatabaseFailure('Failed to load customer summary: $e'));
+      return Error(DatabaseFailure('Failed to load debts: $e'));
     }
   }
 

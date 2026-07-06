@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
+import 'package:utang_tracker/core/domain/debt_item.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'package:utang_tracker/features/debt_items/domain/debt_item.dart';
 import 'package:utang_tracker/features/debt_items/domain/debt_item_repository.dart';
 
 const _uuid = Uuid();

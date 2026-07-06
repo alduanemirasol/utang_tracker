@@ -1,6 +1,6 @@
 import 'package:utang_tracker/core/database/tables.dart';
-import 'package:utang_tracker/features/debts/domain/debt.dart';
-import 'package:utang_tracker/features/debts/domain/debt_status.dart';
+import 'package:utang_tracker/core/domain/debt.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 
 class DebtModel {
   final String id;

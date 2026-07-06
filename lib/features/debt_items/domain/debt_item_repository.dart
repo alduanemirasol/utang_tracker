@@ -1,5 +1,5 @@
+import 'package:utang_tracker/core/domain/debt_item.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'debt_item.dart';
 
 abstract class DebtItemRepository {
   Future<Result<DebtItem>> create(DebtItem item);

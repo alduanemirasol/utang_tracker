@@ -1,11 +1,12 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:utang_tracker/core/database/data_sources/debt_data_source.dart';
+import 'package:utang_tracker/core/database/data_sources/payment_data_source.dart';
+import 'package:utang_tracker/core/domain/debt_calculator.dart';
+import 'package:utang_tracker/core/domain/payment.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'package:utang_tracker/features/payments/domain/payment.dart';
+import 'package:utang_tracker/core/infrastructure/models/payment_model.dart';
 import 'package:utang_tracker/features/payments/domain/payment_repository.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_data_source.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_model.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_data_source.dart';
 import 'package:utang_tracker/helpers/date_time_helper.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
@@ -21,7 +22,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       await _db.transaction((txn) async {
         final model = PaymentModel.fromEntity(payment);
         await _dataSource.insert(model.toMap(), txn);
-        await _debtDataSource.recalculateFromPayments(payment.debtId, txn);
+        await _recalculateDebtTotals(payment.debtId, txn);
       });
       return Success(payment);
     } catch (e) {
@@ -68,10 +69,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       await _db.transaction((txn) async {
         final model = PaymentModel.fromEntity(updatedPayment);
         await _dataSource.update(model.toMap(), txn);
-        await _debtDataSource.recalculateFromPayments(
-          updatedPayment.debtId,
-          txn,
-        );
+        await _recalculateDebtTotals(updatedPayment.debtId, txn);
       });
       return Success(updatedPayment);
     } catch (e) {
@@ -91,14 +89,35 @@ class PaymentRepositoryImpl implements PaymentRepository {
       final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
       await _db.transaction((txn) async {
         await _dataSource.delete(id, now, txn);
-        await _debtDataSource.recalculateFromPayments(
-          existingPayment.debtId,
-          txn,
-        );
+        await _recalculateDebtTotals(existingPayment.debtId, txn);
       });
       return const Success(null);
     } catch (e) {
       return Error(DatabaseFailure('Failed to delete payment: $e'));
     }
+  }
+
+  Future<void> _recalculateDebtTotals(String debtId, Transaction txn) async {
+    final totalAmount = await _debtDataSource.getTotalAmount(debtId);
+    final paidAmount =
+        await _debtDataSource.sumPaymentAmountsByDebtId(debtId, txn);
+    final balance = DebtCalculator.calculateBalance(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+    );
+    final status = DebtCalculator.calculateStatus(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+    );
+    final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
+    await _debtDataSource.updateDebtTotals(
+      debtId: debtId,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      balance: balance,
+      status: status,
+      updatedAt: now,
+      txn: txn,
+    );
   }
 }

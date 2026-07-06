@@ -1,10 +1,10 @@
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/core/infrastructure/models/debt_model.dart';
+import 'package:utang_tracker/core/infrastructure/models/payment_model.dart';
 import 'package:utang_tracker/features/dashboard/domain/dashboard_repository.dart';
 import 'package:utang_tracker/features/dashboard/domain/dashboard_summary.dart';
 import 'package:utang_tracker/features/dashboard/infrastructure/dashboard_data_source.dart';
-import 'package:utang_tracker/features/debts/infrastructure/debt_model.dart';
-import 'package:utang_tracker/features/payments/infrastructure/payment_model.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
   final DashboardDataSource _dataSource;

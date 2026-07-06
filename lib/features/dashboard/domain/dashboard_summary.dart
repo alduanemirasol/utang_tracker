@@ -1,5 +1,5 @@
-import 'package:utang_tracker/features/debts/domain/debt.dart';
-import 'package:utang_tracker/features/payments/domain/payment.dart';
+import 'package:utang_tracker/core/domain/debt.dart';
+import 'package:utang_tracker/core/domain/payment.dart';
 
 class DashboardSummary {
   final double totalOutstandingBalance;

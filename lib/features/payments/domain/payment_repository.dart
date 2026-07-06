@@ -1,5 +1,5 @@
+import 'package:utang_tracker/core/domain/payment.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'payment.dart';
 
 abstract class PaymentRepository {
   Future<Result<Payment>> create(Payment payment);
