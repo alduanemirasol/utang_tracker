@@ -3,7 +3,7 @@ import 'package:utang_tracker/core/domain/payment_method.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/features/payments/domain/payment_repository.dart';
-import 'package:utang_tracker/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class UpdatePaymentUseCase {
   final PaymentRepository _repository;

@@ -21,6 +21,7 @@
 ```text
 lib/
 ├── core/
+│   ├── constants/              # Design tokens (colors, spacing, typography, radii)
 │   ├── database/
 │   │   ├── data_sources/       # Shared data sources (Debt, DebtItem, Payment)
 │   │   ├── app_database.dart
@@ -180,6 +181,19 @@ lib/
 ---
 
 ## Core Module Rules
+
+### Design Tokens (Constants)
+
+- All design tokens live in `lib/core/constants/`.
+- Use these constants instead of hardcoded values for colors, spacing, font sizes, font weights, border widths, and radii.
+- Currently available constants:
+  - `AppColors` — color palette (primary, surface, text, status, dark mode variants)
+  - `AppSpacing` — spacing values (4–220px, chip/dropdown heights, chart line widths)
+  - `AppFontSizes` — font sizes (xs–x4l, icon sizes)
+  - `AppFontWeights` — font weights (regular, medium, semiBold, bold)
+  - `AppBorderWidths` — border widths (thin, regular, thick)
+  - `AppRadius` — corner radii (xs, sm, md, lg, chart-specific)
+- Widgets must reference these constants; never hardcode numeric layout values or color literals.
 
 ### Shared Data Sources
 

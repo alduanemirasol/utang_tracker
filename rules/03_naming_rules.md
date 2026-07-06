@@ -12,3 +12,4 @@
 - Suffix database models with `Model`.
 - One class per file.
 - File names use snake_case.
+- Prefix design token classes with `App` (e.g., AppColors, AppSpacing, AppFontSizes).

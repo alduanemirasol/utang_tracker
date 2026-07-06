@@ -9,7 +9,7 @@ import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/domain/customer_repository.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_data_source.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_model.dart';
-import 'package:utang_tracker/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   final CustomerDataSource _customerDataSource;
@@ -41,8 +41,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<Result<List<Customer>>> getAll({String? query}) async {
     try {
       final maps = await _customerDataSource.getAll(query: query);
-      final customers =
-          maps.map((m) => CustomerModel.fromMap(m).toEntity()).toList();
+      final customers = maps
+          .map((m) => CustomerModel.fromMap(m).toEntity())
+          .toList();
       return Success(customers);
     } catch (e) {
       return Error(DatabaseFailure('Failed to load customers: $e'));
@@ -64,7 +65,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
   @override
   Future<Result<List<Map<String, dynamic>>>> getDebtsByCustomerId(
-      String customerId) async {
+    String customerId,
+  ) async {
     try {
       final debtMaps = await _debtDataSource.getAll(customerId: customerId);
       return Success(debtMaps);

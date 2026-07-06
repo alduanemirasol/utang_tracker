@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
-import 'package:utang_tracker/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/domain/customer_repository.dart';
 

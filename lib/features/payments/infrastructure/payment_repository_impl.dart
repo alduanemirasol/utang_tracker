@@ -7,7 +7,7 @@ import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/core/infrastructure/models/payment_model.dart';
 import 'package:utang_tracker/features/payments/domain/payment_repository.dart';
-import 'package:utang_tracker/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
   final PaymentDataSource _dataSource;
@@ -47,8 +47,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<Result<List<Payment>>> getByDebtId(String debtId) async {
     try {
       final maps = await _dataSource.getByDebtId(debtId);
-      final payments =
-          maps.map((m) => PaymentModel.fromMap(m).toEntity()).toList();
+      final payments = maps
+          .map((m) => PaymentModel.fromMap(m).toEntity())
+          .toList();
       return Success(payments);
     } catch (e) {
       return Error(DatabaseFailure('Failed to load payments: $e'));
@@ -99,8 +100,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   Future<void> _recalculateDebtTotals(String debtId, Transaction txn) async {
     final totalAmount = await _debtDataSource.getTotalAmount(debtId);
-    final paidAmount =
-        await _debtDataSource.sumPaymentAmountsByDebtId(debtId, txn);
+    final paidAmount = await _debtDataSource.sumPaymentAmountsByDebtId(
+      debtId,
+      txn,
+    );
     final balance = DebtCalculator.calculateBalance(
       totalAmount: totalAmount,
       paidAmount: paidAmount,
