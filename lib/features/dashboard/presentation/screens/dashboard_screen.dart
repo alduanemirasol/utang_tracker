@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
+import 'package:utang_tracker/core/presentation/app_header.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -15,6 +16,12 @@ class DashboardScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.space7),
         children: [
+          AppHeader(
+            label: 'Dashboard',
+            rightIcon: Icons.notifications_outlined,
+            onRightTap: () {},
+            padding: const EdgeInsets.only(bottom: AppSpacing.space7),
+          ),
           AppCard(
             header: Row(
               children: [

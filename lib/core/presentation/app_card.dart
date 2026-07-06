@@ -34,10 +34,7 @@ class AppCard extends StatelessWidget {
 
     return Container(
       margin: margin ??
-          const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space7,
-            vertical: AppSpacing.space3,
-          ),
+          const EdgeInsets.only(bottom: AppSpacing.space5),
       child: Material(
         type: MaterialType.card,
         elevation: elevation ?? 1,
