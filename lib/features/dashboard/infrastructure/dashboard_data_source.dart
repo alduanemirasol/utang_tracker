@@ -37,19 +37,22 @@ class DashboardDataSource {
   }
 
   Future<List<Map<String, dynamic>>> getRecentDebts({int limit = 5}) async {
-    return db.query(
-      tableDebts,
-      where: '$columnDeletedAt IS NULL',
-      orderBy: '$columnCreatedAt DESC',
-      limit: limit,
+    return db.rawQuery(
+      'SELECT d.*, c.$columnName as customer_name FROM $tableDebts d '
+      'INNER JOIN $tableCustomers c ON d.$columnCustomerId = c.$columnId '
+      'WHERE d.$columnDeletedAt IS NULL AND c.$columnDeletedAt IS NULL '
+      'ORDER BY d.$columnCreatedAt DESC '
+      'LIMIT ?',
+      [limit],
     );
   }
 
   Future<List<Map<String, dynamic>>> getRecentPayments({int limit = 5}) async {
     return db.rawQuery(
-      'SELECT p.*, d.$columnCustomerId FROM $tablePayments p '
+      'SELECT p.*, c.$columnName as customer_name FROM $tablePayments p '
       'INNER JOIN $tableDebts d ON p.$columnDebtId = d.$columnId '
-      'WHERE p.$columnDeletedAt IS NULL AND d.$columnDeletedAt IS NULL '
+      'INNER JOIN $tableCustomers c ON d.$columnCustomerId = c.$columnId '
+      'WHERE p.$columnDeletedAt IS NULL AND d.$columnDeletedAt IS NULL AND c.$columnDeletedAt IS NULL '
       'ORDER BY p.$columnCreatedAt DESC '
       'LIMIT ?',
       [limit],

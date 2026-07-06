@@ -42,7 +42,7 @@ class TotalReceivablesCard extends StatelessWidget {
               color: AppColors.onPrimary,
             ),
           ),
-          const SizedBox(height: AppSpacing.space7),
+          const SizedBox(height: AppSpacing.space8),
           Row(
             children: [
               Expanded(

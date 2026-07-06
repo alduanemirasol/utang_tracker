@@ -1,20 +1,17 @@
-import 'package:utang_tracker/core/domain/debt.dart';
-import 'package:utang_tracker/core/domain/payment.dart';
+import 'activity_item.dart';
 
 class DashboardSummary {
   final double totalOutstandingBalance;
   final double totalCollected;
   final int activeDebtCount;
   final int totalCustomers;
-  final List<Debt> recentDebts;
-  final List<Payment> recentPayments;
+  final List<ActivityItem> recentActivity;
 
   const DashboardSummary({
     required this.totalOutstandingBalance,
     required this.totalCollected,
     required this.activeDebtCount,
     required this.totalCustomers,
-    required this.recentDebts,
-    required this.recentPayments,
+    required this.recentActivity,
   });
 }
