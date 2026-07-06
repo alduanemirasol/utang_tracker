@@ -20,6 +20,7 @@ class UtangTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Utang Tracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
