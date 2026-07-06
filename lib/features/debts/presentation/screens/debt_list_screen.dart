@@ -5,8 +5,6 @@ class DebtListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Debt List')),
-    );
+    return const Center(child: Text('Debt List'));
   }
 }
