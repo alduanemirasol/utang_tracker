@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/presentation/providers/data_source_providers.
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/domain/customer_repository.dart';
+import 'package:utang_tracker/features/customers/domain/customer_summary.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_repository_impl.dart';
 import 'package:utang_tracker/features/customers/application/create_customer_use_case.dart';
 import 'package:utang_tracker/features/customers/application/get_customers_use_case.dart';
@@ -45,6 +46,16 @@ final updateCustomerUseCaseProvider = Provider<UpdateCustomerUseCase>((ref) {
 
 final deleteCustomerUseCaseProvider = Provider<DeleteCustomerUseCase>((ref) {
   return DeleteCustomerUseCase(ref.read(customerRepositoryProvider));
+});
+
+final customerDetailProvider =
+    FutureProvider.family<CustomerSummary, String>((ref, id) async {
+  final result =
+      await ref.read(getCustomerSummaryUseCaseProvider).execute(id);
+  return switch (result) {
+    Success(data: final summary) => summary,
+    Error(failure: final f) => throw f,
+  };
 });
 
 class CustomerListNotifier extends AsyncNotifier<List<Customer>> {
