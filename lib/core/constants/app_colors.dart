@@ -5,6 +5,7 @@ class AppColors {
 
   static const Color primary = Color(0xFF1565C0);
   static const Color onPrimary = Colors.white;
+  static const Color onPrimaryLow = Colors.white70;
   static const Color transparent = Colors.transparent;
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFFC107);

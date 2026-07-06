@@ -2,6 +2,7 @@
   AppRadius._();
 
   static const double xs = 6;
+  static const double xsm = 10;
   static const double sm = 12;
   static const double md = 28;
   static const double lg = 9999;
