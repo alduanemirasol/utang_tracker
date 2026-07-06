@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/helpers/date_time_helper.dart';
@@ -24,7 +23,7 @@ class UtangTrackerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Utang Tracker',
       theme: ThemeData(
-        textTheme: GoogleFonts.dmSansTextTheme(),
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           brightness: Brightness.light,
@@ -32,7 +31,7 @@ class UtangTrackerApp extends StatelessWidget {
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        textTheme: GoogleFonts.dmSansTextTheme(),
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           brightness: Brightness.dark,

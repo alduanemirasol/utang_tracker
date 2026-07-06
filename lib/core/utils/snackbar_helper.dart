@@ -15,7 +15,7 @@ extension SnackBarExtension on BuildContext {
           style: const TextStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'DMSans',
+            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.success,
@@ -38,7 +38,7 @@ extension SnackBarExtension on BuildContext {
           style: const TextStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'DMSans',
+            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.error,
@@ -61,7 +61,7 @@ extension SnackBarExtension on BuildContext {
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'DMSans',
+            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.warning,
@@ -84,7 +84,7 @@ extension SnackBarExtension on BuildContext {
           style: const TextStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'DMSans',
+            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.primary,
