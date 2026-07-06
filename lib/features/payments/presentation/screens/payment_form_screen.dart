@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/constants/app_colors.dart';
 
 class PaymentFormScreen extends StatelessWidget {
   final String debtId;
@@ -11,6 +12,7 @@ class PaymentFormScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(isEditing ? 'Edit Payment' : 'New Payment')),
       body: const Center(child: Text('Payment Form')),
     );

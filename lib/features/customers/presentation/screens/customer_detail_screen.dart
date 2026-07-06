@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/constants/app_colors.dart';
 
 class CustomerDetailScreen extends StatelessWidget {
   final String customerId;
@@ -7,8 +8,9 @@ class CustomerDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Customer Detail')),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: const Center(child: Text('Customer Detail')),
     );
   }
 }
