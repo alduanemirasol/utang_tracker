@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/presentation/app_header.dart';
-import 'package:utang_tracker/features/dashboard/presentation/widgets/stats_row_card.dart';
-import 'package:utang_tracker/features/dashboard/presentation/widgets/total_collected_card.dart';
 import 'package:utang_tracker/features/dashboard/presentation/widgets/total_receivables_card.dart';
 
 const String totalReceivables = '₱1,055,000.00';
@@ -31,8 +29,6 @@ class DashboardScreen extends StatelessWidget {
             collectedThisMonth: collectedThisMonth,
             activeCustomers: activeCustomers,
           ),
-          const TotalCollectedCard(amount: '₱0.00'),
-          const StatsRowCard(customers: '0', activeDebts: '0'),
         ],
       ),
     );
