@@ -11,6 +11,26 @@ class AppTheme {
 
   static const String fontFamily = 'Poppins';
 
+  /// Shared text style base so UI code always resolves to [fontFamily].
+  static TextStyle textStyle({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? height,
+    FontStyle? fontStyle,
+    TextDecoration? decoration,
+  }) {
+    return TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      height: height,
+      fontStyle: fontStyle,
+      decoration: decoration,
+    );
+  }
+
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
@@ -21,12 +41,21 @@ class AppTheme {
       surface: AppColors.surface,
     );
 
+    final textTheme = _textTheme(
+      AppColors.textPrimary,
+      AppColors.textSecondary,
+    ).apply(fontFamily: fontFamily);
+
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
-      textTheme: _textTheme(AppColors.textPrimary, AppColors.textSecondary),
+      textTheme: textTheme,
+      primaryTextTheme: textTheme.apply(
+        bodyColor: AppColors.onPrimary,
+        displayColor: AppColors.onPrimary,
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
@@ -195,8 +224,25 @@ class AppTheme {
       popupMenuTheme: PopupMenuThemeData(
         color: AppColors.surface,
         surfaceTintColor: AppColors.transparent,
+        textStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.medium,
+          color: AppColors.textPrimary,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        labelStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.semibold,
+          color: AppColors.textPrimary,
+        ),
+        secondaryLabelStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.semibold,
+          color: AppColors.onPrimary,
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
@@ -204,8 +250,13 @@ class AppTheme {
         surfaceTintColor: AppColors.transparent,
         modalBackgroundColor: AppColors.surface,
       ),
-      dropdownMenuTheme: const DropdownMenuThemeData(
-        menuStyle: MenuStyle(
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.medium,
+          color: AppColors.textPrimary,
+        ),
+        menuStyle: const MenuStyle(
           backgroundColor: WidgetStatePropertyAll(AppColors.surface),
           surfaceTintColor: WidgetStatePropertyAll(AppColors.transparent),
         ),
@@ -227,14 +278,36 @@ class AppTheme {
       surface: AppColors.darkSurface,
     );
 
+    final textTheme = _textTheme(
+      AppColors.darkTextPrimary,
+      AppColors.darkTextSecondary,
+    ).apply(fontFamily: fontFamily);
+
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
-      textTheme: _textTheme(
-        AppColors.darkTextPrimary,
-        AppColors.darkTextSecondary,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme.apply(
+        bodyColor: AppColors.darkOnPrimary,
+        displayColor: AppColors.darkOnPrimary,
+      ),
+      chipTheme: ChipThemeData(
+        labelStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.semibold,
+          color: AppColors.darkTextPrimary,
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: AppColors.darkSurface,
+        surfaceTintColor: AppColors.transparent,
+        textStyle: textStyle(
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.medium,
+          color: AppColors.darkTextPrimary,
+        ),
       ),
     );
   }

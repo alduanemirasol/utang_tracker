@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppConfirmDialog {
   AppConfirmDialog._();
@@ -18,10 +19,17 @@ class AppConfirmDialog {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
+        title: Text(
+          title,
+          style: AppTheme.textStyle(
+            fontSize: AppFontSizes.x2l,
+            fontWeight: AppFontWeights.semibold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         content: Text(
           message,
-          style: const TextStyle(
+          style: AppTheme.textStyle(
             fontSize: AppFontSizes.md,
             color: AppColors.textPrimary,
           ),
@@ -31,7 +39,7 @@ class AppConfirmDialog {
             onPressed: () => ctx.pop(false),
             child: Text(
               cancelLabel,
-              style: const TextStyle(
+              style: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,
               ),
@@ -45,7 +53,7 @@ class AppConfirmDialog {
             ),
             child: Text(
               confirmLabel,
-              style: const TextStyle(
+              style: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,
               ),

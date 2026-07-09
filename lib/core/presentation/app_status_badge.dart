@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppStatusBadge extends StatelessWidget {
   final DebtStatus status;
@@ -52,7 +53,7 @@ class AppStatusBadge extends StatelessWidget {
       ),
       child: Text(
         labelFor(status),
-        style: TextStyle(
+        style: AppTheme.textStyle(
           fontSize: AppFontSizes.sm,
           fontWeight: AppFontWeights.semibold,
           color: textColor,

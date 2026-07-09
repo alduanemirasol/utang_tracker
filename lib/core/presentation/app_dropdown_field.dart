@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppDropdownField<T> extends StatelessWidget {
   final String label;
@@ -32,16 +33,16 @@ class AppDropdownField<T> extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,
                 color: AppColors.textPrimary,
               ),
             ),
             if (isRequired)
-              const Text(
+              Text(
                 ' *',
-                style: TextStyle(
+                style: AppTheme.textStyle(
                   fontSize: AppFontSizes.md,
                   fontWeight: AppFontWeights.semibold,
                   color: AppColors.error,
@@ -71,16 +72,15 @@ class AppDropdownField<T> extends StatelessWidget {
               ),
               hint: Text(
                 hintText ?? 'Select',
-                style: const TextStyle(
+                style: AppTheme.textStyle(
                   fontSize: AppFontSizes.md,
                   color: AppColors.textSecondary,
                 ),
               ),
-              style: const TextStyle(
+              style: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.medium,
                 color: AppColors.textPrimary,
-                fontFamily: 'Poppins',
               ),
               items: items,
               onChanged: onChanged,

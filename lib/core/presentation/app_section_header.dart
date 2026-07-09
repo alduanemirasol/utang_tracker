@@ -3,6 +3,7 @@ import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppSectionHeader extends StatelessWidget {
   final String label;
@@ -27,7 +28,7 @@ class AppSectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style: AppTheme.textStyle(
               fontSize: AppFontSizes.xl,
               fontWeight: AppFontWeights.semibold,
               color: AppColors.textPrimary,
@@ -42,7 +43,7 @@ class AppSectionHeader extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               minimumSize: const Size(AppSpacing.space48, AppSpacing.space48),
-              textStyle: const TextStyle(
+              textStyle: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,
               ),

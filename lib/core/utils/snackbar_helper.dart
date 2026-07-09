@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 extension SnackBarExtension on BuildContext {
   /// Shows a success SnackBar with a green background and white text.
@@ -12,10 +13,9 @@ extension SnackBarExtension on BuildContext {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
+          style: AppTheme.textStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.success,
@@ -35,10 +35,9 @@ extension SnackBarExtension on BuildContext {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
+          style: AppTheme.textStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.error,
@@ -58,10 +57,9 @@ extension SnackBarExtension on BuildContext {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
+          style: AppTheme.textStyle(
             color: AppColors.textPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.warning,
@@ -81,10 +79,9 @@ extension SnackBarExtension on BuildContext {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
+          style: AppTheme.textStyle(
             color: AppColors.onPrimary,
             fontSize: AppFontSizes.md,
-            fontFamily: 'Poppins',
           ),
         ),
         backgroundColor: AppColors.primary,

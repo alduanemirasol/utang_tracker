@@ -110,13 +110,13 @@ class CustomerDetailScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.space3),
+              const SizedBox(height: AppSpacing.space5),
               _StatsRow(
                 totalDebts: summary.totalDebts,
                 totalBalance: summary.totalBalance,
                 totalPaid: summary.totalPaid,
               ),
-              const SizedBox(height: AppSpacing.space7),
+              const SizedBox(height: AppSpacing.space5),
               AppPrimaryButton(
                 label: 'Add debt',
                 icon: Icons.receipt_long,
@@ -213,7 +213,7 @@ class _StatsRow extends StatelessWidget {
             color: AppColors.primary,
           ),
         ),
-        const SizedBox(width: AppSpacing.space3),
+        const SizedBox(width: AppSpacing.space5),
         Expanded(
           child: _StatCard(
             label: 'Balance',
@@ -221,7 +221,7 @@ class _StatsRow extends StatelessWidget {
             color: AppColors.warning,
           ),
         ),
-        const SizedBox(width: AppSpacing.space3),
+        const SizedBox(width: AppSpacing.space5),
         Expanded(
           child: _StatCard(
             label: 'Paid',
@@ -250,17 +250,19 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(AppSpacing.space5),
       child: Column(
         children: [
           Text(
             label,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: AppFontSizes.sm,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: AppSpacing.space3),
+          const SizedBox(height: AppSpacing.space5),
           if (amount != null)
             AppMoneyText(
               amount: amount!,
@@ -270,6 +272,7 @@ class _StatCard extends StatelessWidget {
           else
             Text(
               value ?? '',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppFontSizes.lg,
                 fontWeight: AppFontWeights.bold,

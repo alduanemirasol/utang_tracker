@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppPrimaryButton extends StatelessWidget {
   final String label;
@@ -46,7 +47,7 @@ class AppPrimaryButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
-        textStyle: const TextStyle(
+        textStyle: AppTheme.textStyle(
           fontSize: AppFontSizes.lg,
           fontWeight: AppFontWeights.semibold,
         ),
@@ -104,7 +105,7 @@ class AppSecondaryButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
-        textStyle: const TextStyle(
+        textStyle: AppTheme.textStyle(
           fontSize: AppFontSizes.lg,
           fontWeight: AppFontWeights.semibold,
         ),
@@ -140,12 +141,18 @@ class AppDestructiveButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
-        textStyle: const TextStyle(
+        textStyle: AppTheme.textStyle(
           fontSize: AppFontSizes.lg,
           fontWeight: AppFontWeights.semibold,
         ),
       ),
-      child: Text(label),
+      child: Text(
+        label,
+        style: AppTheme.textStyle(
+          fontSize: AppFontSizes.lg,
+          fontWeight: AppFontWeights.semibold,
+        ),
+      ),
     );
   }
 }
@@ -163,8 +170,13 @@ class _ButtonLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = AppTheme.textStyle(
+      fontSize: AppFontSizes.lg,
+      fontWeight: AppFontWeights.semibold,
+      color: color,
+    );
     if (icon == null) {
-      return Text(label, style: color != null ? TextStyle(color: color) : null);
+      return Text(label, style: style);
     }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +184,7 @@ class _ButtonLabel extends StatelessWidget {
       children: [
         Icon(icon, size: AppFontSizes.iconSm, color: color),
         const SizedBox(width: AppSpacing.space3),
-        Text(label, style: color != null ? TextStyle(color: color) : null),
+        Text(label, style: style),
       ],
     );
   }

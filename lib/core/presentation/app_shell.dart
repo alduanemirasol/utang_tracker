@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
+import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -25,8 +27,14 @@ class AppShell extends StatelessWidget {
         selectedFontSize: AppFontSizes.sm,
         unselectedFontSize: AppFontSizes.sm,
         iconSize: AppFontSizes.iconMd,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        selectedLabelStyle: AppTheme.textStyle(
+          fontSize: AppFontSizes.sm,
+          fontWeight: AppFontWeights.semibold,
+        ),
+        unselectedLabelStyle: AppTheme.textStyle(
+          fontSize: AppFontSizes.sm,
+          fontWeight: AppFontWeights.medium,
+        ),
         items: const [
           BottomNavigationBarItem(
             icon: Padding(

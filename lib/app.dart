@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/core/presentation/router.dart';
@@ -25,6 +26,14 @@ class UtangTrackerApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       routerConfig: appRouter,
+      builder: (context, child) {
+        final base = Theme.of(context).textTheme.bodyMedium ??
+            AppTheme.textStyle(fontSize: AppFontSizes.md);
+        return DefaultTextStyle(
+          style: base.copyWith(fontFamily: AppTheme.fontFamily),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

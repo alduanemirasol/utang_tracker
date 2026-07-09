@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 
 enum AppMoneySize { sm, md, lg, xl, display }
@@ -45,7 +46,7 @@ class AppMoneyText extends StatelessWidget {
     return Text(
       formatPeso(amount),
       textAlign: textAlign,
-      style: TextStyle(
+      style: AppTheme.textStyle(
         fontSize: _fontSize,
         fontWeight: _weight,
         color: color ?? AppColors.textPrimary,

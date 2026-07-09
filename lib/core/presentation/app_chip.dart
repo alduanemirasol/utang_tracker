@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
+import 'package:utang_tracker/core/theme/app_theme.dart';
 
 class AppChip extends StatelessWidget {
   final String label;
@@ -22,7 +23,7 @@ class AppChip extends StatelessWidget {
     return FilterChip(
       label: Text(
         label,
-        style: TextStyle(
+        style: AppTheme.textStyle(
           fontSize: AppFontSizes.md,
           fontWeight: AppFontWeights.semibold,
           height: 1.2,
