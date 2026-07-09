@@ -2,23 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
+import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
+import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/features/dashboard/domain/activity_item.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final List<ActivityItem> items;
+  final ValueChanged<ActivityItem>? onItemTap;
+  final String title;
 
-  const RecentActivityCard({super.key, required this.items});
+  const RecentActivityCard({
+    super.key,
+    required this.items,
+    this.onItemTap,
+    this.title = 'Recent payments',
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      header: const Text(
-        'Recent Activity',
-        style: TextStyle(
-          fontSize: AppFontSizes.lg,
+      header: Text(
+        title,
+        style: const TextStyle(
+          fontSize: AppFontSizes.xl,
           fontWeight: AppFontWeights.semibold,
           color: AppColors.textPrimary,
         ),
@@ -28,9 +37,9 @@ class RecentActivityCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: AppSpacing.space5),
               child: Center(
                 child: Text(
-                  'No recent activity',
+                  'No recent payments',
                   style: TextStyle(
-                    fontSize: AppFontSizes.sm,
+                    fontSize: AppFontSizes.md,
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -50,16 +59,16 @@ class RecentActivityCard extends StatelessWidget {
         ? AppColors.warning.withValues(alpha: 0.1)
         : AppColors.success.withValues(alpha: 0.1);
 
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.space5),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: AppSpacing.space48,
+            height: AppSpacing.space48,
             decoration: BoxDecoration(
               color: iconBg,
-              borderRadius: BorderRadius.circular(AppSpacing.space3),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(icon, color: iconColor, size: AppFontSizes.iconSm),
           ),
@@ -71,65 +80,41 @@ class RecentActivityCard extends StatelessWidget {
                 Text(
                   item.customerName,
                   style: const TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    fontWeight: AppFontWeights.medium,
+                    fontSize: AppFontSizes.md,
+                    fontWeight: AppFontWeights.semibold,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.space05),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.space2,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDebt
-                            ? AppColors.warning.withValues(alpha: 0.15)
-                            : AppColors.success.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(AppSpacing.space1),
-                      ),
-                      child: Text(
-                        item.statusLabel,
-                        style: TextStyle(
-                          fontSize: AppFontSizes.xs - 1,
-                          fontWeight: AppFontWeights.medium,
-                          color: iconColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.space3),
-                    Text(
-                      DateTimeHelper.formatDate(item.date),
-                      style: const TextStyle(
-                        fontSize: AppFontSizes.xs - 1,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: AppSpacing.space1),
+                Text(
+                  '${item.statusLabel} · ${DateTimeHelper.formatDate(item.date)}',
+                  style: const TextStyle(
+                    fontSize: AppFontSizes.sm,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.space5),
-          Text(
-            '₱${_formatAmount(item.amount)}',
-            style: TextStyle(
-              fontSize: AppFontSizes.sm,
-              fontWeight: AppFontWeights.semibold,
-              color: isDebt ? AppColors.textPrimary : AppColors.success,
-            ),
+          AppMoneyText(
+            amount: item.amount,
+            size: AppMoneySize.md,
+            color: isDebt ? AppColors.textPrimary : AppColors.success,
           ),
         ],
       ),
     );
-  }
 
-  String _formatAmount(double amount) {
-    if (amount == amount.roundToDouble()) {
-      return amount.toInt().toString();
-    }
-    return amount.toStringAsFixed(2);
+    if (onItemTap == null) return row;
+
+    return Material(
+      color: AppColors.transparent,
+      child: InkWell(
+        onTap: () => onItemTap!(item),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        child: row,
+      ),
+    );
   }
 }

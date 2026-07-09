@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
-import 'package:utang_tracker/core/constants/app_font_sizes.dart';
-import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/core/presentation/app_async_views.dart';
+import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
@@ -120,7 +120,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
         title: Text(widget.isEditing ? 'Edit Customer' : 'New Customer'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppLoadingView()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.space7),
               child: Form(
@@ -155,35 +155,12 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                       maxLines: 3,
                     ),
                     const SizedBox(height: AppSpacing.space10),
-                    SizedBox(
-                      height: AppSpacing.space56,
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.onPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.space5),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: AppFontSizes.lg,
-                            fontWeight: AppFontWeights.semibold,
-                          ),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: AppSpacing.space8,
-                                height: AppSpacing.space8,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.onPrimary,
-                                ),
-                              )
-                            : Text(
-                                widget.isEditing ? 'Update' : 'Save',
-                              ),
-                      ),
+                    AppPrimaryButton(
+                      label: widget.isEditing
+                          ? 'Update customer'
+                          : 'Save customer',
+                      onPressed: _save,
+                      isLoading: _isSaving,
                     ),
                   ],
                 ),

@@ -32,44 +32,47 @@ class AppCard extends StatelessWidget {
     final effectiveRadius =
         borderRadius ?? BorderRadius.circular(AppRadius.sm);
 
-    return Container(
-      margin: margin ??
-          const EdgeInsets.only(bottom: AppSpacing.space5),
-      child: Material(
-        type: MaterialType.card,
-        elevation: elevation ?? 1,
-        borderRadius: effectiveRadius,
-        color: backgroundColor ?? AppColors.surface,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: effectiveRadius,
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(AppSpacing.space7),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (header case final h?)
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppSpacing.space3),
-                    child: h,
-                  ),
-                ?child,
-                if (actions case final acts? when acts.isNotEmpty)
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: AppSpacing.space5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: acts,
-                    ),
-                  ),
-              ],
+    final content = Padding(
+      padding: padding ?? const EdgeInsets.all(AppSpacing.space7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (header case final h?)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.space5),
+              child: h,
             ),
-          ),
-        ),
+          ?child,
+          if (actions case final acts? when acts.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.space5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: acts,
+              ),
+            ),
+        ],
       ),
+    );
+
+    final material = Material(
+      type: MaterialType.card,
+      elevation: elevation ?? 1,
+      borderRadius: effectiveRadius,
+      color: backgroundColor ?? AppColors.surface,
+      child: onTap != null
+          ? InkWell(
+              onTap: onTap,
+              borderRadius: effectiveRadius,
+              child: content,
+            )
+          : content,
+    );
+
+    return Container(
+      margin: margin ?? const EdgeInsets.only(bottom: AppSpacing.space5),
+      child: material,
     );
   }
 }

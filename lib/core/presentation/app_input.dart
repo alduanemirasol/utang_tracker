@@ -18,6 +18,8 @@ class AppInput extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final String? helperText;
+  final bool enabled;
 
   const AppInput({
     super.key,
@@ -30,6 +32,8 @@ class AppInput extends StatelessWidget {
     this.inputFormatters,
     this.validator,
     this.onChanged,
+    this.helperText,
+    this.enabled = true,
   });
 
   @override
@@ -43,7 +47,7 @@ class AppInput extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                fontSize: AppFontSizes.sm,
+                fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,
                 color: AppColors.textPrimary,
               ),
@@ -52,17 +56,22 @@ class AppInput extends StatelessWidget {
               const Text(
                 ' *',
                 style: TextStyle(
-                  fontSize: AppFontSizes.sm,
+                  fontSize: AppFontSizes.md,
                   fontWeight: AppFontWeights.semibold,
                   color: AppColors.error,
                 ),
               ),
           ],
         ),
-        const SizedBox(height: AppSpacing.space2),
+        const SizedBox(height: AppSpacing.space3),
         TextFormField(
           controller: controller,
-          style: const TextStyle(fontWeight: AppFontWeights.medium),
+          enabled: enabled,
+          style: const TextStyle(
+            fontSize: AppFontSizes.md,
+            fontWeight: AppFontWeights.medium,
+            color: AppColors.textPrimary,
+          ),
           maxLines: maxLines,
           keyboardType: keyboardType,
           inputFormatters: [...?inputFormatters, NoEmojiInputFormatter()],
@@ -71,13 +80,17 @@ class AppInput extends StatelessWidget {
               final result = validator!(value);
               if (result != null) return result;
             }
-            if (value != null && RegExp(r'[<>{}\[\]\\^`~|]').hasMatch(value)) {
+            if (value != null &&
+                RegExp(r'[<>{}\[\]\\^`~|]').hasMatch(value)) {
               return 'Contains invalid characters';
             }
             return null;
           },
           onChanged: onChanged,
-          decoration: AppInputDecoration.textField(hintText: hintText),
+          decoration: AppInputDecoration.textField(
+            hintText: hintText,
+            helperText: helperText,
+          ),
         ),
       ],
     );
@@ -89,12 +102,22 @@ class AppInputDecoration {
 
   static InputDecoration textField({
     String? hintText,
+    String? helperText,
     Widget? prefixIcon,
     Widget? suffixIcon,
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(fontWeight: AppFontWeights.regular),
+      helperText: helperText,
+      helperStyle: const TextStyle(
+        fontSize: AppFontSizes.sm,
+        color: AppColors.textSecondary,
+      ),
+      hintStyle: const TextStyle(
+        fontSize: AppFontSizes.md,
+        fontWeight: AppFontWeights.regular,
+        color: AppColors.textSecondary,
+      ),
       filled: true,
       fillColor: AppColors.surface,
       prefixIcon: prefixIcon,
@@ -116,7 +139,7 @@ class AppInputDecoration {
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space7,
-        vertical: AppSpacing.space4,
+        vertical: AppSpacing.space5,
       ),
     );
   }

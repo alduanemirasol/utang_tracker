@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
@@ -82,6 +82,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(minHeight: AppSpacing.space56),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -100,21 +101,36 @@ class _AppSearchBarState extends State<AppSearchBar> {
         },
         onTapOutside: (_) => _focusNode.unfocus(),
         textAlignVertical: TextAlignVertical.center,
-        style: const TextStyle(fontSize: AppFontSizes.md),
+        style: const TextStyle(
+          fontSize: AppFontSizes.md,
+          color: AppColors.textPrimary,
+        ),
         decoration: InputDecoration(
           hintText: widget.hintText ?? 'Search...',
-          hintStyle: const TextStyle(color: AppColors.textSecondary),
-          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          hintStyle: const TextStyle(
+            fontSize: AppFontSizes.md,
+            color: AppColors.textSecondary,
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppColors.textSecondary,
+            size: AppFontSizes.iconMd,
+          ),
           suffixIcon: _showClear && !widget.readOnly
               ? IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  tooltip: 'Clear search',
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: AppFontSizes.iconSm,
+                  ),
                   onPressed: _clearText,
                 )
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.space7,
-            vertical: AppSpacing.space4,
+            vertical: AppSpacing.space5,
           ),
         ),
       ),

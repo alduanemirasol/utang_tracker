@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
+import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 
@@ -22,7 +23,8 @@ class AppChip extends StatelessWidget {
       label: Text(
         label,
         style: TextStyle(
-          fontSize: AppFontSizes.sm,
+          fontSize: AppFontSizes.md,
+          fontWeight: AppFontWeights.semibold,
           color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
         ),
       ),
@@ -34,9 +36,10 @@ class AppChip extends StatelessWidget {
         color: isSelected ? AppColors.primary : AppColors.border,
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space3,
-        vertical: AppSpacing.space2,
+        horizontal: AppSpacing.space5,
+        vertical: AppSpacing.space3,
       ),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),

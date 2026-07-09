@@ -36,7 +36,9 @@ final appRouter = GoRouter(
                 GoRoute(
                   path: 'new',
                   name: 'debtNew',
-                  builder: (context, state) => const DebtFormScreen(),
+                  builder: (context, state) => DebtFormScreen(
+                    customerId: state.uri.queryParameters['customerId'],
+                  ),
                 ),
                 GoRoute(
                   path: ':id',
@@ -70,9 +72,17 @@ final appRouter = GoRouter(
                     GoRoute(
                       path: 'payments/new',
                       name: 'paymentNew',
-                      builder: (context, state) => PaymentFormScreen(
-                        debtId: state.pathParameters['id']!,
-                      ),
+                      builder: (context, state) {
+                        final amountParam =
+                            state.uri.queryParameters['amount'];
+                        final prefill = amountParam != null
+                            ? double.tryParse(amountParam)
+                            : null;
+                        return PaymentFormScreen(
+                          debtId: state.pathParameters['id']!,
+                          prefillAmount: prefill,
+                        );
+                      },
                     ),
                     GoRoute(
                       path: 'payments/:paymentId/edit',

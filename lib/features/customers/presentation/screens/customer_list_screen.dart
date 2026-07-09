@@ -6,10 +6,13 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
-import 'package:utang_tracker/core/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/presentation/app_async_views.dart';
+import 'package:utang_tracker/core/presentation/app_empty_state.dart';
 import 'package:utang_tracker/core/presentation/app_header.dart';
+import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/core/presentation/app_search_bar.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
+import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class CustomerListScreen extends ConsumerStatefulWidget {
   const CustomerListScreen({super.key});
@@ -25,128 +28,102 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   @override
   Widget build(BuildContext context) {
     final asyncCustomers = ref.watch(customerListProvider);
+    final asyncDebts = ref.watch(allDebtsProvider);
 
-    return Container(
-      color: AppColors.background,
-      child: Scaffold(
-        backgroundColor: AppColors.transparent,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.pushNamed('customerNew'),
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: AppColors.onPrimary),
-        ),
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.space7,
-                  AppSpacing.space7,
-                  AppSpacing.space7,
-                  AppSpacing.space5,
-                ),
-                child: AppHeader(
-                  label: 'Customers',
-                  rightIcon: Icons.notifications_outlined,
-                  onRightTap: () {},
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.space7,
-                ),
-                child: AppSearchBar(
-                  hintText: 'Search customers...',
-                  onChanged: (value) {
-                    _query = value;
-                    ref
-                        .read(customerListProvider.notifier)
-                        .search(value);
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space7),
-              Expanded(
-                child: asyncCustomers.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (e, _) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.space8),
-                      child: Text(
-                        'Failed to load customers',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.sm,
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ),
-                  ),
-                  data: (customers) {
-                    if (customers.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: AppFontSizes.iconL,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(height: AppSpacing.space7),
-                            Text(
-                              _query.isNotEmpty
-                                  ? 'No customers found'
-                                  : 'No customers yet',
-                              style: const TextStyle(
-                                fontSize: AppFontSizes.lg,
-                                fontWeight: AppFontWeights.medium,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            if (_query.isEmpty) ...[
-                              const SizedBox(height: AppSpacing.space3),
-                              Text(
-                                'Tap + to add your first customer',
-                                style: const TextStyle(
-                                  fontSize: AppFontSizes.sm,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    }
+    final balances = <String, double>{};
+    final debts = asyncDebts.asData?.value;
+    if (debts != null) {
+      for (final debt in debts) {
+        balances[debt.customerId] =
+            (balances[debt.customerId] ?? 0) + debt.balance;
+      }
+    }
 
-                    return ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.space7,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'customer_list_fab',
+        onPressed: () => context.pushNamed('customerNew'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        icon: const Icon(Icons.add),
+        label: const Text('Add customer'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.space7,
+              AppSpacing.space7,
+              AppSpacing.space7,
+              AppSpacing.space5,
+            ),
+            child: AppHeader(label: 'Customers'),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space7),
+            child: AppSearchBar(
+              hintText: 'Search customers...',
+              onChanged: (value) {
+                _query = value;
+                ref.read(customerListProvider.notifier).search(value);
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.space7),
+          Expanded(
+            child: asyncCustomers.when(
+              loading: () => const AppLoadingView(),
+              error: (e, _) => AppErrorView(
+                message: 'Failed to load customers',
+                onRetry: () =>
+                    ref.read(customerListProvider.notifier).refresh(),
+              ),
+              data: (customers) {
+                if (customers.isEmpty) {
+                  return AppEmptyState(
+                    icon: Icons.people_outline,
+                    message: _query.isNotEmpty
+                        ? 'No customers found'
+                        : 'No customers yet',
+                    subtitle: _query.isEmpty
+                        ? 'Add a customer to start tracking debts'
+                        : null,
+                    actionLabel: _query.isEmpty ? 'Add customer' : null,
+                    onAction: _query.isEmpty
+                        ? () => context.pushNamed('customerNew')
+                        : null,
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.space7,
+                    0,
+                    AppSpacing.space7,
+                    AppSpacing.space80,
+                  ),
+                  itemCount: customers.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.space3),
+                  itemBuilder: (context, index) {
+                    final customer = customers[index];
+                    return _CustomerTile(
+                      name: customer.name,
+                      subtitle: customer.phone ?? customer.notes,
+                      balance: balances[customer.id] ?? 0,
+                      onTap: () => context.pushNamed(
+                        'customerDetail',
+                        pathParameters: {'id': customer.id},
                       ),
-                      itemCount: customers.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.space3),
-                      itemBuilder: (context, index) {
-                        final customer = customers[index];
-                        return _CustomerTile(
-                          name: customer.name,
-                          subtitle: customer.phone ?? customer.notes,
-                          date: customer.createdAt,
-                          onTap: () => context.pushNamed(
-                            'customerDetail',
-                            pathParameters: {'id': customer.id},
-                          ),
-                        );
-                      },
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -155,13 +132,13 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
 class _CustomerTile extends StatelessWidget {
   final String name;
   final String? subtitle;
-  final DateTime date;
+  final double balance;
   final VoidCallback onTap;
 
   const _CustomerTile({
     required this.name,
     this.subtitle,
-    required this.date,
+    required this.balance,
     required this.onTap,
   });
 
@@ -170,6 +147,7 @@ class _CustomerTile extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(AppRadius.sm),
+      elevation: 1,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -178,8 +156,8 @@ class _CustomerTile extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: AppSpacing.space48,
+                height: AppSpacing.space48,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.xsm),
@@ -198,13 +176,13 @@ class _CustomerTile extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
-                        fontSize: AppFontSizes.md,
+                        fontSize: AppFontSizes.lg,
                         fontWeight: AppFontWeights.semibold,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.space05),
+                      const SizedBox(height: AppSpacing.space1),
                       Text(
                         subtitle!,
                         maxLines: 1,
@@ -215,13 +193,24 @@ class _CustomerTile extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: AppSpacing.space05),
-                    Text(
-                      DateTimeHelper.formatDate(date),
-                      style: const TextStyle(
-                        fontSize: AppFontSizes.xs - 1,
-                        color: AppColors.textSecondary,
-                      ),
+                    const SizedBox(height: AppSpacing.space3),
+                    Row(
+                      children: [
+                        const Text(
+                          'Balance ',
+                          style: TextStyle(
+                            fontSize: AppFontSizes.sm,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        AppMoneyText(
+                          amount: balance,
+                          size: AppMoneySize.sm,
+                          color: balance > 0
+                              ? AppColors.textPrimary
+                              : AppColors.success,
+                        ),
+                      ],
                     ),
                   ],
                 ),

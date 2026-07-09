@@ -4,99 +4,109 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
+import 'package:utang_tracker/core/presentation/app_money_text.dart';
 
 class TotalReceivablesCard extends StatelessWidget {
-  final String totalReceivables;
-  final String collectedThisMonth;
-  final int activeCustomers;
+  final double outstandingBalance;
+  final double totalCollected;
+  final double totalDebtAmount;
+  final int activeDebtCount;
 
   const TotalReceivablesCard({
     super.key,
-    required this.totalReceivables,
-    required this.collectedThisMonth,
-    required this.activeCustomers,
+    required this.outstandingBalance,
+    required this.totalCollected,
+    required this.totalDebtAmount,
+    required this.activeDebtCount,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       backgroundColor: AppColors.primary,
-      header: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'TOTAL RECEIVABLES',
+            'OUTSTANDING BALANCE',
             style: TextStyle(
-              fontSize: AppFontSizes.xs,
+              fontSize: AppFontSizes.sm,
               fontWeight: AppFontWeights.medium,
-              letterSpacing: 1.2,
+              letterSpacing: 1.0,
               color: AppColors.onPrimaryLow,
             ),
           ),
-          const SizedBox(height: AppSpacing.space2),
-          Text(
-            totalReceivables,
-            style: const TextStyle(
-              fontSize: AppFontSizes.x3l,
-              fontWeight: AppFontWeights.bold,
-              color: AppColors.onPrimary,
-            ),
+          const SizedBox(height: AppSpacing.space3),
+          AppMoneyText(
+            amount: outstandingBalance,
+            size: AppMoneySize.display,
+            color: AppColors.onPrimary,
           ),
           const SizedBox(height: AppSpacing.space8),
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'COLLECTED THIS MONTH',
-                      style: TextStyle(
-                        fontSize: AppFontSizes.xs,
-                        fontWeight: AppFontWeights.medium,
-                        color: AppColors.onPrimaryLow,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text(
-                      collectedThisMonth,
-                      style: const TextStyle(
-                        fontSize: AppFontSizes.xl,
-                        fontWeight: AppFontWeights.bold,
-                        color: AppColors.onPrimary,
-                      ),
-                    ),
-                  ],
+                child: _Metric(
+                  label: 'TOTAL COLLECTED',
+                  amount: totalCollected,
                 ),
               ),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'ACTIVE CUSTOMERS',
-                      style: TextStyle(
-                        fontSize: AppFontSizes.xs,
-                        fontWeight: AppFontWeights.medium,
-                        color: AppColors.onPrimaryLow,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text(
-                      '$activeCustomers',
-                      style: const TextStyle(
-                        fontSize: AppFontSizes.xl,
-                        fontWeight: AppFontWeights.bold,
-                        color: AppColors.onPrimary,
-                      ),
-                    ),
-                  ],
+                child: _Metric(
+                  label: 'TOTAL DEBTS',
+                  amount: totalDebtAmount,
+                  alignEnd: true,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.space5),
+          Text(
+            '$activeDebtCount active debt${activeDebtCount == 1 ? '' : 's'}',
+            style: const TextStyle(
+              fontSize: AppFontSizes.sm,
+              fontWeight: AppFontWeights.medium,
+              color: AppColors.onPrimaryLow,
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _Metric extends StatelessWidget {
+  final String label;
+  final double amount;
+  final bool alignEnd;
+
+  const _Metric({
+    required this.label,
+    required this.amount,
+    this.alignEnd = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment:
+          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: AppFontSizes.sm,
+            fontWeight: AppFontWeights.medium,
+            color: AppColors.onPrimaryLow,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.space1),
+        AppMoneyText(
+          amount: amount,
+          size: AppMoneySize.lg,
+          color: AppColors.onPrimary,
+        ),
+      ],
     );
   }
 }

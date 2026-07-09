@@ -98,6 +98,15 @@ final debtListProvider = AsyncNotifierProvider<DebtListNotifier, List<Debt>>(
   DebtListNotifier.new,
 );
 
+/// Unfiltered debt list for cross-screen aggregates (customer balances, etc.).
+final allDebtsProvider = FutureProvider<List<Debt>>((ref) async {
+  final result = await ref.read(getDebtsUseCaseProvider).execute();
+  return switch (result) {
+    Success(data: final debts) => debts,
+    Error(failure: final f) => throw f,
+  };
+});
+
 final debtDetailProvider =
     FutureProvider.family<DebtDetail, String>((ref, id) async {
   final result = await ref.read(getDebtDetailUseCaseProvider).execute(id);

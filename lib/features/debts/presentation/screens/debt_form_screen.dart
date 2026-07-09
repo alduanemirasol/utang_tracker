@@ -8,12 +8,17 @@ import 'package:utang_tracker/core/constants/app_radius.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/core/helpers/date_time_helper.dart';
+import 'package:utang_tracker/core/presentation/app_async_views.dart';
+import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
+import 'package:utang_tracker/core/presentation/app_date_field.dart';
+import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
+import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:utang_tracker/features/debt_items/presentation/providers/debt_item_providers.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
@@ -64,6 +69,13 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     super.initState();
     if (widget.isEditing) {
       _loadDebt();
+    } else if (widget.customerId != null) {
+      _selectedCustomer = Customer(
+        id: widget.customerId!,
+        name: '',
+        createdAt: DateTimeHelper.now(),
+        updatedAt: DateTimeHelper.now(),
+      );
     }
   }
 
@@ -315,6 +327,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
         switch (result) {
           case Success():
             ref.invalidate(debtListProvider);
+            ref.invalidate(allDebtsProvider);
+            ref.invalidate(dashboardProvider);
             context.showSuccessSnackBar('Debt updated successfully');
             context.pop();
           case Error(failure: final f):
@@ -356,6 +370,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           if (mounted) {
             setState(() => _isSaving = false);
             ref.invalidate(debtListProvider);
+            ref.invalidate(allDebtsProvider);
+            ref.invalidate(dashboardProvider);
             context.showSuccessSnackBar('Debt created successfully');
             context.pushReplacementNamed(
               'debtDetail',
@@ -385,7 +401,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Edit Debt')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const AppLoadingView(),
       );
     }
 
@@ -408,17 +424,17 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                     const SizedBox(height: AppSpacing.space7),
                   ],
                 ),
-              _DatePickerField(
+              AppDateField(
                 label: 'Transaction Date',
                 value: _transactionDate,
-                isDueDate: false,
+                isRequired: true,
                 onTap: () => _pickDate(false),
               ),
               const SizedBox(height: AppSpacing.space7),
-              _DatePickerField(
-                label: 'Due Date (optional)',
+              AppDateField(
+                label: 'Due Date',
                 value: _dueDate,
-                isDueDate: true,
+                placeholder: 'Optional due date',
                 onTap: () => _pickDate(true),
                 onClear: _dueDate != null
                     ? () => setState(() => _dueDate = null)
@@ -436,32 +452,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 _buildItemsSection(),
               ],
               const SizedBox(height: AppSpacing.space10),
-              SizedBox(
-                height: AppSpacing.space56,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: AppFontSizes.lg,
-                      fontWeight: AppFontWeights.semibold,
-                    ),
-                  ),
-                  child: _isSaving
-                      ? const SizedBox(
-                          width: AppSpacing.space8,
-                          height: AppSpacing.space8,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.onPrimary,
-                          ),
-                        )
-                      : Text(widget.isEditing ? 'Update' : 'Create'),
-                ),
+              AppPrimaryButton(
+                label: widget.isEditing ? 'Update debt' : 'Create debt',
+                onPressed: _save,
+                isLoading: _isSaving,
               ),
             ],
           ),
@@ -563,18 +557,22 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           child: Text(
                             formatPeso(item.subtotal),
                             style: const TextStyle(
-                              fontSize: AppFontSizes.sm,
+                              fontSize: AppFontSizes.md,
                               fontWeight: AppFontWeights.semibold,
                               color: AppColors.textPrimary,
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => _removeItem(item.id),
-                          child: const Icon(
+                        IconButton(
+                          tooltip: 'Remove item',
+                          onPressed: () => _removeItem(item.id),
+                          icon: const Icon(
                             Icons.close,
-                            size: AppFontSizes.iconSm,
                             color: AppColors.error,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: AppSpacing.space48,
+                            minHeight: AppSpacing.space48,
                           ),
                         ),
                       ],
@@ -633,7 +631,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
   Widget _buildCustomerSelector(AsyncValue<List<Customer>> asyncCustomers) {
     return asyncCustomers.when(
-      loading: () => const CircularProgressIndicator(),
+      loading: () => const AppLoadingView(),
       error: (_, _) => const Text(
         'Failed to load customers',
         style: TextStyle(color: AppColors.error),
@@ -645,152 +643,35 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
             (c) => c.id == _selectedCustomer!.id,
           );
           if (match.isNotEmpty) {
-            _selectedCustomer = match.first;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _selectedCustomer = match.first);
+            });
           }
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'Customer',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    fontWeight: AppFontWeights.semibold,
-                    color: AppColors.textPrimary,
-                  ),
+        Customer? dropdownValue;
+        if (_selectedCustomer != null) {
+          final match =
+              customers.where((c) => c.id == _selectedCustomer!.id);
+          dropdownValue = match.isNotEmpty ? match.first : null;
+        }
+
+        return AppDropdownField<Customer>(
+          label: 'Customer',
+          value: dropdownValue,
+          isRequired: true,
+          hintText: 'Select a customer',
+          items: customers
+              .map(
+                (customer) => DropdownMenuItem(
+                  value: customer,
+                  child: Text(customer.name),
                 ),
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    fontWeight: AppFontWeights.semibold,
-                    color: AppColors.error,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.space2),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: AppColors.border),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space7,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Customer>(
-                  value: _selectedCustomer,
-                  isExpanded: true,
-                  hint: const Text(
-                    'Select a customer',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  items: customers.map((customer) {
-                    return DropdownMenuItem(
-                      value: customer,
-                      child: Text(
-                        customer.name,
-                        style: const TextStyle(
-                          fontWeight: AppFontWeights.medium,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) =>
-                      setState(() => _selectedCustomer = value),
-                ),
-              ),
-            ),
-          ],
+              )
+              .toList(),
+          onChanged: (value) => setState(() => _selectedCustomer = value),
         );
       },
-    );
-  }
-}
-
-class _DatePickerField extends StatelessWidget {
-  final String label;
-  final DateTime? value;
-  final bool isDueDate;
-  final VoidCallback onTap;
-  final VoidCallback? onClear;
-
-  const _DatePickerField({
-    required this.label,
-    required this.value,
-    required this.isDueDate,
-    required this.onTap,
-    this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: AppFontSizes.sm,
-            fontWeight: AppFontWeights.semibold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.space2),
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space7,
-              vertical: AppSpacing.space4,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  size: AppFontSizes.iconSm,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: AppSpacing.space5),
-                Expanded(
-                  child: Text(
-                    value != null
-                        ? DateTimeHelper.formatDate(value!)
-                        : 'Select date',
-                    style: TextStyle(
-                      fontSize: AppFontSizes.sm,
-                      fontWeight: AppFontWeights.medium,
-                      color: value != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-                if (onClear != null)
-                  GestureDetector(
-                    onTap: onClear,
-                    child: const Icon(
-                      Icons.close,
-                      size: AppFontSizes.iconSm,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
