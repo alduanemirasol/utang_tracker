@@ -19,7 +19,7 @@ class AppDatabase {
 
     _db = await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('PRAGMA foreign_keys = ON');
         for (final stmt in allCreateStatements) {
@@ -29,6 +29,11 @@ class AppDatabase {
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           for (final stmt in migrationStatementsV2) {
+            await db.execute(stmt);
+          }
+        }
+        if (oldVersion < 3) {
+          for (final stmt in migrationStatementsV3) {
             await db.execute(stmt);
           }
         }

@@ -33,20 +33,24 @@ class AppCard extends StatelessWidget {
         borderRadius ?? BorderRadius.circular(AppRadius.sm);
 
     final content = Padding(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.space7),
+      padding: padding ??
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.space7,
+            vertical: AppSpacing.space5,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           if (header case final h?)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.space5),
+              padding: const EdgeInsets.only(bottom: AppSpacing.space3),
               child: h,
             ),
           ?child,
           if (actions case final acts? when acts.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.space5),
+              padding: const EdgeInsets.only(top: AppSpacing.space3),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: acts,

@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/domain/debt_item.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/features/debt_items/domain/debt_item_repository.dart';
 
 const _uuid = Uuid();
@@ -40,6 +41,7 @@ class CreateDebtItemUseCase {
       unit: unit.trim(),
       unitPrice: unitPrice,
       subtotal: subtotal,
+      createdAt: DateTimeHelper.createdAt(),
     );
 
     return _repository.create(item);

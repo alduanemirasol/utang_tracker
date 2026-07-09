@@ -12,6 +12,8 @@ import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
 import 'package:utang_tracker/core/presentation/app_confirm_dialog.dart';
+import 'package:utang_tracker/core/presentation/app_info_row.dart';
+import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/core/presentation/app_section_header.dart';
 import 'package:utang_tracker/core/presentation/app_status_badge.dart';
@@ -34,17 +36,32 @@ class CustomerDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Customer'),
         actions: [
-          TextButton(
-            onPressed: () => context.pushNamed(
-              'customerEdit',
-              pathParameters: {'id': customerId},
-            ),
-            child: const Text('Edit'),
-          ),
-          TextButton(
-            onPressed: () => _confirmDelete(context, ref),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+          PopupMenuButton<_CustomerDetailAction>(
+            tooltip: 'More options',
+            onSelected: (action) {
+              switch (action) {
+                case _CustomerDetailAction.edit:
+                  context.pushNamed(
+                    'customerEdit',
+                    pathParameters: {'id': customerId},
+                  );
+                case _CustomerDetailAction.delete:
+                  _confirmDelete(context, ref);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _CustomerDetailAction.edit,
+                child: Text('Edit'),
+              ),
+              PopupMenuItem(
+                value: _CustomerDetailAction.delete,
+                child: Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -78,14 +95,14 @@ class CustomerDetailScreen extends ConsumerWidget {
                     ),
                     if (customer.phone case final phone?) ...[
                       const SizedBox(height: AppSpacing.space5),
-                      _InfoRow(icon: Icons.phone_outlined, label: phone),
+                      AppInfoRow(icon: Icons.phone_outlined, label: phone),
                     ],
                     if (customer.notes case final notes?) ...[
                       const SizedBox(height: AppSpacing.space5),
-                      _InfoRow(icon: Icons.notes_outlined, label: notes),
+                      AppInfoRow(icon: Icons.notes_outlined, label: notes),
                     ],
                     const SizedBox(height: AppSpacing.space5),
-                    _InfoRow(
+                    AppInfoRow(
                       icon: Icons.calendar_today_outlined,
                       label:
                           'Member since ${DateTimeHelper.formatDate(customer.createdAt)}',
@@ -120,32 +137,10 @@ class CustomerDetailScreen extends ConsumerWidget {
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (customerDebts.isEmpty)
-                AppCard(
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.receipt_long_outlined,
-                        color: AppColors.textSecondary,
-                        size: AppFontSizes.iconMd,
-                      ),
-                      const SizedBox(height: AppSpacing.space3),
-                      const Text(
-                        'No debts for this customer',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.md,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.space5),
-                      TextButton(
-                        onPressed: () => context.pushNamed(
-                          'debtNew',
-                          queryParameters: {'customerId': customerId},
-                        ),
-                        child: const Text('Add debt'),
-                      ),
-                    ],
-                  ),
+                const AppInlineEmpty(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'No debts for this customer',
+                  subtitle: 'Use Add debt above to start tracking',
                 )
               else
                 ...customerDebts.map(
@@ -194,32 +189,7 @@ class CustomerDetailScreen extends ConsumerWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _InfoRow({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: AppFontSizes.iconSm, color: AppColors.textSecondary),
-        const SizedBox(width: AppSpacing.space5),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: AppFontSizes.md,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+enum _CustomerDetailAction { edit, delete }
 
 class _StatsRow extends StatelessWidget {
   final int totalDebts;

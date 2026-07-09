@@ -12,6 +12,8 @@ import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
 import 'package:utang_tracker/core/presentation/app_confirm_dialog.dart';
+import 'package:utang_tracker/core/presentation/app_info_row.dart';
+import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/core/presentation/app_section_header.dart';
 import 'package:utang_tracker/core/presentation/app_status_badge.dart';
@@ -36,17 +38,32 @@ class DebtDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Debt'),
         actions: [
-          TextButton(
-            onPressed: () => context.pushNamed(
-              'debtEdit',
-              pathParameters: {'id': debtId},
-            ),
-            child: const Text('Edit'),
-          ),
-          TextButton(
-            onPressed: () => _confirmDelete(context, ref),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+          PopupMenuButton<_DebtDetailAction>(
+            tooltip: 'More options',
+            onSelected: (action) {
+              switch (action) {
+                case _DebtDetailAction.edit:
+                  context.pushNamed(
+                    'debtEdit',
+                    pathParameters: {'id': debtId},
+                  );
+                case _DebtDetailAction.delete:
+                  _confirmDelete(context, ref);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _DebtDetailAction.edit,
+                child: Text('Edit details'),
+              ),
+              PopupMenuItem(
+                value: _DebtDetailAction.delete,
+                child: Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -100,25 +117,7 @@ class DebtDetailScreen extends ConsumerWidget {
                 ),
               ] else ...[
                 const SizedBox(height: AppSpacing.space3),
-                AppCard(
-                  backgroundColor: AppColors.success.withValues(alpha: 0.1),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: AppColors.success),
-                      SizedBox(width: AppSpacing.space5),
-                      Expanded(
-                        child: Text(
-                          'This debt is fully paid',
-                          style: TextStyle(
-                            fontSize: AppFontSizes.lg,
-                            fontWeight: AppFontWeights.semibold,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _PaidStatusBanner(paidAmount: debt.paidAmount),
               ],
               const SizedBox(height: AppSpacing.space8),
               AppSectionHeader(
@@ -132,32 +131,10 @@ class DebtDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.space5),
               if (detail.items.isEmpty)
-                AppCard(
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.shopping_cart_outlined,
-                        color: AppColors.textSecondary,
-                        size: AppFontSizes.iconMd,
-                      ),
-                      const SizedBox(height: AppSpacing.space3),
-                      const Text(
-                        'No items added yet',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.md,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.space5),
-                      TextButton(
-                        onPressed: () => context.pushNamed(
-                          'debtItemNew',
-                          pathParameters: {'id': debtId},
-                        ),
-                        child: const Text('Add item'),
-                      ),
-                    ],
-                  ),
+                const AppInlineEmpty(
+                  icon: Icons.shopping_cart_outlined,
+                  title: 'No items added yet',
+                  subtitle: 'Add products charged on this debt',
                 )
               else
                 ...detail.items.map(
@@ -180,44 +157,15 @@ class DebtDetailScreen extends ConsumerWidget {
               AppSectionHeader(
                 label: 'Payments',
                 count: detail.payments.length,
-                actionLabel: canPay ? 'Add' : null,
-                onAction: canPay
-                    ? () => context.pushNamed(
-                          'paymentNew',
-                          pathParameters: {'id': debtId},
-                        )
-                    : null,
               ),
               const SizedBox(height: AppSpacing.space5),
               if (detail.payments.isEmpty)
-                AppCard(
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.payments_outlined,
-                        color: AppColors.textSecondary,
-                        size: AppFontSizes.iconMd,
-                      ),
-                      const SizedBox(height: AppSpacing.space3),
-                      const Text(
-                        'No payments recorded',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.md,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (canPay) ...[
-                        const SizedBox(height: AppSpacing.space5),
-                        TextButton(
-                          onPressed: () => context.pushNamed(
-                            'paymentNew',
-                            pathParameters: {'id': debtId},
-                          ),
-                          child: const Text('Record payment'),
-                        ),
-                      ],
-                    ],
-                  ),
+                AppInlineEmpty(
+                  icon: Icons.payments_outlined,
+                  title: 'No payments recorded',
+                  subtitle: canPay
+                      ? 'Use Record payment above when money is collected'
+                      : null,
                 )
               else
                 ...detail.payments.map(
@@ -267,6 +215,57 @@ class DebtDetailScreen extends ConsumerWidget {
       case Error(failure: final f):
         context.showErrorSnackBar(f.message);
     }
+  }
+}
+
+enum _DebtDetailAction { edit, delete }
+
+class _PaidStatusBanner extends StatelessWidget {
+  final double paidAmount;
+
+  const _PaidStatusBanner({required this.paidAmount});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      backgroundColor: AppColors.success.withValues(alpha: 0.08),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.check_circle_outline,
+            color: AppColors.success,
+            size: AppFontSizes.iconMd,
+          ),
+          const SizedBox(width: AppSpacing.space5),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Fully paid',
+                  style: TextStyle(
+                    fontSize: AppFontSizes.lg,
+                    fontWeight: AppFontWeights.semibold,
+                    color: AppColors.success,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space1),
+                Text(
+                  '${formatPeso(paidAmount)} collected in full',
+                  style: const TextStyle(
+                    fontSize: AppFontSizes.md,
+                    fontWeight: AppFontWeights.medium,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -345,14 +344,14 @@ class _DebtHeroCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.space7),
-          _InfoRow(
+          AppInfoRow(
             icon: Icons.calendar_today_outlined,
             label: 'Date: ${DateTimeHelper.formatDate(transactionDate)}',
           ),
           if (dueDate case final d?)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.space3),
-              child: _InfoRow(
+              child: AppInfoRow(
                 icon: Icons.event_outlined,
                 label: 'Due: ${DateTimeHelper.formatDate(d)}',
               ),
@@ -360,7 +359,7 @@ class _DebtHeroCard extends StatelessWidget {
           if (notes case final n?)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.space3),
-              child: _InfoRow(
+              child: AppInfoRow(
                 icon: Icons.notes_outlined,
                 label: n,
               ),
@@ -399,32 +398,6 @@ class _AmountColumn extends StatelessWidget {
           amount: amount,
           size: AppMoneySize.md,
           color: color,
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _InfoRow({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: AppFontSizes.iconSm, color: AppColors.textSecondary),
-        const SizedBox(width: AppSpacing.space5),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: AppFontSizes.md,
-              color: AppColors.textPrimary,
-            ),
-          ),
         ),
       ],
     );

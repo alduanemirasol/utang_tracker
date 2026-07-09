@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/constants/app_border_widths.dart';
 import 'package:utang_tracker/core/constants/app_colors.dart';
 import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_radius.dart';
@@ -29,6 +30,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   final FocusNode _focusNode = FocusNode();
   bool _hasController = false;
   bool _showClear = false;
+  bool _focused = false;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
     _hasController = widget.controller != null;
     _controller = widget.controller ?? TextEditingController();
     _controller.addListener(_onTextChanged);
+    _focusNode.addListener(_onFocusChanged);
   }
 
   void _onTextChanged() {
@@ -45,27 +48,36 @@ class _AppSearchBarState extends State<AppSearchBar> {
     }
   }
 
+  void _onFocusChanged() {
+    final focused = _focusNode.hasFocus;
+    if (focused != _focused) {
+      setState(() => _focused = focused);
+    }
+  }
+
   @override
   void didUpdateWidget(AppSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
       if (_hasController) {
         _controller.removeListener(_onTextChanged);
+      } else {
+        _controller
+          ..removeListener(_onTextChanged)
+          ..dispose();
       }
       _hasController = widget.controller != null;
       _controller = widget.controller ?? TextEditingController();
-      if (!_hasController) {
-        _controller.addListener(_onTextChanged);
-      }
+      _controller.addListener(_onTextChanged);
     }
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
-    if (_hasController) {
-      _controller.removeListener(_onTextChanged);
-    }
+    _focusNode
+      ..removeListener(_onFocusChanged)
+      ..dispose();
+    _controller.removeListener(_onTextChanged);
     if (!_hasController) {
       _controller.dispose();
     }
@@ -81,12 +93,17 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
       constraints: const BoxConstraints(minHeight: AppSpacing.space56),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: _focused ? AppColors.primary : AppColors.border,
+          width: _focused ? AppBorderWidths.thick : AppBorderWidths.regular,
+        ),
       ),
       child: TextField(
         focusNode: _focusNode,
@@ -106,6 +123,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
           color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
+          isDense: true,
+          filled: true,
+          fillColor: AppColors.transparent,
           hintText: widget.hintText ?? 'Search...',
           hintStyle: const TextStyle(
             fontSize: AppFontSizes.md,
@@ -128,6 +148,11 @@ class _AppSearchBarState extends State<AppSearchBar> {
                 )
               : null,
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.space7,
             vertical: AppSpacing.space5,

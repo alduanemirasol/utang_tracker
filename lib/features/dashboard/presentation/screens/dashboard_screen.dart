@@ -100,7 +100,6 @@ class DashboardScreen extends ConsumerWidget {
                 _QuickActions(
                   onAddDebt: () => context.pushNamed('debtNew'),
                   onAddCustomer: () => context.pushNamed('customerNew'),
-                  onRecordPayment: () => context.goNamed('debtList'),
                 ),
                 if (summary.upcomingDues.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.space3),
@@ -187,12 +186,10 @@ class DashboardScreen extends ConsumerWidget {
 class _QuickActions extends StatelessWidget {
   final VoidCallback onAddDebt;
   final VoidCallback onAddCustomer;
-  final VoidCallback onRecordPayment;
 
   const _QuickActions({
     required this.onAddDebt,
     required this.onAddCustomer,
-    required this.onRecordPayment,
   });
 
   @override
@@ -214,14 +211,6 @@ class _QuickActions extends StatelessWidget {
               icon: Icons.person_add_alt_1,
               label: 'Add customer',
               onTap: onAddCustomer,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.space3),
-          Expanded(
-            child: _ActionChip(
-              icon: Icons.payments,
-              label: 'Payments',
-              onTap: onRecordPayment,
             ),
           ),
         ],

@@ -70,6 +70,7 @@ const String createDebtItemsTable = '''
     $columnUnit TEXT NOT NULL,
     $columnUnitPrice REAL NOT NULL,
     $columnSubtotal REAL NOT NULL,
+    $columnCreatedAt TEXT,
     $columnDeletedAt TEXT,
     FOREIGN KEY ($columnDebtId) REFERENCES $tableDebts($columnId)
   )
@@ -113,4 +114,22 @@ const List<String> migrationStatementsV2 = [
   alterDebtsAddDeletedAt,
   alterDebtItemsAddDeletedAt,
   alterPaymentsAddDeletedAt,
+];
+
+const String alterDebtItemsAddCreatedAt =
+    'ALTER TABLE $tableDebtItems ADD COLUMN $columnCreatedAt TEXT';
+
+const String backfillDebtItemsCreatedAt = '''
+  UPDATE $tableDebtItems
+  SET $columnCreatedAt = (
+    SELECT d.$columnTransactionDate
+    FROM $tableDebts d
+    WHERE d.$columnId = $tableDebtItems.$columnDebtId
+  )
+  WHERE $columnCreatedAt IS NULL
+''';
+
+const List<String> migrationStatementsV3 = [
+  alterDebtItemsAddCreatedAt,
+  backfillDebtItemsCreatedAt,
 ];

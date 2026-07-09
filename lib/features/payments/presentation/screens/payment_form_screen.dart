@@ -10,11 +10,13 @@ import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
+import 'package:utang_tracker/core/presentation/app_confirm_dialog.dart';
 import 'package:utang_tracker/core/presentation/app_date_field.dart';
 import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
 import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
@@ -47,6 +49,7 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
   PaymentMethod _method = PaymentMethod.cash;
   bool _isLoading = false;
   bool _isSaving = false;
+  bool _isDeleting = false;
   double _remainingBalance = 0;
   String _customerName = '';
 
@@ -96,18 +99,16 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
           }
       }
     } else if (widget.prefillAmount != null && widget.prefillAmount! > 0) {
-      final amount = widget.prefillAmount!;
-      _amountController.text = amount == amount.roundToDouble()
-          ? amount.toInt().toString()
-          : amount.toStringAsFixed(2);
-    } else if (_remainingBalance > 0) {
-      final amount = _remainingBalance;
-      _amountController.text = amount == amount.roundToDouble()
-          ? amount.toInt().toString()
-          : amount.toStringAsFixed(2);
+      _setAmount(widget.prefillAmount!);
     }
 
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _setAmount(double amount) {
+    _amountController.text = amount == amount.roundToDouble()
+        ? amount.toInt().toString()
+        : amount.toStringAsFixed(2);
   }
 
   Future<void> _pickDate() async {
@@ -169,11 +170,7 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
 
     switch (result) {
       case Success():
-        ref.invalidate(debtDetailProvider(widget.debtId));
-        ref.invalidate(debtListProvider);
-        ref.invalidate(allDebtsProvider);
-        ref.invalidate(dashboardProvider);
-        ref.invalidate(paymentListProvider(widget.debtId));
+        _invalidateRelated();
         context.showSuccessSnackBar(
           widget.isEditing
               ? 'Payment updated successfully'
@@ -185,6 +182,40 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
     }
   }
 
+  Future<void> _confirmDelete() async {
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Delete Payment',
+      message: 'This will permanently delete this payment record.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _isDeleting = true);
+    final result =
+        await ref.read(deletePaymentUseCaseProvider).execute(widget.paymentId!);
+    if (!mounted) return;
+    setState(() => _isDeleting = false);
+
+    switch (result) {
+      case Success():
+        _invalidateRelated();
+        context.showSuccessSnackBar('Payment deleted');
+        context.pop();
+      case Error(failure: final f):
+        context.showErrorSnackBar(f.message);
+    }
+  }
+
+  void _invalidateRelated() {
+    ref.invalidate(debtDetailProvider(widget.debtId));
+    ref.invalidate(debtListProvider);
+    ref.invalidate(allDebtsProvider);
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(paymentListProvider(widget.debtId));
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -194,6 +225,9 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canUseFullBalance =
+        !widget.isEditing && _remainingBalance > 0.001;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -260,6 +294,20 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
                         return null;
                       },
                     ),
+                    if (canUseFullBalance) ...[
+                      const SizedBox(height: AppSpacing.space3),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() => _setAmount(_remainingBalance));
+                          },
+                          child: Text(
+                            'Use full balance (${formatPeso(_remainingBalance)})',
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.space7),
                     AppDateField(
                       label: 'Payment Date',
@@ -295,12 +343,17 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
                     ),
                     const SizedBox(height: AppSpacing.space10),
                     AppPrimaryButton(
-                      label: widget.isEditing
-                          ? 'Update payment'
-                          : 'Record payment',
+                      label: widget.isEditing ? 'Save' : 'Record payment',
                       onPressed: _save,
                       isLoading: _isSaving,
                     ),
+                    if (widget.isEditing) ...[
+                      const SizedBox(height: AppSpacing.space5),
+                      AppDestructiveButton(
+                        label: 'Delete payment',
+                        onPressed: _isDeleting ? null : _confirmDelete,
+                      ),
+                    ],
                   ],
                 ),
               ),

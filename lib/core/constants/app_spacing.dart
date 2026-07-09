@@ -30,6 +30,6 @@
   static const double chartLineWidth = 2.5;
   static const double chartLineWidthSm = 1.5;
   static const double dropdownHeight = 48;
-  static const double chipHeight = 40;
+  static const double chipHeight = 44;
   static const double sheetHeightFactor = 0.6;
 }

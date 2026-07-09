@@ -52,14 +52,43 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
               AppSpacing.space7,
               AppSpacing.space7,
               AppSpacing.space7,
               AppSpacing.space5,
             ),
-            child: AppHeader(label: 'Debts'),
+            child: AppHeader(
+              label: 'Debts',
+              trailing: PopupMenuButton<_DebtSort>(
+                tooltip: 'Sort',
+                initialValue: _sort,
+                onSelected: (value) => setState(() => _sort = value),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: _DebtSort.newest,
+                    child: Text('Newest'),
+                  ),
+                  PopupMenuItem(
+                    value: _DebtSort.oldest,
+                    child: Text('Oldest'),
+                  ),
+                  PopupMenuItem(
+                    value: _DebtSort.highestBalance,
+                    child: Text('Highest balance'),
+                  ),
+                ],
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.space3),
+                  child: Icon(
+                    Icons.sort,
+                    color: AppColors.primary,
+                    size: AppFontSizes.iconMd,
+                  ),
+                ),
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space7),
@@ -70,7 +99,12 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
           ),
           const SizedBox(height: AppSpacing.space5),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space7),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.space7,
+              0,
+              AppSpacing.space7,
+              AppSpacing.space5,
+            ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -100,53 +134,6 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
                   ),
                 ],
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.space7,
-              AppSpacing.space3,
-              AppSpacing.space7,
-              AppSpacing.space5,
-            ),
-            child: Row(
-              children: [
-                const Text(
-                  'Sort:',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.space3),
-                DropdownButton<_DebtSort>(
-                  value: _sort,
-                  underline: const SizedBox.shrink(),
-                  style: const TextStyle(
-                    fontSize: AppFontSizes.md,
-                    fontWeight: AppFontWeights.medium,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Poppins',
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: _DebtSort.newest,
-                      child: Text('Newest'),
-                    ),
-                    DropdownMenuItem(
-                      value: _DebtSort.oldest,
-                      child: Text('Oldest'),
-                    ),
-                    DropdownMenuItem(
-                      value: _DebtSort.highestBalance,
-                      child: Text('Highest balance'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) setState(() => _sort = value);
-                  },
-                ),
-              ],
             ),
           ),
           Expanded(

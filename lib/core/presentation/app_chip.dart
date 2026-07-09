@@ -25,6 +25,7 @@ class AppChip extends StatelessWidget {
         style: TextStyle(
           fontSize: AppFontSizes.md,
           fontWeight: AppFontWeights.semibold,
+          height: 1.2,
           color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
         ),
       ),
@@ -32,14 +33,17 @@ class AppChip extends StatelessWidget {
       onSelected: (_) => onTap?.call(),
       backgroundColor: AppColors.surface,
       selectedColor: AppColors.primary,
+      checkmarkColor: AppColors.onPrimary,
       side: BorderSide(
         color: isSelected ? AppColors.primary : AppColors.border,
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space5,
+        horizontal: AppSpacing.space3,
         vertical: AppSpacing.space3,
       ),
-      materialTapTargetSize: MaterialTapTargetSize.padded,
+      labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3),
+      visualDensity: const VisualDensity(horizontal: 0, vertical: 1),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),

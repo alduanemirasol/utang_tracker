@@ -13,13 +13,16 @@ import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
 import 'package:utang_tracker/core/presentation/app_date_field.dart';
 import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
+import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
+import 'package:utang_tracker/core/presentation/app_section_header.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:utang_tracker/features/debt_items/presentation/providers/debt_item_providers.dart';
+import 'package:utang_tracker/features/debt_items/presentation/widgets/debt_item_fields.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class _TempItemData {
@@ -132,173 +135,27 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   }
 
   Future<void> _showAddItemSheet() async {
-    final nameCtrl = TextEditingController();
-    final qtyCtrl = TextEditingController();
-    final unitCtrl = TextEditingController(text: 'pc');
-    final priceCtrl = TextEditingController();
-    final sheetFormKey = GlobalKey<FormState>();
-
-    final added = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<_TempItemData>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sm)),
       ),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.space7,
-            right: AppSpacing.space7,
-            top: AppSpacing.space7,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.space7,
-          ),
-          child: Form(
-            key: sheetFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 32,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: AppSpacing.space5),
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const Text(
-                  'Add Item',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.x2l,
-                    fontWeight: AppFontWeights.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.space8),
-                AppInput(
-                  label: 'Product Name',
-                  controller: nameCtrl,
-                  hintText: 'Enter product name',
-                  isRequired: true,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: AppSpacing.space7),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: AppInput(
-                        label: 'Quantity',
-                        controller: qtyCtrl,
-                        hintText: '0',
-                        keyboardType: TextInputType.number,
-                        isRequired: true,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
-                          final n = double.tryParse(v);
-                          if (n == null || n <= 0) return 'Must be > 0';
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.space5),
-                    Expanded(
-                      flex: 1,
-                      child: AppInput(
-                        label: 'Unit',
-                        controller: unitCtrl,
-                        hintText: 'pc',
-                        isRequired: true,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.space7),
-                AppInput(
-                  label: 'Unit Price',
-                  controller: priceCtrl,
-                  hintText: '0.00',
-                  keyboardType: TextInputType.number,
-                  isRequired: true,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Required';
-                    final n = double.tryParse(v);
-                    if (n == null || n < 0) return 'Invalid price';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.space8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.pop(false),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: AppColors.border),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.space6,
-                          ),
-                        ),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.space5),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!sheetFormKey.currentState!.validate()) return;
-                          context.pop(true);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.onPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.space6,
-                          ),
-                        ),
-                        child: const Text('Add'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (ctx) => const _AddDebtItemSheet(),
     );
 
-    if (added == true && mounted) {
+    if (result != null && mounted) {
       setState(() {
         _itemIdCounter++;
         _items.add(_TempItemData(
           id: 'temp_$_itemIdCounter',
-          productName: nameCtrl.text.trim(),
-          quantity: double.parse(qtyCtrl.text.trim()),
-          unit: unitCtrl.text.trim(),
-          unitPrice: double.parse(priceCtrl.text.trim()),
+          productName: result.productName,
+          quantity: result.quantity,
+          unit: result.unit,
+          unitPrice: result.unitPrice,
         ));
       });
     }
-
-    nameCtrl.dispose();
-    qtyCtrl.dispose();
-    unitCtrl.dispose();
-    priceCtrl.dispose();
   }
 
   Future<void> _save() async {
@@ -400,15 +257,16 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: const Text('Edit Debt')),
+        appBar: AppBar(title: const Text('Edit Debt Details')),
         body: const AppLoadingView(),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar:
-          AppBar(title: Text(widget.isEditing ? 'Edit Debt' : 'New Debt')),
+      appBar: AppBar(
+        title: Text(widget.isEditing ? 'Edit Debt Details' : 'New Debt'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.space7),
         child: Form(
@@ -447,13 +305,23 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 hintText: 'Optional notes',
                 maxLines: 3,
               ),
+              if (widget.isEditing) ...[
+                const SizedBox(height: AppSpacing.space5),
+                const Text(
+                  'Manage products from the debt screen.',
+                  style: TextStyle(
+                    fontSize: AppFontSizes.md,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
               if (!widget.isEditing) ...[
                 const SizedBox(height: AppSpacing.space8),
                 _buildItemsSection(),
               ],
               const SizedBox(height: AppSpacing.space10),
               AppPrimaryButton(
-                label: widget.isEditing ? 'Update debt' : 'Create debt',
+                label: widget.isEditing ? 'Save' : 'Create debt',
                 onPressed: _save,
                 isLoading: _isSaving,
               ),
@@ -468,161 +336,102 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     final total = _items.fold(0.0, (sum, i) => sum + i.subtotal);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Items (${_items.length})',
-              style: const TextStyle(
-                fontSize: AppFontSizes.lg,
-                fontWeight: AppFontWeights.semibold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: _showAddItemSheet,
-              icon: const Icon(Icons.add, size: AppFontSizes.iconSm),
-              label: const Text('Add'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                textStyle: const TextStyle(
-                  fontWeight: AppFontWeights.semibold,
-                ),
-              ),
-            ),
-          ],
+        AppSectionHeader(
+          label: 'Items',
+          count: _items.length,
+          actionLabel: 'Add item',
+          onAction: _showAddItemSheet,
         ),
+        const SizedBox(height: AppSpacing.space5),
         if (_items.isEmpty)
-          AppCard(
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.shopping_cart_outlined,
-                  color: AppColors.textSecondary,
-                  size: AppFontSizes.x2l,
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                const Text(
-                  'No items yet',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.space5),
-                TextButton(
-                  onPressed: _showAddItemSheet,
-                  child: const Text('Add Item'),
-                ),
-              ],
-            ),
+          const AppInlineEmpty(
+            icon: Icons.shopping_cart_outlined,
+            title: 'No items yet',
+            subtitle: 'Add products to this debt',
           )
         else
           Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ..._items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.space3),
-                  child: AppCard(
-                    padding: const EdgeInsets.all(AppSpacing.space5),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.productName,
-                                style: const TextStyle(
-                                  fontSize: AppFontSizes.sm,
-                                  fontWeight: AppFontWeights.semibold,
-                                  color: AppColors.textPrimary,
-                                ),
+                (item) => AppCard(
+                  padding: const EdgeInsets.all(AppSpacing.space5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.productName,
+                              style: const TextStyle(
+                                fontSize: AppFontSizes.md,
+                                fontWeight: AppFontWeights.semibold,
+                                color: AppColors.textPrimary,
                               ),
-                              const SizedBox(height: AppSpacing.space1),
-                              Text(
-                                '${formatQuantity(item.quantity)} ${item.unit} × ${formatPeso(item.unitPrice)}',
-                                style: const TextStyle(
-                                  fontSize: AppFontSizes.xs,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: AppSpacing.space3),
-                          child: Text(
-                            formatPeso(item.subtotal),
-                            style: const TextStyle(
-                              fontSize: AppFontSizes.md,
-                              fontWeight: AppFontWeights.semibold,
-                              color: AppColors.textPrimary,
                             ),
+                            const SizedBox(height: AppSpacing.space1),
+                            Text(
+                              '${formatQuantity(item.quantity)} ${item.unit} × ${formatPeso(item.unitPrice)}',
+                              style: const TextStyle(
+                                fontSize: AppFontSizes.sm,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.space3),
+                        child: Text(
+                          formatPeso(item.subtotal),
+                          style: const TextStyle(
+                            fontSize: AppFontSizes.md,
+                            fontWeight: AppFontWeights.semibold,
+                            color: AppColors.textPrimary,
                           ),
                         ),
-                        IconButton(
-                          tooltip: 'Remove item',
-                          onPressed: () => _removeItem(item.id),
-                          icon: const Icon(
-                            Icons.close,
-                            color: AppColors.error,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: AppSpacing.space48,
-                            minHeight: AppSpacing.space48,
-                          ),
+                      ),
+                      IconButton(
+                        tooltip: 'Remove item',
+                        onPressed: () => _removeItem(item.id),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.error,
                         ),
-                      ],
-                    ),
+                        constraints: const BoxConstraints(
+                          minWidth: AppSpacing.space48,
+                          minHeight: AppSpacing.space48,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              if (_items.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.space3),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(
-                        fontSize: AppFontSizes.md,
-                        fontWeight: AppFontWeights.semibold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      formatPeso(total),
-                      style: const TextStyle(
-                        fontSize: AppFontSizes.lg,
-                        fontWeight: AppFontWeights.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.space3),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _showAddItemSheet,
-                    icon: const Icon(Icons.add, size: AppFontSizes.iconSm),
-                    label: const Text('Add Another Item'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.border),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.space5,
-                      ),
+              const SizedBox(height: AppSpacing.space3),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total',
+                    style: TextStyle(
+                      fontSize: AppFontSizes.md,
+                      fontWeight: AppFontWeights.semibold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                ),
-              ],
+                  Text(
+                    formatPeso(total),
+                    style: const TextStyle(
+                      fontSize: AppFontSizes.lg,
+                      fontWeight: AppFontWeights.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
       ],
@@ -672,6 +481,120 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           onChanged: (value) => setState(() => _selectedCustomer = value),
         );
       },
+    );
+  }
+}
+
+/// Owns sheet controllers so they are disposed only when the sheet is gone.
+class _AddDebtItemSheet extends StatefulWidget {
+  const _AddDebtItemSheet();
+
+  @override
+  State<_AddDebtItemSheet> createState() => _AddDebtItemSheetState();
+}
+
+class _AddDebtItemSheetState extends State<_AddDebtItemSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _qtyController = TextEditingController();
+  final _priceController = TextEditingController();
+  String _unit = 'pc';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _qtyController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Use Navigator.pop so go_router does not pop the parent DebtFormScreen.
+    Navigator.of(context).pop(
+      _TempItemData(
+        id: '',
+        productName: _nameController.text.trim(),
+        quantity: double.parse(_qtyController.text.trim()),
+        unit: _unit,
+        unitPrice: double.parse(_priceController.text.trim()),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.space7,
+          AppSpacing.space7,
+          AppSpacing.space7,
+          AppSpacing.space7 + bottomInset,
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 32,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.space5),
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const Text(
+                  'Add Item',
+                  style: TextStyle(
+                    fontSize: AppFontSizes.x2l,
+                    fontWeight: AppFontWeights.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space8),
+                DebtItemFields(
+                  nameController: _nameController,
+                  qtyController: _qtyController,
+                  priceController: _priceController,
+                  unit: _unit,
+                  onUnitChanged: (value) => setState(() => _unit = value),
+                ),
+                const SizedBox(height: AppSpacing.space8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppSecondaryButton(
+                        label: 'Cancel',
+                        foregroundColor: AppColors.textSecondary,
+                        borderColor: AppColors.border,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.space5),
+                    Expanded(
+                      child: AppPrimaryButton(
+                        label: 'Add',
+                        onPressed: _submit,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

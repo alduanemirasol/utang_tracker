@@ -28,11 +28,10 @@ class TotalReceivablesCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'OUTSTANDING BALANCE',
+            'Outstanding balance',
             style: TextStyle(
               fontSize: AppFontSizes.sm,
               fontWeight: AppFontWeights.medium,
-              letterSpacing: 1.0,
               color: AppColors.onPrimaryLow,
             ),
           ),
@@ -47,13 +46,13 @@ class TotalReceivablesCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _Metric(
-                  label: 'TOTAL COLLECTED',
+                  label: 'Total collected',
                   amount: totalCollected,
                 ),
               ),
               Expanded(
                 child: _Metric(
-                  label: 'TOTAL DEBTS',
+                  label: 'Total debts',
                   amount: totalDebtAmount,
                   alignEnd: true,
                 ),

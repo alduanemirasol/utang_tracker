@@ -156,9 +156,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     ),
                     const SizedBox(height: AppSpacing.space10),
                     AppPrimaryButton(
-                      label: widget.isEditing
-                          ? 'Update customer'
-                          : 'Save customer',
+                      label: 'Save',
                       onPressed: _save,
                       isLoading: _isSaving,
                     ),

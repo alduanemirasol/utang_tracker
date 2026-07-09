@@ -6,11 +6,11 @@ import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_button.dart';
-import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
-import 'package:utang_tracker/core/presentation/app_input.dart';
+import 'package:utang_tracker/core/presentation/app_confirm_dialog.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:utang_tracker/features/debt_items/presentation/providers/debt_item_providers.dart';
+import 'package:utang_tracker/features/debt_items/presentation/widgets/debt_item_fields.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class DebtItemFormScreen extends ConsumerStatefulWidget {
@@ -26,8 +26,6 @@ class DebtItemFormScreen extends ConsumerStatefulWidget {
 }
 
 class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
-  static const _units = ['pc', 'kg', 'g', 'L', 'ml', 'pack', 'box', 'set'];
-
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _qtyController = TextEditingController();
@@ -35,6 +33,7 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
   String _unit = 'pc';
   bool _isLoading = false;
   bool _isSaving = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -57,10 +56,7 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
         _priceController.text = item.unitPrice == item.unitPrice.roundToDouble()
             ? item.unitPrice.toInt().toString()
             : item.unitPrice.toStringAsFixed(2);
-        _unit = _units.contains(item.unit) ? item.unit : item.unit;
-        if (!_units.contains(_unit)) {
-          // Keep custom unit as selected value by using free text in unit list
-        }
+        _unit = item.unit;
       case Error():
         if (mounted) {
           context.showErrorSnackBar('Failed to load item');
@@ -106,11 +102,7 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
 
     switch (result) {
       case Success():
-        ref.invalidate(debtDetailProvider(widget.debtId));
-        ref.invalidate(debtListProvider);
-        ref.invalidate(allDebtsProvider);
-        ref.invalidate(dashboardProvider);
-        ref.invalidate(debtItemListProvider(widget.debtId));
+        _invalidateRelated();
         context.showSuccessSnackBar(
           widget.isEditing ? 'Item updated successfully' : 'Item added successfully',
         );
@@ -118,6 +110,40 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
       case Error(failure: final f):
         context.showErrorSnackBar(f.message);
     }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Delete Item',
+      message: 'This will permanently remove this item from the debt.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _isDeleting = true);
+    final result =
+        await ref.read(deleteDebtItemUseCaseProvider).execute(widget.itemId!);
+    if (!mounted) return;
+    setState(() => _isDeleting = false);
+
+    switch (result) {
+      case Success():
+        _invalidateRelated();
+        context.showSuccessSnackBar('Item deleted');
+        context.pop();
+      case Error(failure: final f):
+        context.showErrorSnackBar(f.message);
+    }
+  }
+
+  void _invalidateRelated() {
+    ref.invalidate(debtDetailProvider(widget.debtId));
+    ref.invalidate(debtListProvider);
+    ref.invalidate(allDebtsProvider);
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(debtItemListProvider(widget.debtId));
   }
 
   @override
@@ -130,11 +156,6 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final unitItems = {
-      ..._units,
-      if (!_units.contains(_unit) && _unit.isNotEmpty) _unit,
-    }.toList();
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -149,66 +170,26 @@ class _DebtItemFormScreenState extends ConsumerState<DebtItemFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    AppInput(
-                      label: 'Product Name',
-                      controller: _nameController,
-                      hintText: 'Enter product name',
-                      isRequired: true,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppInput(
-                      label: 'Quantity',
-                      controller: _qtyController,
-                      hintText: '0',
-                      isRequired: true,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Required';
-                        final n = double.tryParse(v.trim());
-                        if (n == null || n <= 0) return 'Must be greater than 0';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppDropdownField<String>(
-                      label: 'Unit',
-                      value: unitItems.contains(_unit) ? _unit : unitItems.first,
-                      isRequired: true,
-                      items: unitItems
-                          .map(
-                            (u) => DropdownMenuItem(value: u, child: Text(u)),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) setState(() => _unit = value);
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppInput(
-                      label: 'Unit Price',
-                      controller: _priceController,
-                      hintText: '0.00',
-                      isRequired: true,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Required';
-                        final n = double.tryParse(v.trim());
-                        if (n == null || n < 0) return 'Invalid price';
-                        return null;
-                      },
+                    DebtItemFields(
+                      nameController: _nameController,
+                      qtyController: _qtyController,
+                      priceController: _priceController,
+                      unit: _unit,
+                      onUnitChanged: (value) => setState(() => _unit = value),
                     ),
                     const SizedBox(height: AppSpacing.space10),
                     AppPrimaryButton(
-                      label: widget.isEditing ? 'Update item' : 'Add item',
+                      label: widget.isEditing ? 'Save' : 'Add item',
                       onPressed: _save,
                       isLoading: _isSaving,
                     ),
+                    if (widget.isEditing) ...[
+                      const SizedBox(height: AppSpacing.space5),
+                      AppDestructiveButton(
+                        label: 'Delete item',
+                        onPressed: _isDeleting ? null : _confirmDelete,
+                      ),
+                    ],
                   ],
                 ),
               ),

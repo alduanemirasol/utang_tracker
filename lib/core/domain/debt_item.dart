@@ -6,6 +6,7 @@ class DebtItem {
   final String unit;
   final double unitPrice;
   final double subtotal;
+  final DateTime? createdAt;
   final DateTime? deletedAt;
 
   const DebtItem({
@@ -16,6 +17,7 @@ class DebtItem {
     required this.unit,
     required this.unitPrice,
     required this.subtotal,
+    this.createdAt,
     this.deletedAt,
   });
 
@@ -27,6 +29,7 @@ class DebtItem {
     String? unit,
     double? unitPrice,
     double? subtotal,
+    DateTime? createdAt,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
   }) {
@@ -38,6 +41,7 @@ class DebtItem {
       unit: unit ?? this.unit,
       unitPrice: unitPrice ?? this.unitPrice,
       subtotal: subtotal ?? this.subtotal,
+      createdAt: createdAt ?? this.createdAt,
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
