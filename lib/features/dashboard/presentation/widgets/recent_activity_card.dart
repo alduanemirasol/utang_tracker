@@ -32,22 +32,25 @@ class RecentActivityCard extends StatelessWidget {
           color: AppColors.textPrimary,
         ),
       ),
-      child: items.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.space5),
-              child: Center(
-                child: Text(
-                  'No recent payments',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.md,
-                    color: AppColors.textSecondary,
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.space5),
+        child: items.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.space5),
+                child: Center(
+                  child: Text(
+                    'No recent payments',
+                    style: TextStyle(
+                      fontSize: AppFontSizes.md,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
+              )
+            : Column(
+                children: items.map(_buildItem).toList(),
               ),
-            )
-          : Column(
-              children: items.map(_buildItem).toList(),
-            ),
+      ),
     );
   }
 

@@ -62,6 +62,8 @@ class AppDropdownField<T> extends StatelessWidget {
             child: DropdownButton<T>(
               value: value,
               isExpanded: true,
+              dropdownColor: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               icon: const Icon(
                 Icons.arrow_drop_down,
                 size: AppFontSizes.iconMd,

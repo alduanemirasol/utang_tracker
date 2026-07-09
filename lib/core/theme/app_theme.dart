@@ -192,6 +192,24 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
       ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: AppColors.surface,
+        surfaceTintColor: AppColors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: AppColors.transparent,
+        modalBackgroundColor: AppColors.surface,
+      ),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(AppColors.surface),
+          surfaceTintColor: WidgetStatePropertyAll(AppColors.transparent),
+        ),
+      ),
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: AppBorderWidths.regular,

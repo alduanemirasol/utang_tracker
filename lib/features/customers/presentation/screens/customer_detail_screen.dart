@@ -105,7 +105,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                     AppInfoRow(
                       icon: Icons.calendar_today_outlined,
                       label:
-                          'Member since ${DateTimeHelper.formatDate(customer.createdAt)}',
+                          'Customer since ${DateTimeHelper.formatDate(customer.createdAt)}',
                     ),
                   ],
                 ),
