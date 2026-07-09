@@ -6,29 +6,37 @@ import 'package:utang_tracker/core/domain/debt.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/core/infrastructure/models/debt_item_model.dart';
 import 'package:utang_tracker/core/infrastructure/models/debt_model.dart';
 import 'package:utang_tracker/core/infrastructure/models/payment_model.dart';
+import 'package:utang_tracker/features/customers/infrastructure/customer_data_source.dart';
 import 'package:utang_tracker/features/debts/domain/debt_detail.dart';
 import 'package:utang_tracker/features/debts/domain/debt_repository.dart';
-import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class DebtRepositoryImpl implements DebtRepository {
   final DebtDataSource _debtDataSource;
   final DebtItemDataSource _debtItemDataSource;
   final PaymentDataSource _paymentDataSource;
+  final CustomerDataSource _customerDataSource;
   final Database _db;
 
   DebtRepositoryImpl(
     this._debtDataSource,
     this._debtItemDataSource,
     this._paymentDataSource,
+    this._customerDataSource,
     this._db,
   );
 
   @override
   Future<Result<Debt>> create(Debt debt) async {
     try {
+      final customer = await _customerDataSource.getById(debt.customerId);
+      if (customer == null) {
+        return Error(NotFoundFailure('Customer not found'));
+      }
+
       final model = DebtModel.fromEntity(debt);
       await _debtDataSource.insert(model.toMap());
       return Success(debt);
@@ -77,14 +85,12 @@ class DebtRepositoryImpl implements DebtRepository {
       final debt = DebtModel.fromMap(debtMap).toEntity();
 
       final itemMaps = await _debtItemDataSource.getByDebtId(id);
-      final items = itemMaps
-          .map((m) => DebtItemModel.fromMap(m).toEntity())
-          .toList();
+      final items =
+          itemMaps.map((m) => DebtItemModel.fromMap(m).toEntity()).toList();
 
       final paymentMaps = await _paymentDataSource.getByDebtId(id);
-      final payments = paymentMaps
-          .map((m) => PaymentModel.fromMap(m).toEntity())
-          .toList();
+      final payments =
+          paymentMaps.map((m) => PaymentModel.fromMap(m).toEntity()).toList();
 
       return Success(DebtDetail(debt: debt, items: items, payments: payments));
     } catch (e) {
@@ -95,6 +101,10 @@ class DebtRepositoryImpl implements DebtRepository {
   @override
   Future<Result<Debt>> update(Debt debt) async {
     try {
+      final existing = await _debtDataSource.getById(debt.id);
+      if (existing == null) {
+        return Error(NotFoundFailure('Debt not found'));
+      }
       final model = DebtModel.fromEntity(debt);
       await _debtDataSource.update(model.toMap());
       return Success(debt);
@@ -106,6 +116,11 @@ class DebtRepositoryImpl implements DebtRepository {
   @override
   Future<Result<void>> delete(String id) async {
     try {
+      final existing = await _debtDataSource.getById(id);
+      if (existing == null) {
+        return Error(NotFoundFailure('Debt not found'));
+      }
+
       await _db.transaction((txn) async {
         final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
         await _paymentDataSource.deleteByDebtId(id, now, txn);

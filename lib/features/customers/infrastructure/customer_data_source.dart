@@ -22,8 +22,9 @@ class CustomerDataSource {
     );
   }
 
-  Future<Map<String, dynamic>?> getById(String id) async {
-    final results = await db.query(
+  Future<Map<String, dynamic>?> getById(String id, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    final results = await conn.query(
       tableCustomers,
       where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
@@ -39,7 +40,7 @@ class CustomerDataSource {
     await db.update(
       tableCustomers,
       map,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [map[columnId]],
     );
   }
@@ -48,8 +49,11 @@ class CustomerDataSource {
     final conn = txn ?? db;
     await conn.update(
       tableCustomers,
-      {columnDeletedAt: deletedAt},
-      where: '$columnId = ?',
+      {
+        columnDeletedAt: deletedAt,
+        columnUpdatedAt: deletedAt,
+      },
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
   }

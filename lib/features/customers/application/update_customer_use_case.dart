@@ -22,12 +22,15 @@ class UpdateCustomerUseCase {
     final existing = await _repository.getById(id);
     switch (existing) {
       case Success():
+        final trimmedPhone = phone?.trim();
+        final trimmedNotes = notes?.trim();
         final updated = existing.data.copyWith(
           name: name.trim(),
-          phone: phone?.trim(),
-          notes: notes?.trim(),
+          phone: trimmedPhone,
+          notes: trimmedNotes,
           updatedAt: DateTimeHelper.updatedAt(),
-          clearNotes: notes == null,
+          clearPhone: trimmedPhone == null || trimmedPhone.isEmpty,
+          clearNotes: trimmedNotes == null || trimmedNotes.isEmpty,
         );
         return _repository.update(updated);
       case Error():

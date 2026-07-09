@@ -24,6 +24,9 @@ class CreateDebtItemUseCase {
     if (quantity <= 0) {
       return Error(ValidationFailure('Quantity must be greater than 0'));
     }
+    if (unit.trim().isEmpty) {
+      return Error(ValidationFailure('Unit is required'));
+    }
     if (unitPrice < 0) {
       return Error(ValidationFailure('Unit price cannot be negative'));
     }

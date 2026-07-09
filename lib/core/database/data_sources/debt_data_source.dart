@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:utang_tracker/core/database/tables.dart';
+import 'package:utang_tracker/core/domain/debt_calculator.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class DebtDataSource {
   final Database db;
@@ -10,7 +12,9 @@ class DebtDataSource {
   Future<List<Map<String, dynamic>>> getAll({
     String? customerId,
     DebtStatus? status,
+    Transaction? txn,
   }) async {
+    final conn = txn ?? db;
     final conditions = <String>['$columnDeletedAt IS NULL'];
     final args = <dynamic>[];
 
@@ -23,7 +27,7 @@ class DebtDataSource {
       args.add(status.value);
     }
 
-    return db.query(
+    return conn.query(
       tableDebts,
       where: conditions.join(' AND '),
       whereArgs: args,
@@ -31,8 +35,9 @@ class DebtDataSource {
     );
   }
 
-  Future<Map<String, dynamic>?> getById(String id) async {
-    final results = await db.query(
+  Future<Map<String, dynamic>?> getById(String id, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    final results = await conn.query(
       tableDebts,
       where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
@@ -40,15 +45,17 @@ class DebtDataSource {
     return results.isNotEmpty ? results.first : null;
   }
 
-  Future<void> insert(Map<String, dynamic> map) async {
-    await db.insert(tableDebts, map);
+  Future<void> insert(Map<String, dynamic> map, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.insert(tableDebts, map);
   }
 
-  Future<void> update(Map<String, dynamic> map) async {
-    await db.update(
+  Future<void> update(Map<String, dynamic> map, [Transaction? txn]) async {
+    final conn = txn ?? db;
+    await conn.update(
       tableDebts,
       map,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [map[columnId]],
     );
   }
@@ -57,37 +64,55 @@ class DebtDataSource {
     final conn = txn ?? db;
     await conn.update(
       tableDebts,
-      {columnDeletedAt: deletedAt},
-      where: '$columnId = ?',
+      {
+        columnDeletedAt: deletedAt,
+        columnUpdatedAt: deletedAt,
+      },
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
   }
 
   Future<void> deleteByCustomerId(
-      String customerId, String deletedAt, [Transaction? txn]) async {
+    String customerId,
+    String deletedAt, [
+    Transaction? txn,
+  ]) async {
     final conn = txn ?? db;
     await conn.update(
       tableDebts,
-      {columnDeletedAt: deletedAt},
+      {
+        columnDeletedAt: deletedAt,
+        columnUpdatedAt: deletedAt,
+      },
       where: '$columnCustomerId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [customerId],
     );
   }
 
-  Future<double> sumSubtotalsByDebtId(String debtId, [Transaction? txn]) async {
+  Future<double> sumSubtotalsByDebtId(
+    String debtId, [
+    Transaction? txn,
+  ]) async {
     final conn = txn ?? db;
     final result = await conn.rawQuery(
-      'SELECT COALESCE(SUM($columnSubtotal), 0) as total FROM $tableDebtItems WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
+      'SELECT COALESCE(SUM($columnSubtotal), 0) as total '
+      'FROM $tableDebtItems '
+      'WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
       [debtId],
     );
     return (result.first['total'] as num).toDouble();
   }
 
-  Future<double> sumPaymentAmountsByDebtId(String debtId,
-      [Transaction? txn]) async {
+  Future<double> sumPaymentAmountsByDebtId(
+    String debtId, [
+    Transaction? txn,
+  ]) async {
     final conn = txn ?? db;
     final result = await conn.rawQuery(
-      'SELECT COALESCE(SUM($columnAmount), 0) as paid FROM $tablePayments WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
+      'SELECT COALESCE(SUM($columnAmount), 0) as paid '
+      'FROM $tablePayments '
+      'WHERE $columnDebtId = ? AND $columnDeletedAt IS NULL',
       [debtId],
     );
     return (result.first['paid'] as num).toDouble();
@@ -112,31 +137,32 @@ class DebtDataSource {
         columnStatus: status,
         columnUpdatedAt: updatedAt,
       },
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [debtId],
     );
   }
 
-  Future<double> getPaidAmount(String debtId) async {
-    final results = await db.query(
-      tableDebts,
-      columns: [columnPaidAmount],
-      where: '$columnId = ?',
-      whereArgs: [debtId],
+  /// Single source of truth: total from items, paid from payments, inside [txn].
+  Future<void> recalculateTotals(String debtId, Transaction txn) async {
+    final totalAmount = await sumSubtotalsByDebtId(debtId, txn);
+    final paidAmount = await sumPaymentAmountsByDebtId(debtId, txn);
+    final balance = DebtCalculator.calculateBalance(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
     );
-    return results.isNotEmpty
-        ? (results.first[columnPaidAmount] as num).toDouble()
-        : 0.0;
-  }
-
-  Future<double> getTotalAmount(String debtId) async {
-    final results = await db.query(
-      tableDebts,
-      columns: [columnTotalAmount],
-      where: '$columnId = ?',
-      whereArgs: [debtId],
+    final status = DebtCalculator.calculateStatus(
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
     );
-    if (results.isEmpty) return 0.0;
-    return (results.first[columnTotalAmount] as num).toDouble();
+    final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
+    await updateDebtTotals(
+      debtId: debtId,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      balance: balance,
+      status: status,
+      updatedAt: now,
+      txn: txn,
+    );
   }
 }

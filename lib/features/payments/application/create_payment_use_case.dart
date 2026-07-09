@@ -23,15 +23,19 @@ class CreatePaymentUseCase {
     if (amount <= 0) {
       return Error(ValidationFailure('Amount must be greater than 0'));
     }
+    if (debtId.trim().isEmpty) {
+      return Error(ValidationFailure('Debt is required'));
+    }
 
     final now = DateTimeHelper.createdAt();
+    final trimmedNotes = notes?.trim();
     final payment = Payment(
       id: _uuid.v4(),
       debtId: debtId,
       amount: amount,
       paymentDate: paymentDate,
       paymentMethod: paymentMethod,
-      notes: notes?.trim(),
+      notes: trimmedNotes == null || trimmedNotes.isEmpty ? null : trimmedNotes,
       createdAt: now,
     );
 

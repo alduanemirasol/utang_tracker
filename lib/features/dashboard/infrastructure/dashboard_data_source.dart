@@ -16,7 +16,10 @@ class DashboardDataSource {
 
   Future<double> getTotalCollected() async {
     final result = await db.rawQuery(
-      'SELECT COALESCE(SUM($columnPaidAmount), 0) as total FROM $tableDebts WHERE $columnDeletedAt IS NULL',
+      'SELECT COALESCE(SUM(p.$columnAmount), 0) as total '
+      'FROM $tablePayments p '
+      'INNER JOIN $tableDebts d ON p.$columnDebtId = d.$columnId '
+      'WHERE p.$columnDeletedAt IS NULL AND d.$columnDeletedAt IS NULL',
     );
     return (result.first['total'] as num).toDouble();
   }

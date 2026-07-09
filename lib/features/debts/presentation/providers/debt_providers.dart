@@ -19,6 +19,7 @@ final debtRepositoryProvider = Provider<DebtRepository>((ref) {
     ref.read(debtDataSourceProvider),
     ref.read(debtItemDataSourceProvider),
     ref.read(paymentDataSourceProvider),
+    ref.read(customerDataSourceProvider),
     ref.read(databaseProvider),
   );
 });

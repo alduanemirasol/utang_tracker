@@ -34,7 +34,7 @@ class DebtItemDataSource {
     await conn.update(
       tableDebtItems,
       map,
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [map[columnId]],
     );
   }
@@ -45,7 +45,7 @@ class DebtItemDataSource {
     await conn.update(
       tableDebtItems,
       {columnDeletedAt: deletedAt},
-      where: '$columnId = ?',
+      where: '$columnId = ? AND $columnDeletedAt IS NULL',
       whereArgs: [id],
     );
   }

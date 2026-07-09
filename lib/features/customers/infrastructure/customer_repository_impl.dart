@@ -5,11 +5,11 @@ import 'package:utang_tracker/core/database/data_sources/payment_data_source.dar
 import 'package:utang_tracker/core/database/tables.dart';
 import 'package:utang_tracker/core/errors/failure.dart';
 import 'package:utang_tracker/core/errors/result.dart';
+import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/domain/customer_repository.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_data_source.dart';
 import 'package:utang_tracker/features/customers/infrastructure/customer_model.dart';
-import 'package:utang_tracker/core/helpers/date_time_helper.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   final CustomerDataSource _customerDataSource;
@@ -41,9 +41,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<Result<List<Customer>>> getAll({String? query}) async {
     try {
       final maps = await _customerDataSource.getAll(query: query);
-      final customers = maps
-          .map((m) => CustomerModel.fromMap(m).toEntity())
-          .toList();
+      final customers =
+          maps.map((m) => CustomerModel.fromMap(m).toEntity()).toList();
       return Success(customers);
     } catch (e) {
       return Error(DatabaseFailure('Failed to load customers: $e'));
@@ -68,7 +67,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
     String customerId,
   ) async {
     try {
-      final debtMaps = await _debtDataSource.getAll(customerId: customerId);
+      final debtMaps =
+          await _debtDataSource.getAll(customerId: customerId);
       return Success(debtMaps);
     } catch (e) {
       return Error(DatabaseFailure('Failed to load debts: $e'));
@@ -78,6 +78,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Result<Customer>> update(Customer customer) async {
     try {
+      final existing = await _customerDataSource.getById(customer.id);
+      if (existing == null) {
+        return Error(NotFoundFailure('Customer not found'));
+      }
       final model = CustomerModel.fromEntity(customer);
       await _customerDataSource.update(model.toMap());
       return Success(customer);
@@ -89,9 +93,17 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Result<void>> delete(String id) async {
     try {
+      final existing = await _customerDataSource.getById(id);
+      if (existing == null) {
+        return Error(NotFoundFailure('Customer not found'));
+      }
+
       await _db.transaction((txn) async {
         final now = DateTimeHelper.updatedAt().toUtc().toIso8601String();
-        final debtMaps = await _debtDataSource.getAll(customerId: id);
+        final debtMaps = await _debtDataSource.getAll(
+          customerId: id,
+          txn: txn,
+        );
         for (final map in debtMaps) {
           final debtId = map[columnId] as String;
           await _paymentDataSource.deleteByDebtId(debtId, now, txn);
