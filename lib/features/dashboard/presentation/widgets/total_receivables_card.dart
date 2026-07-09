@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 
 class TotalReceivablesCard extends StatelessWidget {
   final double outstandingBalance;
@@ -22,6 +23,19 @@ class TotalReceivablesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stackMetrics = AppResponsive.of(context).isCompact ||
+        AppResponsive.of(context).isLargeText;
+
+    final collected = _Metric(
+      label: 'Total collected',
+      amount: totalCollected,
+    );
+    final debts = _Metric(
+      label: 'Total debts',
+      amount: totalDebtAmount,
+      alignEnd: !stackMetrics,
+    );
+
     return AppCard(
       backgroundColor: AppColors.primary,
       child: Column(
@@ -29,6 +43,8 @@ class TotalReceivablesCard extends StatelessWidget {
         children: [
           const Text(
             'Outstanding balance',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: AppFontSizes.sm,
               fontWeight: AppFontWeights.medium,
@@ -42,26 +58,27 @@ class TotalReceivablesCard extends StatelessWidget {
             color: AppColors.onPrimary,
           ),
           const SizedBox(height: AppSpacing.space8),
-          Row(
-            children: [
-              Expanded(
-                child: _Metric(
-                  label: 'Total collected',
-                  amount: totalCollected,
-                ),
-              ),
-              Expanded(
-                child: _Metric(
-                  label: 'Total debts',
-                  amount: totalDebtAmount,
-                  alignEnd: true,
-                ),
-              ),
-            ],
-          ),
+          if (stackMetrics)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                collected,
+                const SizedBox(height: AppSpacing.space5),
+                debts,
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(child: collected),
+                Expanded(child: debts),
+              ],
+            ),
           const SizedBox(height: AppSpacing.space5),
           Text(
             '$activeDebtCount active debt${activeDebtCount == 1 ? '' : 's'}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: AppFontSizes.sm,
               fontWeight: AppFontWeights.medium,
@@ -93,6 +110,8 @@ class _Metric extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: AppFontSizes.sm,
             fontWeight: AppFontWeights.medium,
@@ -104,6 +123,7 @@ class _Metric extends StatelessWidget {
           amount: amount,
           size: AppMoneySize.lg,
           color: AppColors.onPrimary,
+          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
         ),
       ],
     );

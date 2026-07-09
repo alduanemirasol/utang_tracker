@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 
 /// Shared product line-item fields for create sheet and item form.
 class DebtItemFields extends StatelessWidget {
@@ -30,6 +31,49 @@ class DebtItemFields extends StatelessWidget {
     }.toList();
     final selectedUnit =
         unitItems.contains(unit) ? unit : unitItems.first;
+    final sideBySide = AppResponsive.of(context).isExpanded ||
+        (!AppResponsive.of(context).isCompact &&
+            !AppResponsive.of(context).isLargeText);
+
+    final qtyField = AppInput(
+      label: 'Quantity',
+      controller: qtyController,
+      hintText: '0',
+      isRequired: true,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Required';
+        final n = double.tryParse(v.trim());
+        if (n == null || n <= 0) return 'Must be greater than 0';
+        return null;
+      },
+    );
+
+    final unitField = AppDropdownField<String>(
+      label: 'Unit',
+      value: selectedUnit,
+      isRequired: true,
+      items: unitItems
+          .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+          .toList(),
+      onChanged: (value) {
+        if (value != null) onUnitChanged(value);
+      },
+    );
+
+    final priceField = AppInput(
+      label: 'Unit Price',
+      controller: priceController,
+      hintText: '0.00',
+      isRequired: true,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Required';
+        final n = double.tryParse(v.trim());
+        if (n == null || n < 0) return 'Invalid price';
+        return null;
+      },
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -43,45 +87,22 @@ class DebtItemFields extends StatelessWidget {
               (v == null || v.trim().isEmpty) ? 'Required' : null,
         ),
         const SizedBox(height: AppSpacing.space7),
-        AppInput(
-          label: 'Quantity',
-          controller: qtyController,
-          hintText: '0',
-          isRequired: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Required';
-            final n = double.tryParse(v.trim());
-            if (n == null || n <= 0) return 'Must be greater than 0';
-            return null;
-          },
-        ),
+        if (sideBySide)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: qtyField),
+              const SizedBox(width: AppSpacing.space5),
+              Expanded(child: unitField),
+            ],
+          )
+        else ...[
+          qtyField,
+          const SizedBox(height: AppSpacing.space7),
+          unitField,
+        ],
         const SizedBox(height: AppSpacing.space7),
-        AppDropdownField<String>(
-          label: 'Unit',
-          value: selectedUnit,
-          isRequired: true,
-          items: unitItems
-              .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-              .toList(),
-          onChanged: (value) {
-            if (value != null) onUnitChanged(value);
-          },
-        ),
-        const SizedBox(height: AppSpacing.space7),
-        AppInput(
-          label: 'Unit Price',
-          controller: priceController,
-          hintText: '0.00',
-          isRequired: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Required';
-            final n = double.tryParse(v.trim());
-            if (n == null || n < 0) return 'Invalid price';
-            return null;
-          },
-        ),
+        priceField,
       ],
     );
   }

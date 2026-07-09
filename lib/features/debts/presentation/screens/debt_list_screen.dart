@@ -14,8 +14,10 @@ import 'package:utang_tracker/core/presentation/app_chip.dart';
 import 'package:utang_tracker/core/presentation/app_empty_state.dart';
 import 'package:utang_tracker/core/presentation/app_header.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
 import 'package:utang_tracker/core/presentation/app_search_bar.dart';
 import 'package:utang_tracker/core/presentation/app_status_badge.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
@@ -38,6 +40,8 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
   Widget build(BuildContext context) {
     final asyncDebts = ref.watch(debtListProvider);
     final asyncCustomers = ref.watch(customerListProvider);
+    final responsive = AppResponsive.of(context);
+    final hPad = responsive.horizontalPadding;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,87 +56,94 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.space7,
-              AppSpacing.space7,
-              AppSpacing.space7,
-              AppSpacing.space5,
-            ),
-            child: AppHeader(
-              label: 'Debts',
-              trailing: PopupMenuButton<_DebtSort>(
-                tooltip: 'Sort',
-                initialValue: _sort,
-                onSelected: (value) => setState(() => _sort = value),
-                itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: _DebtSort.newest,
-                    child: Text('Newest'),
-                  ),
-                  PopupMenuItem(
-                    value: _DebtSort.oldest,
-                    child: Text('Oldest'),
-                  ),
-                  PopupMenuItem(
-                    value: _DebtSort.highestBalance,
-                    child: Text('Highest balance'),
-                  ),
-                ],
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.space3),
-                  child: Icon(
-                    Icons.sort,
-                    color: AppColors.primary,
-                    size: AppFontSizes.iconMd,
+          AppConstrainedWidth(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                hPad,
+                hPad,
+                AppSpacing.space5,
+              ),
+              child: AppHeader(
+                label: 'Debts',
+                trailing: PopupMenuButton<_DebtSort>(
+                  tooltip: 'Sort',
+                  initialValue: _sort,
+                  onSelected: (value) => setState(() => _sort = value),
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: _DebtSort.newest,
+                      child: Text('Newest'),
+                    ),
+                    PopupMenuItem(
+                      value: _DebtSort.oldest,
+                      child: Text('Oldest'),
+                    ),
+                    PopupMenuItem(
+                      value: _DebtSort.highestBalance,
+                      child: Text('Highest balance'),
+                    ),
+                  ],
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.space3),
+                    child: Icon(
+                      Icons.sort,
+                      color: AppColors.primary,
+                      size: AppFontSizes.iconMd,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space7),
-            child: AppSearchBar(
-              hintText: 'Search by customer name...',
-              onChanged: (value) => setState(() => _searchQuery = value.trim()),
+          AppConstrainedWidth(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPad),
+              child: AppSearchBar(
+                hintText: 'Search by customer name...',
+                onChanged: (value) =>
+                    setState(() => _searchQuery = value.trim()),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.space5),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.space7,
-              0,
-              AppSpacing.space7,
-              AppSpacing.space5,
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  AppChip(
-                    label: 'All',
-                    isSelected: _selectedStatus == null,
-                    onTap: () => _filterStatus(null),
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                  AppChip(
-                    label: 'Unpaid',
-                    isSelected: _selectedStatus == DebtStatus.unpaid,
-                    onTap: () => _filterStatus(DebtStatus.unpaid),
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                  AppChip(
-                    label: 'Partial',
-                    isSelected: _selectedStatus == DebtStatus.partial,
-                    onTap: () => _filterStatus(DebtStatus.partial),
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                  AppChip(
-                    label: 'Paid',
-                    isSelected: _selectedStatus == DebtStatus.paid,
-                    onTap: () => _filterStatus(DebtStatus.paid),
-                  ),
-                ],
+          AppConstrainedWidth(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                0,
+                hPad,
+                AppSpacing.space5,
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    AppChip(
+                      label: 'All',
+                      isSelected: _selectedStatus == null,
+                      onTap: () => _filterStatus(null),
+                    ),
+                    const SizedBox(width: AppSpacing.space3),
+                    AppChip(
+                      label: 'Unpaid',
+                      isSelected: _selectedStatus == DebtStatus.unpaid,
+                      onTap: () => _filterStatus(DebtStatus.unpaid),
+                    ),
+                    const SizedBox(width: AppSpacing.space3),
+                    AppChip(
+                      label: 'Partial',
+                      isSelected: _selectedStatus == DebtStatus.partial,
+                      onTap: () => _filterStatus(DebtStatus.partial),
+                    ),
+                    const SizedBox(width: AppSpacing.space3),
+                    AppChip(
+                      label: 'Paid',
+                      isSelected: _selectedStatus == DebtStatus.paid,
+                      onTap: () => _filterStatus(DebtStatus.paid),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -196,30 +207,27 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen> {
                 return RefreshIndicator(
                   onRefresh: () =>
                       ref.read(debtListProvider.notifier).refresh(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.space7,
-                      0,
-                      AppSpacing.space7,
-                      AppSpacing.space80,
+                  child: AppConstrainedWidth(
+                    child: ListView.builder(
+                      padding: responsive.listPadding(),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final debt = filtered[index];
+                        final customerName =
+                            nameMap[debt.customerId] ?? 'Unknown';
+                        return _DebtTile(
+                          customerName: customerName,
+                          totalAmount: debt.totalAmount,
+                          balance: debt.balance,
+                          status: debt.status,
+                          date: debt.transactionDate,
+                          onTap: () => context.pushNamed(
+                            'debtDetail',
+                            pathParameters: {'id': debt.id},
+                          ),
+                        );
+                      },
                     ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final debt = filtered[index];
-                      final customerName =
-                          nameMap[debt.customerId] ?? 'Unknown';
-                      return _DebtTile(
-                        customerName: customerName,
-                        totalAmount: debt.totalAmount,
-                        balance: debt.balance,
-                        status: debt.status,
-                        date: debt.transactionDate,
-                        onTap: () => context.pushNamed(
-                          'debtDetail',
-                          pathParameters: {'id': debt.id},
-                        ),
-                      );
-                    },
                   ),
                 );
               },
@@ -294,17 +302,23 @@ class _DebtTile extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.space5),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total ${formatPeso(totalAmount)}',
-                style: const TextStyle(
-                  fontSize: AppFontSizes.sm,
-                  color: AppColors.textSecondary,
+              Flexible(
+                child: Text(
+                  'Total ${formatPeso(totalAmount)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: AppFontSizes.sm,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.space3),
               Text(
                 DateTimeHelper.formatDate(date),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: AppFontSizes.sm,
                   color: AppColors.textSecondary,

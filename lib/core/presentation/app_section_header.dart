@@ -4,6 +4,7 @@ import 'package:utang_tracker/core/constants/app_font_sizes.dart';
 import 'package:utang_tracker/core/constants/app_font_weights.dart';
 import 'package:utang_tracker/core/constants/app_spacing.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 
 class AppSectionHeader extends StatelessWidget {
   final String label;
@@ -22,12 +23,15 @@ class AppSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = count != null ? '$label ($count)' : label;
+    final compact = AppResponsive.of(context).isCompact;
 
     return Row(
       children: [
         Expanded(
           child: Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: AppTheme.textStyle(
               fontSize: AppFontSizes.xl,
               fontWeight: AppFontWeights.semibold,
@@ -39,10 +43,19 @@ class AppSectionHeader extends StatelessWidget {
           TextButton.icon(
             onPressed: onAction,
             icon: const Icon(Icons.add, size: AppFontSizes.iconSm),
-            label: Text(actionLabel!),
+            label: Text(
+              actionLabel!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
-              minimumSize: const Size(AppSpacing.space48, AppSpacing.space48),
+              minimumSize: const Size(
+                AppSpacing.minTouchTarget,
+                AppSpacing.minTouchTarget,
+              ),
+              // On narrow screens keep label but allow it to shrink.
+              visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
               textStyle: AppTheme.textStyle(
                 fontSize: AppFontSizes.md,
                 fontWeight: AppFontWeights.semibold,

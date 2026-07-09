@@ -13,6 +13,11 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // Slightly smaller labels when the user has large accessibility text.
+    final labelSize =
+        textScale >= 1.3 ? AppFontSizes.xs * 0.9 : AppFontSizes.sm;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(top: true, bottom: false, child: navigationShell),
@@ -24,17 +29,17 @@ class AppShell extends StatelessWidget {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
         showUnselectedLabels: true,
-        selectedFontSize: AppFontSizes.sm,
-        unselectedFontSize: AppFontSizes.sm,
+        selectedFontSize: labelSize,
+        unselectedFontSize: labelSize,
         iconSize: AppFontSizes.iconMd,
         selectedLabelStyle: AppTheme.textStyle(
-          fontSize: AppFontSizes.sm,
+          fontSize: labelSize,
           fontWeight: AppFontWeights.semibold,
-        ),
+        ).copyWith(overflow: TextOverflow.ellipsis),
         unselectedLabelStyle: AppTheme.textStyle(
-          fontSize: AppFontSizes.sm,
+          fontSize: labelSize,
           fontWeight: AppFontWeights.medium,
-        ),
+        ).copyWith(overflow: TextOverflow.ellipsis),
         items: const [
           BottomNavigationBarItem(
             icon: Padding(

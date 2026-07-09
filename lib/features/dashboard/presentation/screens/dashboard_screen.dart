@@ -11,6 +11,8 @@ import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_card.dart';
 import 'package:utang_tracker/core/presentation/app_header.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/features/dashboard/domain/activity_item.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:utang_tracker/features/dashboard/presentation/widgets/recent_activity_card.dart';
@@ -22,6 +24,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncSummary = ref.watch(dashboardProvider);
+    final responsive = AppResponsive.of(context);
 
     return Container(
       color: AppColors.background,
@@ -34,147 +37,166 @@ class DashboardScreen extends ConsumerWidget {
         data: (summary) {
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(dashboardProvider),
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.space7),
-              children: [
-                const AppHeader(
-                  label: 'Dashboard',
-                  subtitle: 'Your debt overview',
-                  padding: EdgeInsets.only(bottom: AppSpacing.space7),
-                ),
-                TotalReceivablesCard(
-                  outstandingBalance: summary.totalOutstandingBalance,
-                  totalCollected: summary.totalCollected,
-                  totalDebtAmount: summary.totalDebtAmount,
-                  activeDebtCount: summary.activeDebtCount,
-                ),
-                if (summary.overdueCount > 0)
-                  AppCard(
-                    backgroundColor: AppColors.error.withValues(alpha: 0.08),
-                    onTap: () => context.goNamed('debtList'),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: AppSpacing.space48,
-                          height: AppSpacing.space48,
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: AppConstrainedWidth(
+              child: ListView(
+                padding: responsive.pagePadding(),
+                children: [
+                  const AppHeader(
+                    label: 'Dashboard',
+                    subtitle: 'Your debt overview',
+                    padding: EdgeInsets.only(bottom: AppSpacing.space7),
+                  ),
+                  TotalReceivablesCard(
+                    outstandingBalance: summary.totalOutstandingBalance,
+                    totalCollected: summary.totalCollected,
+                    totalDebtAmount: summary.totalDebtAmount,
+                    activeDebtCount: summary.activeDebtCount,
+                  ),
+                  if (summary.overdueCount > 0)
+                    AppCard(
+                      backgroundColor: AppColors.error.withValues(alpha: 0.08),
+                      onTap: () => context.goNamed('debtList'),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: AppSpacing.space48,
+                            height: AppSpacing.space48,
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.15),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                            ),
+                            child: const Icon(
+                              Icons.warning_amber_rounded,
+                              color: AppColors.error,
+                              size: AppFontSizes.iconMd,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.warning_amber_rounded,
+                          const SizedBox(width: AppSpacing.space5),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${summary.overdueCount} overdue debt${summary.overdueCount == 1 ? '' : 's'}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: AppFontSizes.lg,
+                                    fontWeight: AppFontWeights.semibold,
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.space1),
+                                AppMoneyText(
+                                  amount: summary.overdueAmount,
+                                  size: AppMoneySize.md,
+                                  color: AppColors.error,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
                             color: AppColors.error,
                             size: AppFontSizes.iconMd,
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.space5),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${summary.overdueCount} overdue debt${summary.overdueCount == 1 ? '' : 's'}',
-                                style: const TextStyle(
-                                  fontSize: AppFontSizes.lg,
-                                  fontWeight: AppFontWeights.semibold,
-                                  color: AppColors.error,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.space1),
-                              AppMoneyText(
-                                amount: summary.overdueAmount,
-                                size: AppMoneySize.md,
-                                color: AppColors.error,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.error,
-                          size: AppFontSizes.iconMd,
-                        ),
-                      ],
-                    ),
-                  ),
-                _QuickActions(
-                  onAddDebt: () => context.pushNamed('debtNew'),
-                  onAddCustomer: () => context.pushNamed('customerNew'),
-                ),
-                if (summary.upcomingDues.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.space3),
-                  AppCard(
-                    header: const Text(
-                      'Upcoming due dates',
-                      style: TextStyle(
-                        fontSize: AppFontSizes.xl,
-                        fontWeight: AppFontWeights.semibold,
-                        color: AppColors.textPrimary,
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: summary.upcomingDues.map((item) {
-                        return Material(
-                          color: AppColors.transparent,
-                          child: InkWell(
-                            onTap: () => context.pushNamed(
-                              'debtDetail',
-                              pathParameters: {'id': item.debtId},
-                            ),
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppSpacing.space5,
+                  _QuickActions(
+                    onAddDebt: () => context.pushNamed('debtNew'),
+                    onAddCustomer: () => context.pushNamed('customerNew'),
+                  ),
+                  if (summary.upcomingDues.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.space3),
+                    AppCard(
+                      header: const Text(
+                        'Upcoming due dates',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: AppFontSizes.xl,
+                          fontWeight: AppFontWeights.semibold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      child: Column(
+                        children: summary.upcomingDues.map((item) {
+                          return Material(
+                            color: AppColors.transparent,
+                            child: InkWell(
+                              onTap: () => context.pushNamed(
+                                'debtDetail',
+                                pathParameters: {'id': item.debtId},
                               ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.customerName,
-                                          style: const TextStyle(
-                                            fontSize: AppFontSizes.md,
-                                            fontWeight: AppFontWeights.semibold,
-                                            color: AppColors.textPrimary,
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.space5,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.customerName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: AppFontSizes.md,
+                                              fontWeight:
+                                                  AppFontWeights.semibold,
+                                              color: AppColors.textPrimary,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: AppSpacing.space1),
-                                        Text(
-                                          'Due ${DateTimeHelper.formatDate(item.dueDate)}',
-                                          style: const TextStyle(
-                                            fontSize: AppFontSizes.sm,
-                                            color: AppColors.textSecondary,
+                                          const SizedBox(
+                                            height: AppSpacing.space1,
                                           ),
-                                        ),
-                                      ],
+                                          Text(
+                                            'Due ${DateTimeHelper.formatDate(item.dueDate)}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: AppFontSizes.sm,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  AppMoneyText(
-                                    amount: item.balance,
-                                    size: AppMoneySize.md,
-                                  ),
-                                ],
+                                    const SizedBox(width: AppSpacing.space3),
+                                    Flexible(
+                                      child: AppMoneyText(
+                                        amount: item.balance,
+                                        size: AppMoneySize.md,
+                                        textAlign: TextAlign.end,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
+                  ],
+                  RecentActivityCard(
+                    items: summary.recentPayments,
+                    onItemTap: (ActivityItem item) {
+                      context.pushNamed(
+                        'debtDetail',
+                        pathParameters: {'id': item.debtId},
+                      );
+                    },
                   ),
                 ],
-                RecentActivityCard(
-                  items: summary.recentPayments,
-                  onItemTap: (ActivityItem item) {
-                    context.pushNamed(
-                      'debtDetail',
-                      pathParameters: {'id': item.debtId},
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           );
         },
@@ -194,27 +216,38 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stack =
+        AppResponsive.of(context).isCompact && AppResponsive.of(context).isLargeText;
+
+    final debt = _ActionChip(
+      icon: Icons.receipt_long,
+      label: 'Add debt',
+      onTap: onAddDebt,
+    );
+    final customer = _ActionChip(
+      icon: Icons.person_add_alt_1,
+      label: 'Add customer',
+      onTap: onAddCustomer,
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.space5),
-      child: Row(
-        children: [
-          Expanded(
-            child: _ActionChip(
-              icon: Icons.receipt_long,
-              label: 'Add debt',
-              onTap: onAddDebt,
+      child: stack
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                debt,
+                const SizedBox(height: AppSpacing.space3),
+                customer,
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: debt),
+                const SizedBox(width: AppSpacing.space3),
+                Expanded(child: customer),
+              ],
             ),
-          ),
-          const SizedBox(width: AppSpacing.space3),
-          Expanded(
-            child: _ActionChip(
-              icon: Icons.person_add_alt_1,
-              label: 'Add customer',
-              onTap: onAddCustomer,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -254,6 +287,8 @@ class _ActionChip extends StatelessWidget {
                 Text(
                   label,
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.sm,
                     fontWeight: AppFontWeights.semibold,

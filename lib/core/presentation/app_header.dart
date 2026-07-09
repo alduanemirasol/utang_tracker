@@ -39,6 +39,8 @@ class AppHeader extends StatelessWidget {
               children: [
                 Text(
                   label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: AppFontSizes.x3l,
                     fontWeight: AppFontWeights.bold,
@@ -49,6 +51,8 @@ class AppHeader extends StatelessWidget {
                   const SizedBox(height: AppSpacing.space1),
                   Text(
                     subtitle!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: AppFontSizes.md,
                       fontWeight: AppFontWeights.regular,

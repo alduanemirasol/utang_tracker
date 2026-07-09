@@ -20,35 +20,40 @@ class AppChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(
-        label,
-        style: AppTheme.textStyle(
-          fontSize: AppFontSizes.md,
-          fontWeight: AppFontWeights.semibold,
-          height: 1.2,
-          color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSpacing.chipHeight),
+      child: FilterChip(
+        label: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTheme.textStyle(
+            fontSize: AppFontSizes.md,
+            fontWeight: AppFontWeights.semibold,
+            height: 1.2,
+            color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
+          ),
         ),
+        selected: isSelected,
+        onSelected: (_) => onTap?.call(),
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.primary,
+        checkmarkColor: AppColors.onPrimary,
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : AppColors.border,
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.space3,
+          vertical: AppSpacing.space3,
+        ),
+        labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3),
+        visualDensity: const VisualDensity(horizontal: 0, vertical: 1),
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        showCheckmark: false,
       ),
-      selected: isSelected,
-      onSelected: (_) => onTap?.call(),
-      backgroundColor: AppColors.surface,
-      selectedColor: AppColors.primary,
-      checkmarkColor: AppColors.onPrimary,
-      side: BorderSide(
-        color: isSelected ? AppColors.primary : AppColors.border,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space3,
-        vertical: AppSpacing.space3,
-      ),
-      labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.space3),
-      visualDensity: const VisualDensity(horizontal: 0, vertical: 1),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      showCheckmark: false,
     );
   }
 }

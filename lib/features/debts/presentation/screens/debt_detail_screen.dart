@@ -16,7 +16,9 @@ import 'package:utang_tracker/core/presentation/app_info_row.dart';
 import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/core/presentation/app_section_header.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
 import 'package:utang_tracker/core/presentation/app_status_badge.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
@@ -80,110 +82,112 @@ class DebtDetailScreen extends ConsumerWidget {
           final customerName = nameMap[debt.customerId] ?? 'Unknown';
           final canPay = debt.balance > 0.001;
 
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.space7),
-            children: [
-              _DebtHeroCard(
-                customerName: customerName,
-                totalAmount: debt.totalAmount,
-                paidAmount: debt.paidAmount,
-                balance: debt.balance,
-                status: debt.status,
-                transactionDate: debt.transactionDate,
-                dueDate: debt.dueDate,
-                notes: debt.notes,
-              ),
-              if (canPay) ...[
-                const SizedBox(height: AppSpacing.space3),
-                AppPrimaryButton(
-                  label: 'Record payment',
-                  icon: Icons.payments_outlined,
-                  onPressed: () => context.pushNamed(
-                    'paymentNew',
+          return AppConstrainedWidth(
+            child: ListView(
+              padding: AppResponsive.of(context).pagePadding(),
+              children: [
+                _DebtHeroCard(
+                  customerName: customerName,
+                  totalAmount: debt.totalAmount,
+                  paidAmount: debt.paidAmount,
+                  balance: debt.balance,
+                  status: debt.status,
+                  transactionDate: debt.transactionDate,
+                  dueDate: debt.dueDate,
+                  notes: debt.notes,
+                ),
+                if (canPay) ...[
+                  const SizedBox(height: AppSpacing.space3),
+                  AppPrimaryButton(
+                    label: 'Record payment',
+                    icon: Icons.payments_outlined,
+                    onPressed: () => context.pushNamed(
+                      'paymentNew',
+                      pathParameters: {'id': debtId},
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.space5),
+                  AppSecondaryButton(
+                    label: 'Pay remaining ${formatPeso(debt.balance)}',
+                    icon: Icons.done_all,
+                    onPressed: () => context.pushNamed(
+                      'paymentNew',
+                      pathParameters: {'id': debtId},
+                      queryParameters: {
+                        'amount': debt.balance.toString(),
+                      },
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: AppSpacing.space3),
+                  _PaidStatusBanner(paidAmount: debt.paidAmount),
+                ],
+                const SizedBox(height: AppSpacing.space8),
+                AppSectionHeader(
+                  label: 'Items',
+                  count: detail.items.length,
+                  actionLabel: 'Add item',
+                  onAction: () => context.pushNamed(
+                    'debtItemNew',
                     pathParameters: {'id': debtId},
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space5),
-                AppSecondaryButton(
-                  label: 'Pay remaining ${formatPeso(debt.balance)}',
-                  icon: Icons.done_all,
-                  onPressed: () => context.pushNamed(
-                    'paymentNew',
-                    pathParameters: {'id': debtId},
-                    queryParameters: {
-                      'amount': debt.balance.toString(),
-                    },
+                if (detail.items.isEmpty)
+                  const AppInlineEmpty(
+                    icon: Icons.shopping_cart_outlined,
+                    title: 'No items added yet',
+                    subtitle: 'Add products charged on this debt',
+                  )
+                else
+                  ...detail.items.map(
+                    (item) => _ItemTile(
+                      productName: item.productName,
+                      quantity: item.quantity,
+                      unit: item.unit,
+                      unitPrice: item.unitPrice,
+                      subtotal: item.subtotal,
+                      onTap: () => context.pushNamed(
+                        'debtItemEdit',
+                        pathParameters: {
+                          'id': debtId,
+                          'itemId': item.id,
+                        },
+                      ),
+                    ),
                   ),
+                const SizedBox(height: AppSpacing.space7),
+                AppSectionHeader(
+                  label: 'Payments',
+                  count: detail.payments.length,
                 ),
-              ] else ...[
-                const SizedBox(height: AppSpacing.space3),
-                _PaidStatusBanner(paidAmount: debt.paidAmount),
+                const SizedBox(height: AppSpacing.space5),
+                if (detail.payments.isEmpty)
+                  AppInlineEmpty(
+                    icon: Icons.payments_outlined,
+                    title: 'No payments recorded',
+                    subtitle: canPay
+                        ? 'Use Record payment above when money is collected'
+                        : null,
+                  )
+                else
+                  ...detail.payments.map(
+                    (payment) => _PaymentTile(
+                      amount: payment.amount,
+                      paymentDate: payment.paymentDate,
+                      method: payment.paymentMethod.value,
+                      onTap: () => context.pushNamed(
+                        'paymentEdit',
+                        pathParameters: {
+                          'id': debtId,
+                          'paymentId': payment.id,
+                        },
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.space10),
               ],
-              const SizedBox(height: AppSpacing.space8),
-              AppSectionHeader(
-                label: 'Items',
-                count: detail.items.length,
-                actionLabel: 'Add item',
-                onAction: () => context.pushNamed(
-                  'debtItemNew',
-                  pathParameters: {'id': debtId},
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space5),
-              if (detail.items.isEmpty)
-                const AppInlineEmpty(
-                  icon: Icons.shopping_cart_outlined,
-                  title: 'No items added yet',
-                  subtitle: 'Add products charged on this debt',
-                )
-              else
-                ...detail.items.map(
-                  (item) => _ItemTile(
-                    productName: item.productName,
-                    quantity: item.quantity,
-                    unit: item.unit,
-                    unitPrice: item.unitPrice,
-                    subtotal: item.subtotal,
-                    onTap: () => context.pushNamed(
-                      'debtItemEdit',
-                      pathParameters: {
-                        'id': debtId,
-                        'itemId': item.id,
-                      },
-                    ),
-                  ),
-                ),
-              const SizedBox(height: AppSpacing.space7),
-              AppSectionHeader(
-                label: 'Payments',
-                count: detail.payments.length,
-              ),
-              const SizedBox(height: AppSpacing.space5),
-              if (detail.payments.isEmpty)
-                AppInlineEmpty(
-                  icon: Icons.payments_outlined,
-                  title: 'No payments recorded',
-                  subtitle: canPay
-                      ? 'Use Record payment above when money is collected'
-                      : null,
-                )
-              else
-                ...detail.payments.map(
-                  (payment) => _PaymentTile(
-                    amount: payment.amount,
-                    paymentDate: payment.paymentDate,
-                    method: payment.paymentMethod.value,
-                    onTap: () => context.pushNamed(
-                      'paymentEdit',
-                      pathParameters: {
-                        'id': debtId,
-                        'paymentId': payment.id,
-                      },
-                    ),
-                  ),
-                ),
-              const SizedBox(height: AppSpacing.space10),
-            ],
+            ),
           );
         },
       ),
@@ -254,6 +258,8 @@ class _PaidStatusBanner extends StatelessWidget {
                 const SizedBox(height: AppSpacing.space1),
                 Text(
                   '${formatPeso(paidAmount)} collected in full',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.md,
                     fontWeight: AppFontWeights.medium,
@@ -433,6 +439,8 @@ class _ItemTile extends StatelessWidget {
               children: [
                 Text(
                   productName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.md,
                     fontWeight: AppFontWeights.semibold,
@@ -442,6 +450,8 @@ class _ItemTile extends StatelessWidget {
                 const SizedBox(height: AppSpacing.space1),
                 Text(
                   '${formatQuantity(quantity)} $unit × ${formatPeso(unitPrice)}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.sm,
                     color: AppColors.textSecondary,
@@ -450,7 +460,14 @@ class _ItemTile extends StatelessWidget {
               ],
             ),
           ),
-          AppMoneyText(amount: subtotal, size: AppMoneySize.md),
+          const SizedBox(width: AppSpacing.space3),
+          Flexible(
+            child: AppMoneyText(
+              amount: subtotal,
+              size: AppMoneySize.md,
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
@@ -499,10 +516,14 @@ class _PaymentTile extends StatelessWidget {
               ],
             ),
           ),
-          AppMoneyText(
-            amount: amount,
-            size: AppMoneySize.md,
-            color: AppColors.success,
+          const SizedBox(width: AppSpacing.space3),
+          Flexible(
+            child: AppMoneyText(
+              amount: amount,
+              size: AppMoneySize.md,
+              color: AppColors.success,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),

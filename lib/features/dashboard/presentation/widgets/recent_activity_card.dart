@@ -26,6 +26,8 @@ class RecentActivityCard extends StatelessWidget {
     return AppCard(
       header: Text(
         title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: const TextStyle(
           fontSize: AppFontSizes.xl,
           fontWeight: AppFontWeights.semibold,
@@ -82,6 +84,8 @@ class RecentActivityCard extends StatelessWidget {
               children: [
                 Text(
                   item.customerName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.md,
                     fontWeight: AppFontWeights.semibold,
@@ -91,6 +95,8 @@ class RecentActivityCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.space1),
                 Text(
                   '${item.statusLabel} · ${DateTimeHelper.formatDate(item.date)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: AppFontSizes.sm,
                     color: AppColors.textSecondary,
@@ -100,10 +106,13 @@ class RecentActivityCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.space5),
-          AppMoneyText(
-            amount: item.amount,
-            size: AppMoneySize.md,
-            color: isDebt ? AppColors.textPrimary : AppColors.success,
+          Flexible(
+            child: AppMoneyText(
+              amount: item.amount,
+              size: AppMoneySize.md,
+              color: isDebt ? AppColors.textPrimary : AppColors.success,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),

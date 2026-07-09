@@ -7,6 +7,8 @@ import 'package:utang_tracker/core/errors/result.dart';
 import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_button.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
@@ -122,45 +124,47 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       body: _isLoading
           ? const AppLoadingView()
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.space7),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppInput(
-                      label: 'Customer Name',
-                      controller: _nameController,
-                      hintText: 'Enter customer name',
-                      isRequired: true,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppInput(
-                      label: 'Phone Number',
-                      controller: _phoneController,
-                      hintText: 'Enter phone number',
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppInput(
-                      label: 'Notes',
-                      controller: _notesController,
-                      hintText: 'Optional notes',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: AppSpacing.space10),
-                    AppPrimaryButton(
-                      label: 'Save',
-                      onPressed: _save,
-                      isLoading: _isSaving,
-                    ),
-                  ],
+              padding: AppResponsive.of(context).scrollPadding(),
+              child: AppConstrainedWidth(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AppInput(
+                        label: 'Customer Name',
+                        controller: _nameController,
+                        hintText: 'Enter customer name',
+                        isRequired: true,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.space7),
+                      AppInput(
+                        label: 'Phone Number',
+                        controller: _phoneController,
+                        hintText: 'Enter phone number',
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: AppSpacing.space7),
+                      AppInput(
+                        label: 'Notes',
+                        controller: _notesController,
+                        hintText: 'Optional notes',
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: AppSpacing.space10),
+                      AppPrimaryButton(
+                        label: 'Save',
+                        onPressed: _save,
+                        isLoading: _isSaving,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

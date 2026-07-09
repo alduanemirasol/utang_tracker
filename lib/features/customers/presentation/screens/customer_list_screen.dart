@@ -10,7 +10,9 @@ import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_empty_state.dart';
 import 'package:utang_tracker/core/presentation/app_header.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
 import 'package:utang_tracker/core/presentation/app_search_bar.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
@@ -29,6 +31,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
   Widget build(BuildContext context) {
     final asyncCustomers = ref.watch(customerListProvider);
     final asyncDebts = ref.watch(allDebtsProvider);
+    final responsive = AppResponsive.of(context);
+    final hPad = responsive.horizontalPadding;
 
     final balances = <String, double>{};
     final debts = asyncDebts.asData?.value;
@@ -52,23 +56,27 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.space7,
-              AppSpacing.space7,
-              AppSpacing.space7,
-              AppSpacing.space5,
+          AppConstrainedWidth(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                hPad,
+                hPad,
+                AppSpacing.space5,
+              ),
+              child: const AppHeader(label: 'Customers'),
             ),
-            child: AppHeader(label: 'Customers'),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space7),
-            child: AppSearchBar(
-              hintText: 'Search customers...',
-              onChanged: (value) {
-                _query = value;
-                ref.read(customerListProvider.notifier).search(value);
-              },
+          AppConstrainedWidth(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPad),
+              child: AppSearchBar(
+                hintText: 'Search customers...',
+                onChanged: (value) {
+                  _query = value;
+                  ref.read(customerListProvider.notifier).search(value);
+                },
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.space7),
@@ -97,28 +105,25 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                   );
                 }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.space7,
-                    0,
-                    AppSpacing.space7,
-                    AppSpacing.space80,
+                return AppConstrainedWidth(
+                  child: ListView.separated(
+                    padding: responsive.listPadding(),
+                    itemCount: customers.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: AppSpacing.space3),
+                    itemBuilder: (context, index) {
+                      final customer = customers[index];
+                      return _CustomerTile(
+                        name: customer.name,
+                        subtitle: customer.phone ?? customer.notes,
+                        balance: balances[customer.id] ?? 0,
+                        onTap: () => context.pushNamed(
+                          'customerDetail',
+                          pathParameters: {'id': customer.id},
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: customers.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: AppSpacing.space3),
-                  itemBuilder: (context, index) {
-                    final customer = customers[index];
-                    return _CustomerTile(
-                      name: customer.name,
-                      subtitle: customer.phone ?? customer.notes,
-                      balance: balances[customer.id] ?? 0,
-                      onTap: () => context.pushNamed(
-                        'customerDetail',
-                        pathParameters: {'id': customer.id},
-                      ),
-                    );
-                  },
                 );
               },
             ),
@@ -175,6 +180,8 @@ class _CustomerTile extends StatelessWidget {
                   children: [
                     Text(
                       name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: AppFontSizes.lg,
                         fontWeight: AppFontWeights.semibold,
@@ -203,12 +210,14 @@ class _CustomerTile extends StatelessWidget {
                             color: AppColors.textSecondary,
                           ),
                         ),
-                        AppMoneyText(
-                          amount: balance,
-                          size: AppMoneySize.sm,
-                          color: balance > 0
-                              ? AppColors.textPrimary
-                              : AppColors.success,
+                        Flexible(
+                          child: AppMoneyText(
+                            amount: balance,
+                            size: AppMoneySize.sm,
+                            color: balance > 0
+                                ? AppColors.textPrimary
+                                : AppColors.success,
+                          ),
                         ),
                       ],
                     ),

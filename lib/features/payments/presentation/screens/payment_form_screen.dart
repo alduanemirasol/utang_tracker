@@ -16,6 +16,8 @@ import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
 import 'package:utang_tracker/core/presentation/app_async_views.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
@@ -236,125 +238,131 @@ class _PaymentFormScreenState extends ConsumerState<PaymentFormScreen> {
       body: _isLoading
           ? const AppLoadingView()
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.space7),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_customerName.isNotEmpty || _remainingBalance > 0)
-                      AppCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (_customerName.isNotEmpty)
-                              Text(
-                                _customerName,
-                                style: const TextStyle(
-                                  fontSize: AppFontSizes.xl,
-                                  fontWeight: AppFontWeights.semibold,
-                                  color: AppColors.textPrimary,
+              padding: AppResponsive.of(context).scrollPadding(),
+              child: AppConstrainedWidth(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_customerName.isNotEmpty || _remainingBalance > 0)
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_customerName.isNotEmpty)
+                                Text(
+                                  _customerName,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: AppFontSizes.xl,
+                                    fontWeight: AppFontWeights.semibold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              const SizedBox(height: AppSpacing.space5),
+                              const Text(
+                                'Remaining balance',
+                                style: TextStyle(
+                                  fontSize: AppFontSizes.sm,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
-                            const SizedBox(height: AppSpacing.space5),
-                            const Text(
-                              'Remaining balance',
-                              style: TextStyle(
-                                fontSize: AppFontSizes.sm,
-                                color: AppColors.textSecondary,
+                              const SizedBox(height: AppSpacing.space1),
+                              AppMoneyText(
+                                amount: _remainingBalance,
+                                size: AppMoneySize.lg,
+                                color: _remainingBalance > 0
+                                    ? AppColors.textPrimary
+                                    : AppColors.success,
                               ),
-                            ),
-                            const SizedBox(height: AppSpacing.space1),
-                            AppMoneyText(
-                              amount: _remainingBalance,
-                              size: AppMoneySize.lg,
-                              color: _remainingBalance > 0
-                                  ? AppColors.textPrimary
-                                  : AppColors.success,
-                            ),
-                          ],
-                        ),
-                      ),
-                    AppInput(
-                      label: 'Amount',
-                      controller: _amountController,
-                      hintText: '0.00',
-                      isRequired: true,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Amount is required';
-                        }
-                        final n = double.tryParse(value.trim());
-                        if (n == null || n <= 0) {
-                          return 'Enter an amount greater than 0';
-                        }
-                        return null;
-                      },
-                    ),
-                    if (canUseFullBalance) ...[
-                      const SizedBox(height: AppSpacing.space3),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton(
-                          onPressed: () {
-                            setState(() => _setAmount(_remainingBalance));
-                          },
-                          child: Text(
-                            'Use full balance (${formatPeso(_remainingBalance)})',
+                            ],
                           ),
                         ),
+                      AppInput(
+                        label: 'Amount',
+                        controller: _amountController,
+                        hintText: '0.00',
+                        isRequired: true,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Amount is required';
+                          }
+                          final n = double.tryParse(value.trim());
+                          if (n == null || n <= 0) {
+                            return 'Enter an amount greater than 0';
+                          }
+                          return null;
+                        },
                       ),
-                    ],
-                    const SizedBox(height: AppSpacing.space7),
-                    AppDateField(
-                      label: 'Payment Date',
-                      value: _paymentDate,
-                      isRequired: true,
-                      onTap: _pickDate,
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppDropdownField<PaymentMethod>(
-                      label: 'Payment Method',
-                      value: _method,
-                      isRequired: true,
-                      items: PaymentMethod.values
-                          .map(
-                            (m) => DropdownMenuItem(
-                              value: m,
-                              child: Text(_methodLabel(m)),
+                      if (canUseFullBalance) ...[
+                        const SizedBox(height: AppSpacing.space3),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() => _setAmount(_remainingBalance));
+                            },
+                            child: Text(
+                              'Use full balance (${formatPeso(_remainingBalance)})',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _method = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.space7),
-                    AppInput(
-                      label: 'Notes',
-                      controller: _notesController,
-                      hintText: 'Optional notes',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: AppSpacing.space10),
-                    AppPrimaryButton(
-                      label: widget.isEditing ? 'Save' : 'Record payment',
-                      onPressed: _save,
-                      isLoading: _isSaving,
-                    ),
-                    if (widget.isEditing) ...[
-                      const SizedBox(height: AppSpacing.space5),
-                      AppDestructiveButton(
-                        label: 'Delete payment',
-                        onPressed: _isDeleting ? null : _confirmDelete,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.space7),
+                      AppDateField(
+                        label: 'Payment Date',
+                        value: _paymentDate,
+                        isRequired: true,
+                        onTap: _pickDate,
                       ),
+                      const SizedBox(height: AppSpacing.space7),
+                      AppDropdownField<PaymentMethod>(
+                        label: 'Payment Method',
+                        value: _method,
+                        isRequired: true,
+                        items: PaymentMethod.values
+                            .map(
+                              (m) => DropdownMenuItem(
+                                value: m,
+                                child: Text(_methodLabel(m)),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _method = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.space7),
+                      AppInput(
+                        label: 'Notes',
+                        controller: _notesController,
+                        hintText: 'Optional notes',
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: AppSpacing.space10),
+                      AppPrimaryButton(
+                        label: widget.isEditing ? 'Save' : 'Record payment',
+                        onPressed: _save,
+                        isLoading: _isSaving,
+                      ),
+                      if (widget.isEditing) ...[
+                        const SizedBox(height: AppSpacing.space5),
+                        AppDestructiveButton(
+                          label: 'Delete payment',
+                          onPressed: _isDeleting ? null : _confirmDelete,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),

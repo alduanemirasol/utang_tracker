@@ -22,6 +22,7 @@ class AppLoadingView extends StatelessWidget {
             const SizedBox(height: AppSpacing.space7),
             Text(
               message!,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppFontSizes.md,
                 color: AppColors.textSecondary,
@@ -71,7 +72,9 @@ class AppErrorView extends StatelessWidget {
             if (onRetry != null) ...[
               const SizedBox(height: AppSpacing.space8),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 240),
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.errorActionMaxWidth,
+                ),
                 child: AppSecondaryButton(
                   label: 'Try again',
                   onPressed: onRetry,

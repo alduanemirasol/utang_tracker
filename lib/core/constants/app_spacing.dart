@@ -31,5 +31,22 @@
   static const double chartLineWidthSm = 1.5;
   static const double dropdownHeight = 48;
   static const double chipHeight = 44;
-  static const double sheetHeightFactor = 0.6;
+  static const double sheetHeightFactor = 0.9;
+
+  /// Minimum interactive touch target (Material guideline).
+  static const double minTouchTarget = 48;
+
+  /// Centered content max width on phones / medium screens.
+  static const double contentMaxWidth = 640;
+
+  /// Centered content max width on tablets / expanded layouts.
+  static const double contentMaxWidthWide = 720;
+
+  /// Empty / error state CTA max width.
+  static const double emptyActionMaxWidth = 280;
+  static const double errorActionMaxWidth = 240;
+
+  /// Modal bottom-sheet drag handle.
+  static const double sheetHandleWidth = 32;
+  static const double sheetHandleHeight = 4;
 }

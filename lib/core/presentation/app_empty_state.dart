@@ -59,7 +59,9 @@ class AppEmptyState extends StatelessWidget {
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AppSpacing.space8),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 280),
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.emptyActionMaxWidth,
+                ),
                 child: AppPrimaryButton(
                   label: actionLabel!,
                   onPressed: onAction,

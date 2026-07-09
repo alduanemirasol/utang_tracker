@@ -16,7 +16,9 @@ import 'package:utang_tracker/core/presentation/app_info_row.dart';
 import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_money_text.dart';
 import 'package:utang_tracker/core/presentation/app_section_header.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
 import 'package:utang_tracker/core/presentation/app_status_badge.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
@@ -78,15 +80,18 @@ class CustomerDetailScreen extends ConsumerWidget {
               allDebts.where((d) => d.customerId == customerId).toList()
                 ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
 
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.space7),
-            children: [
+          return AppConstrainedWidth(
+            child: ListView(
+              padding: AppResponsive.of(context).pagePadding(),
+              children: [
               AppCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       customer.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: AppFontSizes.x2l,
                         fontWeight: AppFontWeights.bold,
@@ -154,6 +159,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                 ),
               const SizedBox(height: AppSpacing.space10),
             ],
+            ),
           );
         },
       ),
@@ -204,31 +210,48 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = AppResponsive.of(context);
+    final stack = responsive.isCompact || responsive.isLargeText;
+
+    final debts = _StatCard(
+      label: 'Debts',
+      value: '$totalDebts',
+      color: AppColors.primary,
+    );
+    final balance = _StatCard(
+      label: 'Balance',
+      amount: totalBalance,
+      color: AppColors.warning,
+    );
+    final paid = _StatCard(
+      label: 'Paid',
+      amount: totalPaid,
+      color: AppColors.success,
+    );
+
+    if (stack) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: debts),
+              const SizedBox(width: AppSpacing.space5),
+              Expanded(child: balance),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.space5),
+          paid,
+        ],
+      );
+    }
+
     return Row(
       children: [
-        Expanded(
-          child: _StatCard(
-            label: 'Debts',
-            value: '$totalDebts',
-            color: AppColors.primary,
-          ),
-        ),
+        Expanded(child: debts),
         const SizedBox(width: AppSpacing.space5),
-        Expanded(
-          child: _StatCard(
-            label: 'Balance',
-            amount: totalBalance,
-            color: AppColors.warning,
-          ),
-        ),
+        Expanded(child: balance),
         const SizedBox(width: AppSpacing.space5),
-        Expanded(
-          child: _StatCard(
-            label: 'Paid',
-            amount: totalPaid,
-            color: AppColors.success,
-          ),
-        ),
+        Expanded(child: paid),
       ],
     );
   }
@@ -257,6 +280,8 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: AppFontSizes.sm,
               color: AppColors.textSecondary,
@@ -268,11 +293,14 @@ class _StatCard extends StatelessWidget {
               amount: amount!,
               size: AppMoneySize.sm,
               color: AppColors.textPrimary,
+              textAlign: TextAlign.center,
             )
           else
             Text(
               value ?? '',
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: AppFontSizes.lg,
                 fontWeight: AppFontWeights.bold,

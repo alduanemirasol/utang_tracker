@@ -15,7 +15,9 @@ import 'package:utang_tracker/core/presentation/app_date_field.dart';
 import 'package:utang_tracker/core/presentation/app_dropdown_field.dart';
 import 'package:utang_tracker/core/presentation/app_inline_empty.dart';
 import 'package:utang_tracker/core/presentation/app_input.dart';
+import 'package:utang_tracker/core/presentation/app_page_body.dart';
 import 'package:utang_tracker/core/presentation/app_section_header.dart';
+import 'package:utang_tracker/core/utils/app_responsive.dart';
 import 'package:utang_tracker/core/utils/number_formatter.dart';
 import 'package:utang_tracker/core/utils/snackbar_helper.dart';
 import 'package:utang_tracker/features/customers/domain/customer.dart';
@@ -268,64 +270,66 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
         title: Text(widget.isEditing ? 'Edit Debt Details' : 'New Debt'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.space7),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (!widget.isEditing)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCustomerSelector(asyncCustomers),
-                    const SizedBox(height: AppSpacing.space7),
-                  ],
-                ),
-              AppDateField(
-                label: 'Transaction Date',
-                value: _transactionDate,
-                isRequired: true,
-                onTap: () => _pickDate(false),
-              ),
-              const SizedBox(height: AppSpacing.space7),
-              AppDateField(
-                label: 'Due Date',
-                value: _dueDate,
-                placeholder: 'Optional due date',
-                onTap: () => _pickDate(true),
-                onClear: _dueDate != null
-                    ? () => setState(() => _dueDate = null)
-                    : null,
-              ),
-              const SizedBox(height: AppSpacing.space7),
-              AppInput(
-                label: 'Notes',
-                controller: _notesController,
-                hintText: 'Optional notes',
-                maxLines: 3,
-              ),
-              if (widget.isEditing) ...[
-                const SizedBox(height: AppSpacing.space5),
-                const Text(
-                  'Manage products from the debt screen.',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.md,
-                    color: AppColors.textSecondary,
+        padding: AppResponsive.of(context).scrollPadding(),
+        child: AppConstrainedWidth(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!widget.isEditing)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCustomerSelector(asyncCustomers),
+                      const SizedBox(height: AppSpacing.space7),
+                    ],
                   ),
+                AppDateField(
+                  label: 'Transaction Date',
+                  value: _transactionDate,
+                  isRequired: true,
+                  onTap: () => _pickDate(false),
+                ),
+                const SizedBox(height: AppSpacing.space7),
+                AppDateField(
+                  label: 'Due Date',
+                  value: _dueDate,
+                  placeholder: 'Optional due date',
+                  onTap: () => _pickDate(true),
+                  onClear: _dueDate != null
+                      ? () => setState(() => _dueDate = null)
+                      : null,
+                ),
+                const SizedBox(height: AppSpacing.space7),
+                AppInput(
+                  label: 'Notes',
+                  controller: _notesController,
+                  hintText: 'Optional notes',
+                  maxLines: 3,
+                ),
+                if (widget.isEditing) ...[
+                  const SizedBox(height: AppSpacing.space5),
+                  const Text(
+                    'Manage products from the debt screen.',
+                    style: TextStyle(
+                      fontSize: AppFontSizes.md,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+                if (!widget.isEditing) ...[
+                  const SizedBox(height: AppSpacing.space8),
+                  _buildItemsSection(),
+                ],
+                const SizedBox(height: AppSpacing.space10),
+                AppPrimaryButton(
+                  label: widget.isEditing ? 'Save' : 'Create debt',
+                  onPressed: _save,
+                  isLoading: _isSaving,
                 ),
               ],
-              if (!widget.isEditing) ...[
-                const SizedBox(height: AppSpacing.space8),
-                _buildItemsSection(),
-              ],
-              const SizedBox(height: AppSpacing.space10),
-              AppPrimaryButton(
-                label: widget.isEditing ? 'Save' : 'Create debt',
-                onPressed: _save,
-                isLoading: _isSaving,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -366,6 +370,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           children: [
                             Text(
                               item.productName,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: AppFontSizes.md,
                                 fontWeight: AppFontWeights.semibold,
@@ -375,6 +381,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                             const SizedBox(height: AppSpacing.space1),
                             Text(
                               '${formatQuantity(item.quantity)} ${item.unit} × ${formatPeso(item.unitPrice)}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: AppFontSizes.sm,
                                 color: AppColors.textSecondary,
@@ -383,14 +391,20 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.space3),
-                        child: Text(
-                          formatPeso(item.subtotal),
-                          style: const TextStyle(
-                            fontSize: AppFontSizes.md,
-                            fontWeight: AppFontWeights.semibold,
-                            color: AppColors.textPrimary,
+                      Flexible(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(right: AppSpacing.space3),
+                          child: Text(
+                            formatPeso(item.subtotal),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                              fontSize: AppFontSizes.md,
+                              fontWeight: AppFontWeights.semibold,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -402,8 +416,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           color: AppColors.error,
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: AppSpacing.space48,
-                          minHeight: AppSpacing.space48,
+                          minWidth: AppSpacing.minTouchTarget,
+                          minHeight: AppSpacing.minTouchTarget,
                         ),
                       ),
                     ],
@@ -526,71 +540,81 @@ class _AddDebtItemSheetState extends State<_AddDebtItemSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final maxHeight =
+        MediaQuery.sizeOf(context).height * AppSpacing.sheetHeightFactor;
+    final hPad = AppResponsive.of(context).horizontalPadding;
 
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.space7,
-          AppSpacing.space7,
-          AppSpacing.space7,
-          AppSpacing.space7 + bottomInset,
-        ),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 32,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: AppSpacing.space5),
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const Text(
-                  'Add Item',
-                  style: TextStyle(
-                    fontSize: AppFontSizes.x2l,
-                    fontWeight: AppFontWeights.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.space8),
-                DebtItemFields(
-                  nameController: _nameController,
-                  qtyController: _qtyController,
-                  priceController: _priceController,
-                  unit: _unit,
-                  onUnitChanged: (value) => setState(() => _unit = value),
-                ),
-                const SizedBox(height: AppSpacing.space8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppSecondaryButton(
-                        label: 'Cancel',
-                        foregroundColor: AppColors.textSecondary,
-                        borderColor: AppColors.border,
-                        onPressed: () => Navigator.of(context).pop(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            hPad,
+            AppSpacing.space7,
+            hPad,
+            AppSpacing.space7 + bottomInset,
+          ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: AppSpacing.sheetHandleWidth,
+                      height: AppSpacing.sheetHandleHeight,
+                      margin:
+                          const EdgeInsets.only(bottom: AppSpacing.space5),
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.sheetHandleHeight),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.space5),
-                    Expanded(
-                      child: AppPrimaryButton(
-                        label: 'Add',
-                        onPressed: _submit,
-                      ),
+                  ),
+                  const Text(
+                    'Add Item',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: AppFontSizes.x2l,
+                      fontWeight: AppFontWeights.bold,
+                      color: AppColors.textPrimary,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: AppSpacing.space8),
+                  DebtItemFields(
+                    nameController: _nameController,
+                    qtyController: _qtyController,
+                    priceController: _priceController,
+                    unit: _unit,
+                    onUnitChanged: (value) => setState(() => _unit = value),
+                  ),
+                  const SizedBox(height: AppSpacing.space8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppSecondaryButton(
+                          label: 'Cancel',
+                          foregroundColor: AppColors.textSecondary,
+                          borderColor: AppColors.border,
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.space5),
+                      Expanded(
+                        child: AppPrimaryButton(
+                          label: 'Add',
+                          onPressed: _submit,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

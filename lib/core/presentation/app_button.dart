@@ -148,6 +148,9 @@ class AppDestructiveButton extends StatelessWidget {
       ),
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
         style: AppTheme.textStyle(
           fontSize: AppFontSizes.lg,
           fontWeight: AppFontWeights.semibold,
@@ -175,16 +178,25 @@ class _ButtonLabel extends StatelessWidget {
       fontWeight: AppFontWeights.semibold,
       color: color,
     );
+    final text = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: style,
+    );
+
     if (icon == null) {
-      return Text(label, style: style);
+      return text;
     }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: AppFontSizes.iconSm, color: color),
         const SizedBox(width: AppSpacing.space3),
-        Text(label, style: style),
+        Flexible(child: text),
       ],
     );
   }
