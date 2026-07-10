@@ -20,10 +20,11 @@ class PaymentsListPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Payments')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/payments/new'),
         tooltip: 'Record payment',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Record payment'),
       ),
       body: async.when(
         loading: () => const LoadingIndicator(),
@@ -37,8 +38,6 @@ class PaymentsListPage extends ConsumerWidget {
               icon: Icons.payments_outlined,
               title: 'No payments yet',
               message: 'Record a payment when a customer pays their utang.',
-              actionLabel: 'Record payment',
-              onAction: () => context.push('/payments/new'),
             );
           }
 
