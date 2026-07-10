@@ -1,0 +1,19 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
+import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
+import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
+
+/// Refresh list/summary providers after mutations.
+void invalidateBusinessData(WidgetRef ref, {String? customerId, String? debtId}) {
+  ref.invalidate(customersListProvider);
+  ref.invalidate(debtsListProvider);
+  ref.invalidate(paymentsListProvider);
+  ref.invalidate(dashboardSummaryProvider);
+  if (customerId != null) {
+    ref.invalidate(customerDetailProvider(customerId));
+  }
+  if (debtId != null) {
+    ref.invalidate(debtDetailProvider(debtId));
+  }
+}

@@ -1,0 +1,73 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/theme/app_spacing.dart';
+
+class AppSearchBar extends StatefulWidget {
+  const AppSearchBar({
+    super.key,
+    required this.onChanged,
+    this.hintText = 'Search',
+    this.initialValue = '',
+    this.debounce = const Duration(milliseconds: 300),
+  });
+
+  final ValueChanged<String> onChanged;
+  final String hintText;
+  final String initialValue;
+  final Duration debounce;
+
+  @override
+  State<AppSearchBar> createState() => _AppSearchBarState();
+}
+
+class _AppSearchBarState extends State<AppSearchBar> {
+  late final TextEditingController _controller;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String value) {
+    setState(() {});
+    _timer?.cancel();
+    _timer = Timer(widget.debounce, () => widget.onChanged(value));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _controller,
+      onChanged: _onChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: widget.hintText,
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _controller.text.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _controller.clear();
+                  widget.onChanged('');
+                  setState(() {});
+                },
+              ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+      ),
+    );
+  }
+}

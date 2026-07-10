@@ -1,0 +1,198 @@
+import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
+import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/core/database/mappers.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/utils/debt_math.dart';
+import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
+import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
+import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
+
+class PaymentRepositoryImpl implements PaymentRepository {
+  PaymentRepositoryImpl(this._db, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+
+  final AppDatabase _db;
+  final Uuid _uuid;
+
+  @override
+  Future<List<Payment>> getAll() async {
+    final query = _db.select(_db.payments).join([
+      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+      innerJoin(
+        _db.customers,
+        _db.customers.id.equalsExp(_db.debts.customerId),
+      ),
+    ])
+      ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final payment = row.readTable(_db.payments);
+      final debt = row.readTable(_db.debts);
+      final customer = row.readTable(_db.customers);
+      return mapPayment(
+        payment,
+        customerName: customer.name,
+        customerId: debt.customerId,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<List<Payment>> getByDebt(String debtId) async {
+    final rows = await (_db.select(_db.payments)
+          ..where((t) => t.debtId.equals(debtId))
+          ..orderBy([(t) => OrderingTerm.desc(t.paymentDate)]))
+        .get();
+    return rows.map(mapPayment).toList();
+  }
+
+  @override
+  Future<List<Payment>> getByCustomer(String customerId) async {
+    final query = _db.select(_db.payments).join([
+      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+      innerJoin(
+        _db.customers,
+        _db.customers.id.equalsExp(_db.debts.customerId),
+      ),
+    ])
+      ..where(_db.debts.customerId.equals(customerId))
+      ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final payment = row.readTable(_db.payments);
+      final debt = row.readTable(_db.debts);
+      final customer = row.readTable(_db.customers);
+      return mapPayment(
+        payment,
+        customerName: customer.name,
+        customerId: debt.customerId,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<List<Payment>> getRecent({int limit = 5}) async {
+    final query = _db.select(_db.payments).join([
+      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+      innerJoin(
+        _db.customers,
+        _db.customers.id.equalsExp(_db.debts.customerId),
+      ),
+    ])
+      ..orderBy([OrderingTerm.desc(_db.payments.createdAt)])
+      ..limit(limit);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final payment = row.readTable(_db.payments);
+      final debt = row.readTable(_db.debts);
+      final customer = row.readTable(_db.customers);
+      return mapPayment(
+        payment,
+        customerName: customer.name,
+        customerId: debt.customerId,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<Money> collectedBetween({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final sum = _db.payments.amount.sum();
+    final query = _db.selectOnly(_db.payments)
+      ..addColumns([sum])
+      ..where(
+        _db.payments.paymentDate.isBetweenValues(start.toUtc(), end.toUtc()),
+      );
+    final row = await query.getSingle();
+    return Money.fromCentavos(row.read(sum) ?? 0);
+  }
+
+  @override
+  Future<Payment> recordPayment({
+    required String debtId,
+    required Money amount,
+    required DateTime paymentDate,
+    required String paymentMethod,
+    String? notes,
+  }) async {
+    if (!amount.isPositive) {
+      throw const ValidationException('Payment amount must be greater than zero.');
+    }
+    if (paymentMethod.trim().isEmpty) {
+      throw const ValidationException('Payment method is required.');
+    }
+
+    final paymentId = _uuid.v4();
+    final now = DateTime.now().toUtc();
+
+    await _db.transaction(() async {
+      final debt = await (_db.select(_db.debts)
+            ..where((t) => t.id.equals(debtId)))
+          .getSingleOrNull();
+      if (debt == null) {
+        throw const NotFoundException('Debt not found.');
+      }
+
+      final status = DebtStatus.fromValue(debt.status);
+      if (status == DebtStatus.paid) {
+        throw const ConflictException('This debt is already fully paid.');
+      }
+
+      final balance = Money.fromCentavos(debt.balance);
+      if (amount > balance) {
+        throw ValidationException(
+          'Payment cannot exceed the remaining balance of ${balance.format()}.',
+        );
+      }
+
+      await _db.into(_db.payments).insert(
+            PaymentsCompanion.insert(
+              id: paymentId,
+              debtId: debtId,
+              amount: amount.centavos,
+              paymentDate: paymentDate.toUtc(),
+              paymentMethod: paymentMethod.trim(),
+              notes: Value(_emptyToNull(notes)),
+              createdAt: now,
+            ),
+          );
+
+      final total = Money.fromCentavos(debt.totalAmount);
+      final newPaid = Money.fromCentavos(debt.paidAmount) + amount;
+      final newBalance = DebtMath.computeBalance(
+        totalAmount: total,
+        paidAmount: newPaid,
+      );
+      final newStatus = DebtMath.deriveStatus(
+        totalAmount: total,
+        paidAmount: newPaid,
+      );
+
+      await (_db.update(_db.debts)..where((t) => t.id.equals(debtId))).write(
+        DebtsCompanion(
+          paidAmount: Value(newPaid.centavos),
+          balance: Value(newBalance.centavos),
+          status: Value(newStatus.value),
+          updatedAt: Value(now),
+        ),
+      );
+    });
+
+    final row = await (_db.select(_db.payments)
+          ..where((t) => t.id.equals(paymentId)))
+        .getSingle();
+    return mapPayment(row);
+  }
+
+  String? _emptyToNull(String? value) {
+    if (value == null) return null;
+    final t = value.trim();
+    return t.isEmpty ? null : t;
+  }
+}
