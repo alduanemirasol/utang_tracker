@@ -10,6 +10,7 @@ import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_sort_order.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
@@ -19,6 +20,7 @@ class DebtsListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(debtStatusFilterProvider);
+    final sort = ref.watch(debtSortOrderProvider);
     final debtsAsync = ref.watch(debtsListProvider);
 
     return Scaffold(
@@ -29,41 +31,86 @@ class DebtsListPage extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.pagePadding,
-                vertical: AppSpacing.sm,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _FilterChip(
-                    label: 'All',
-                    selected: filter == null,
-                    onSelected: () => ref
-                        .read(debtStatusFilterProvider.notifier)
-                        .setFilter(null),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  ...DebtStatus.values.map(
-                    (s) => Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.sm),
-                      child: _FilterChip(
-                        label: s.label,
-                        selected: filter == s,
-                        onSelected: () => ref
-                            .read(debtStatusFilterProvider.notifier)
-                            .setFilter(s),
-                      ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pagePadding,
+              AppSpacing.sm,
+              AppSpacing.sm,
+              AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _FilterChip(
+                          label: 'All',
+                          selected: filter == null,
+                          onSelected: () => ref
+                              .read(debtStatusFilterProvider.notifier)
+                              .setFilter(null),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        ...DebtStatus.values.map(
+                          (s) => Padding(
+                            padding:
+                                const EdgeInsets.only(right: AppSpacing.sm),
+                            child: _FilterChip(
+                              label: s.label,
+                              selected: filter == s,
+                              onSelected: () => ref
+                                  .read(debtStatusFilterProvider.notifier)
+                                  .setFilter(s),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                PopupMenuButton<DebtSortOrder>(
+                  tooltip: 'Sort debts',
+                  initialValue: sort,
+                  onSelected: (order) {
+                    ref.read(debtSortOrderProvider.notifier).setSort(order);
+                  },
+                  itemBuilder: (context) {
+                    return DebtSortOrder.values.map((order) {
+                      return PopupMenuItem<DebtSortOrder>(
+                        value: order,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              child: sort == order
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    )
+                                  : null,
+                            ),
+                            Expanded(child: Text(order.label)),
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.sm),
+                    child: Icon(
+                      Icons.sort,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
