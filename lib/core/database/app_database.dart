@@ -17,30 +17,42 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_debts_customer_id ON debts (customer_id)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_debts_status ON debts (status)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_debts_transaction_date ON debts (transaction_date)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_payments_debt_id ON payments (debt_id)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_payments_payment_date ON payments (payment_date)',
-          );
+          await _createIndexes();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(customers, customers.deletedAt);
+            await m.addColumn(debts, debts.deletedAt);
+            await m.addColumn(debtItems, debtItems.deletedAt);
+            await m.addColumn(payments, payments.deletedAt);
+          }
         },
       );
+
+  Future<void> _createIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_debts_customer_id ON debts (customer_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_debts_status ON debts (status)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_debts_transaction_date ON debts (transaction_date)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_payments_debt_id ON payments (debt_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_payments_payment_date ON payments (payment_date)',
+    );
+  }
 }

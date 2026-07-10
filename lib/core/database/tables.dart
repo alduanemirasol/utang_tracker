@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart';
 
-/// Tables mirror `rules/database_rules.md` exactly (column names & optionality).
+/// Tables mirror `rules/database_rules.md`.
 /// DECIMAL(10,2) → integer centavos; UUID → TEXT; DATETIME → DateTime.
+/// Soft delete: `deleted_at` null = active; non-null = deleted (kept for history).
 
 @DataClassName('CustomerRow')
 class Customers extends Table {
@@ -11,6 +12,7 @@ class Customers extends Table {
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -30,6 +32,7 @@ class Debts extends Table {
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -45,6 +48,7 @@ class DebtItems extends Table {
   TextColumn get unit => text()();
   IntColumn get unitPrice => integer()();
   IntColumn get subtotal => integer()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -59,6 +63,7 @@ class Payments extends Table {
   TextColumn get paymentMethod => text()();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

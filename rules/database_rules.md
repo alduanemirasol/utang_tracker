@@ -12,6 +12,7 @@
 | notes      | TEXT     | No       |
 | created_at | DATETIME | Yes      |
 | updated_at | DATETIME | Yes      |
+| deleted_at | DATETIME | No       |
 
 ---
 
@@ -30,6 +31,7 @@
 | notes            | TEXT          | No       |
 | created_at       | DATETIME      | Yes      |
 | updated_at       | DATETIME      | Yes      |
+| deleted_at       | DATETIME      | No       |
 
 Allowed values for `status`:
 
@@ -50,6 +52,7 @@ Allowed values for `status`:
 | unit         | TEXT          | Yes      |
 | unit_price   | DECIMAL(10,2) | Yes      |
 | subtotal     | DECIMAL(10,2) | Yes      |
+| deleted_at   | DATETIME      | No       |
 
 ---
 
@@ -64,6 +67,7 @@ Allowed values for `status`:
 | payment_method | TEXT          | Yes      |
 | notes          | TEXT          | No       |
 | created_at     | DATETIME      | Yes      |
+| deleted_at     | DATETIME      | No       |
 
 ---
 
@@ -87,3 +91,6 @@ Allowed values for `status`:
 - `due_date` is optional.
 - `phone` and `notes` are optional for customers.
 - `notes` is optional for debts and payments.
+- Soft delete: set `deleted_at` instead of removing rows. Active records have `deleted_at` null.
+- Default lists, counts, and aggregates include only active records (`deleted_at` is null).
+- Customers with active debts cannot be deleted.

@@ -19,10 +19,11 @@ class CustomersListPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Customers')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/customers/new'),
         tooltip: 'Add customer',
-        child: const Icon(Icons.person_add_alt_1),
+        icon: const Icon(Icons.person_add_alt_1),
+        label: const Text('Add customer'),
       ),
       body: Column(
         children: [

@@ -15,6 +15,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
   final AppDatabase _db;
   final Uuid _uuid;
 
+  Expression<bool> get _activePayment => _db.payments.deletedAt.isNull();
+  Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
+  Expression<bool> get _activeCustomer => _db.customers.deletedAt.isNull();
+
   @override
   Future<List<Payment>> getAll() async {
     final query = _db.select(_db.payments).join([
@@ -24,6 +28,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
+      ..where(_activePayment & _activeDebt & _activeCustomer)
       ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
     final rows = await query.get();
@@ -42,7 +47,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<List<Payment>> getByDebt(String debtId) async {
     final rows = await (_db.select(_db.payments)
-          ..where((t) => t.debtId.equals(debtId))
+          ..where((t) => t.debtId.equals(debtId) & t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.desc(t.paymentDate)]))
         .get();
     return rows.map(mapPayment).toList();
@@ -57,7 +62,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
-      ..where(_db.debts.customerId.equals(customerId))
+      ..where(
+        _db.debts.customerId.equals(customerId) &
+            _activePayment &
+            _activeDebt &
+            _activeCustomer,
+      )
       ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
     final rows = await query.get();
@@ -82,6 +92,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
+      ..where(_activePayment & _activeDebt & _activeCustomer)
       ..orderBy([OrderingTerm.desc(_db.payments.createdAt)])
       ..limit(limit);
 
@@ -107,7 +118,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
     final query = _db.selectOnly(_db.payments)
       ..addColumns([sum])
       ..where(
-        _db.payments.paymentDate.isBetweenValues(start.toUtc(), end.toUtc()),
+        _activePayment &
+            _db.payments.paymentDate
+                .isBetweenValues(start.toUtc(), end.toUtc()),
       );
     final row = await query.getSingle();
     return Money.fromCentavos(row.read(sum) ?? 0);
@@ -133,7 +146,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
     await _db.transaction(() async {
       final debt = await (_db.select(_db.debts)
-            ..where((t) => t.id.equals(debtId)))
+            ..where((t) => t.id.equals(debtId) & t.deletedAt.isNull()))
           .getSingleOrNull();
       if (debt == null) {
         throw const NotFoundException('Debt not found.');
@@ -174,7 +187,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
         paidAmount: newPaid,
       );
 
-      await (_db.update(_db.debts)..where((t) => t.id.equals(debtId))).write(
+      await (_db.update(_db.debts)
+            ..where((t) => t.id.equals(debtId) & t.deletedAt.isNull()))
+          .write(
         DebtsCompanion(
           paidAmount: Value(newPaid.centavos),
           balance: Value(newBalance.centavos),
@@ -185,7 +200,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     });
 
     final row = await (_db.select(_db.payments)
-          ..where((t) => t.id.equals(paymentId)))
+          ..where((t) => t.id.equals(paymentId) & t.deletedAt.isNull()))
         .getSingle();
     return mapPayment(row);
   }

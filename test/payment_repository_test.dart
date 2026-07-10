@@ -131,4 +131,20 @@ void main() {
       throwsA(isA<ConflictException>()),
     );
   });
+
+  test('soft deletes customer and keeps row hidden from lists', () async {
+    final customer = await customers.create(name: 'Pedro');
+    await customers.delete(customer.id);
+
+    final listed = await customers.getAll();
+    expect(listed.where((c) => c.id == customer.id), isEmpty);
+    expect(await customers.getById(customer.id), isNull);
+
+    // Row still exists in the database with deleted_at set.
+    final row = await (db.select(db.customers)
+          ..where((t) => t.id.equals(customer.id)))
+        .getSingleOrNull();
+    expect(row, isNotNull);
+    expect(row!.deletedAt, isNotNull);
+  });
 }

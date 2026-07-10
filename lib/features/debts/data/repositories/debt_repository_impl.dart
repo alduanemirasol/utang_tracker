@@ -16,6 +16,9 @@ class DebtRepositoryImpl implements DebtRepository {
   final AppDatabase _db;
   final Uuid _uuid;
 
+  Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
+  Expression<bool> get _activeCustomer => _db.customers.deletedAt.isNull();
+
   @override
   Future<List<Debt>> getAll({DebtStatus? status}) async {
     final query = _db.select(_db.debts).join([
@@ -23,7 +26,8 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ]);
+    ])
+      ..where(_activeDebt & _activeCustomer);
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }
@@ -45,7 +49,11 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
-      ..where(_db.debts.customerId.equals(customerId))
+      ..where(
+        _db.debts.customerId.equals(customerId) &
+            _activeDebt &
+            _activeCustomer,
+      )
       ..orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
 
     final rows = await query.get();
@@ -64,7 +72,9 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
-      ..where(_db.debts.id.equals(id));
+      ..where(
+        _db.debts.id.equals(id) & _activeDebt & _activeCustomer,
+      );
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -72,7 +82,7 @@ class DebtRepositoryImpl implements DebtRepository {
     final debtRow = row.readTable(_db.debts);
     final customer = row.readTable(_db.customers);
     final items = await (_db.select(_db.debtItems)
-          ..where((t) => t.debtId.equals(id)))
+          ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
         .get();
 
     return DebtDetail(
@@ -89,6 +99,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
+      ..where(_activeDebt & _activeCustomer)
       ..orderBy([OrderingTerm.desc(_db.debts.createdAt)])
       ..limit(limit);
 
@@ -111,7 +122,7 @@ class DebtRepositoryImpl implements DebtRepository {
     _validateItems(items);
 
     final customer = await (_db.select(_db.customers)
-          ..where((t) => t.id.equals(customerId)))
+          ..where((t) => t.id.equals(customerId) & t.deletedAt.isNull()))
         .getSingleOrNull();
     if (customer == null) {
       throw const NotFoundException('Customer not found.');
@@ -201,9 +212,13 @@ class DebtRepositoryImpl implements DebtRepository {
     final now = DateTime.now().toUtc();
 
     await _db.transaction(() async {
-      await (_db.delete(_db.debtItems)..where((t) => t.debtId.equals(id))).go();
+      // Soft-delete previous line items so history is retained.
+      await (_db.update(_db.debtItems)
+            ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
+          .write(DebtItemsCompanion(deletedAt: Value(now)));
 
-      final updated = await (_db.update(_db.debts)..where((t) => t.id.equals(id)))
+      final updated = await (_db.update(_db.debts)
+            ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
           .write(
         DebtsCompanion(
           totalAmount: Value(total.centavos),
@@ -245,10 +260,11 @@ class DebtRepositoryImpl implements DebtRepository {
     final query = _db.selectOnly(_db.debts)
       ..addColumns([count])
       ..where(
-        _db.debts.status.isIn([
-          DebtStatus.unpaid.value,
-          DebtStatus.partial.value,
-        ]),
+        _activeDebt &
+            _db.debts.status.isIn([
+              DebtStatus.unpaid.value,
+              DebtStatus.partial.value,
+            ]),
       );
     final row = await query.getSingle();
     return row.read(count) ?? 0;
@@ -260,10 +276,11 @@ class DebtRepositoryImpl implements DebtRepository {
     final query = _db.selectOnly(_db.debts)
       ..addColumns([sum])
       ..where(
-        _db.debts.status.isIn([
-          DebtStatus.unpaid.value,
-          DebtStatus.partial.value,
-        ]),
+        _activeDebt &
+            _db.debts.status.isIn([
+              DebtStatus.unpaid.value,
+              DebtStatus.partial.value,
+            ]),
       );
     final row = await query.getSingle();
     return row.read(sum) ?? 0;

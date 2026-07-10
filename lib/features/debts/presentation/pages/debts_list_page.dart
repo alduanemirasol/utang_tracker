@@ -25,10 +25,11 @@ class DebtsListPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Debts')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/debts/new'),
         tooltip: 'New debt',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('New debt'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,9 +12,12 @@ class CustomerRepositoryImpl implements CustomerRepository {
   final AppDatabase _db;
   final Uuid _uuid;
 
+  Expression<bool> get _active => _db.customers.deletedAt.isNull();
+
   @override
   Future<List<Customer>> getAll() async {
     final rows = await (_db.select(_db.customers)
+          ..where((t) => t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
         .get();
     return rows.map(mapCustomer).toList();
@@ -26,7 +29,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (q.isEmpty) return getAll();
 
     final rows = await (_db.select(_db.customers)
-          ..where((t) => t.name.lower().like('%$q%'))
+          ..where((t) => t.deletedAt.isNull() & t.name.lower().like('%$q%'))
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
         .get();
     return rows.map(mapCustomer).toList();
@@ -35,7 +38,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Customer?> getById(String id) async {
     final row = await (_db.select(_db.customers)
-          ..where((t) => t.id.equals(id)))
+          ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
         .getSingleOrNull();
     return row == null ? null : mapCustomer(row);
   }
@@ -76,7 +79,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
     final now = DateTime.now().toUtc();
     final updated = await (_db.update(_db.customers)
-          ..where((t) => t.id.equals(customer.id)))
+          ..where((t) => t.id.equals(customer.id) & t.deletedAt.isNull()))
         .write(
       CustomersCompanion(
         name: Value(trimmed),
@@ -94,15 +97,26 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
   @override
   Future<void> delete(String id) async {
+    final existing = await getById(id);
+    if (existing == null) {
+      throw const NotFoundException('Customer not found.');
+    }
     if (await hasDebts(id)) {
       throw const ConflictException(
         'Cannot delete a customer who still has debts.',
       );
     }
-    final deleted = await (_db.delete(_db.customers)
-          ..where((t) => t.id.equals(id)))
-        .go();
-    if (deleted == 0) {
+
+    final now = DateTime.now().toUtc();
+    final updated = await (_db.update(_db.customers)
+          ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
+        .write(
+      CustomersCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+    if (updated == 0) {
       throw const NotFoundException('Customer not found.');
     }
   }
@@ -110,7 +124,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<int> count() async {
     final count = countAll();
-    final query = _db.selectOnly(_db.customers)..addColumns([count]);
+    final query = _db.selectOnly(_db.customers)
+      ..addColumns([count])
+      ..where(_active);
     final row = await query.getSingle();
     return row.read(count) ?? 0;
   }
@@ -118,7 +134,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<bool> hasDebts(String customerId) async {
     final row = await (_db.select(_db.debts)
-          ..where((t) => t.customerId.equals(customerId))
+          ..where(
+            (t) => t.customerId.equals(customerId) & t.deletedAt.isNull(),
+          )
           ..limit(1))
         .getSingleOrNull();
     return row != null;
