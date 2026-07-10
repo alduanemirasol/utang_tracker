@@ -91,12 +91,14 @@ class DebtDetailPage extends ConsumerWidget {
                         context,
                         'Date',
                         DateFormatters.formatDate(debt.transactionDate),
+                        valueAlignRight: true,
                       ),
                       if (debt.dueDate != null)
                         _kv(
                           context,
                           'Due date',
                           DateFormatters.formatDate(debt.dueDate!),
+                          valueAlignRight: true,
                         ),
                       const Divider(height: AppSpacing.xl),
                       _amountRow(context, 'Total', debt.totalAmount),
@@ -205,7 +207,12 @@ class DebtDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _kv(BuildContext context, String k, String v) {
+  Widget _kv(
+    BuildContext context,
+    String k,
+    String v, {
+    bool valueAlignRight = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -217,7 +224,12 @@ class DebtDetailPage extends ConsumerWidget {
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
-          Expanded(child: Text(v)),
+          Expanded(
+            child: Text(
+              v,
+              textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
+            ),
+          ),
         ],
       ),
     );
