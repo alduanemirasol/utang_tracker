@@ -13,9 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Quality checks ──────────────────────────────────────────
   quality:
     name: Lint, test, verify
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,19 +43,20 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Verify format
+      - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
 
-      - name: Verify lockfile
+      - name: Check lockfile
         run: flutter pub get --enforce-lockfile
 
+  # ── Build APKs & publish releases ───────────────────────────
   build-apk:
     name: Build APK
     needs: quality
     runs-on: ubuntu-latest
-    # Releases need write access to create/update GitHub Releases.
     permissions:
       contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,22 +76,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Smaller downloads: one APK per CPU architecture (not a fat universal APK).
-      - name: Build release APKs (split per ABI)
+      # One APK per CPU architecture (smaller downloads than a fat APK)
+      - name: Build release APKs
         run: flutter build apk --release --split-per-abi
 
-      - name: Name APKs for release
+      - name: Rename APKs for release
         id: apk
         run: |
           OUT="build/app/outputs/flutter-apk"
-          # Flutter outputs: app-armeabi-v7a-release.apk, app-arm64-v8a-release.apk, app-x86_64-release.apk
-          mapfile -t SOURCES < <(ls -1 "$OUT"/app-*-release.apk 2>/dev/null || true)
-          if [[ ${#SOURCES[@]} -eq 0 ]]; then
-            echo "No split APKs found in $OUT"
-            ls -la "$OUT" || true
-            exit 1
-          fi
+          RELEASE_DIR="$OUT/release-named"
+          mkdir -p "$RELEASE_DIR"
 
+          # Pick a filename prefix based on the git ref
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             PREFIX="utang-tracker-${{ github.ref_name }}"
           elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
@@ -97,19 +96,28 @@ jobs:
             PREFIX="utang-tracker"
           fi
 
-          RELEASE_DIR="$OUT/release-named"
-          mkdir -p "$RELEASE_DIR"
-          for SRC in "${SOURCES[@]}"; do
-            BASE="$(basename "$SRC")"
-            # app-arm64-v8a-release.apk → arm64-v8a
-            ABI="${BASE#app-}"
-            ABI="${ABI%-release.apk}"
-            DEST="$RELEASE_DIR/${PREFIX}-${ABI}.apk"
-            cp "$SRC" "$DEST"
-            echo "Prepared $DEST"
+          # Copy each APK with a friendly name:
+          #   app-arm64-v8a-release.apk → utang-tracker-v1.0.0-arm64-v8a.apk
+          count=0
+          for src in "$OUT"/app-*-release.apk; do
+            [ -f "$src" ] || continue
+
+            base=$(basename "$src")
+            abi="${base#app-}"
+            abi="${abi%-release.apk}"
+
+            dest="$RELEASE_DIR/${PREFIX}-${abi}.apk"
+            cp "$src" "$dest"
+            echo "Prepared $dest"
+            count=$((count + 1))
           done
 
-          echo "dir=$RELEASE_DIR" >> "$GITHUB_OUTPUT"
+          if [ "$count" -eq 0 ]; then
+            echo "No split APKs found in $OUT"
+            ls -la "$OUT" || true
+            exit 1
+          fi
+
           echo "glob=$RELEASE_DIR/${PREFIX}-*.apk" >> "$GITHUB_OUTPUT"
 
       - name: Upload APK artifacts
@@ -120,10 +128,12 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      # Versioned release: push a tag like v1.0.0 (used by in-app force update)
-      - name: Publish versioned GitHub Release
+      # Tag push (v1.0.0) → versioned release for in-app force update
+      - name: Publish versioned release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: ${{ steps.apk.outputs.glob }}
           generate_release_notes: true
@@ -137,19 +147,21 @@ jobs:
             | Most phones (64-bit ARM) | `*-arm64-v8a.apk` |
             | Older 32-bit ARM phones | `*-armeabi-v7a.apk` |
             | Emulators (x86_64) | `*-x86_64.apk` |
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Rolling CI build on main — not used for version comparison in the app
-      - name: Publish latest GitHub Release (main)
+      # Push to main → rolling "latest" prerelease (not used for force-update)
+      - name: Publish latest release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: latest
           name: Latest build
           target_commitish: ${{ github.sha }}
           prerelease: true
           make_latest: false
+          files: ${{ steps.apk.outputs.glob }}
+          fail_on_unmatched_files: true
           body: |
             Continuous split APKs from `main` (prerelease; not used for force-update checks).
 
@@ -162,8 +174,5 @@ jobs:
             | Older 32-bit ARM phones | `utang-tracker-latest-armeabi-v7a.apk` |
             | Emulators (x86_64) | `utang-tracker-latest-x86_64.apk` |
 
-            For user-facing updates, tag a version: `git tag v1.0.1 && git push origin v1.0.1`
-          files: ${{ steps.apk.outputs.glob }}
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            For user-facing updates, tag a version:
+            `git tag v1.0.1 && git push origin v1.0.1`
