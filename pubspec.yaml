@@ -44,7 +44,7 @@ dependencies:
   intl: ^0.20.3
   equatable: ^2.1.0
   share_plus: 10.1.4
-  file_picker: 8.1.0
+  file_picker: 8.3.7
   sqlite3: ^3.3.4
 dev_dependencies:
   flutter_test:
@@ -74,10 +74,11 @@ flutter_native_splash:
   android: true
   ios: false
   android_12:
-    # Logo is pre-padded on teal so the OS circle mask only cuts background —
-    # the brand mark stays a full square (no circular badge).
-    color: "#0F6B5C"
-    image: assets/images/new_logo.png
+    # Android 12+ always circular-masks the splash icon. This asset is the
+    # logo pre-padded on white so the circle only cuts padding — the mark
+    # stays a full square at natural proportions (no circular badge crop).
+    color: "#FFFFFF"
+    image: assets/images/splash_logo_android12.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
