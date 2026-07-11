@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 
 class AppTextField extends StatelessWidget {
@@ -42,18 +43,44 @@ class AppTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
 
+  /// Renders [label] with any `*` characters in [AppColors.danger].
+  static Widget buildLabel(BuildContext context, String label, {TextStyle? style}) {
+    final baseStyle =
+        style ??
+        Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        );
+
+    if (!label.contains('*')) {
+      return Text(label, style: baseStyle);
+    }
+
+    final children = <InlineSpan>[];
+    final parts = label.split('*');
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        children.add(TextSpan(text: parts[i]));
+      }
+      if (i < parts.length - 1) {
+        children.add(
+          const TextSpan(
+            text: '*',
+            style: TextStyle(color: AppColors.danger),
+          ),
+        );
+      }
+    }
+
+    return Text.rich(TextSpan(style: baseStyle, children: children));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          buildLabel(context, label!),
           const SizedBox(height: AppSpacing.sm),
         ],
         TextField(

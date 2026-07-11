@@ -211,7 +211,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Payment date *', style: Theme.of(context).textTheme.labelLarge),
+          AppTextField.buildLabel(context, 'Payment date *'),
           const SizedBox(height: AppSpacing.sm),
           InkWell(
             onTap: _pickDate,
@@ -224,10 +224,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Payment method *',
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
+          AppTextField.buildLabel(context, 'Payment method *'),
           const SizedBox(height: AppSpacing.sm),
           DropdownButtonFormField<String>(
             // ignore: deprecated_member_use

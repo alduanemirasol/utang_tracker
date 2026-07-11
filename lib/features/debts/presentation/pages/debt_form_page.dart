@@ -322,30 +322,22 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             onTap: _pickCustomer,
           ),
           const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              Expanded(
-                child: _DateField(
-                  label: 'Date',
-                  required: true,
-                  value: DateFormatters.formatDate(_transactionDate),
-                  onTap: () => _pickDate(due: false),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _DateField(
-                  label: 'Due date',
-                  value: _dueDate == null
-                      ? 'Optional'
-                      : DateFormatters.formatDate(_dueDate!),
-                  onTap: () => _pickDate(due: true),
-                  onClear: _dueDate == null
-                      ? null
-                      : () => setState(() => _dueDate = null),
-                ),
-              ),
-            ],
+          _DateField(
+            label: 'Date',
+            required: true,
+            value: DateFormatters.formatDate(_transactionDate),
+            onTap: () => _pickDate(due: false),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          _DateField(
+            label: 'Due date',
+            value: _dueDate == null
+                ? 'Optional'
+                : DateFormatters.formatDate(_dueDate!),
+            onTap: () => _pickDate(due: true),
+            onClear: _dueDate == null
+                ? null
+                : () => setState(() => _dueDate = null),
           ),
           const SizedBox(height: AppSpacing.xl),
           Row(
