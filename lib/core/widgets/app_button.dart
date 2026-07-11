@@ -25,10 +25,15 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: variant == AppButtonVariant.secondary
+                  ? AppColors.primary
+                  : Colors.white,
+            ),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,

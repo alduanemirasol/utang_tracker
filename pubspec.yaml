@@ -43,7 +43,9 @@ dependencies:
   uuid: ^4.5.3
   intl: ^0.20.3
   equatable: ^2.1.0
-
+  share_plus: 10.1.4
+  file_picker: 8.1.0
+  sqlite3: ^3.3.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
