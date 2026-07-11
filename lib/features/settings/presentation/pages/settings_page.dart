@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
@@ -11,12 +12,14 @@ import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/update/app_update_checker.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_logo.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
+import 'package:utang_tracker/core/widgets/force_update_dialog.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -28,9 +31,69 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _exporting = false;
   bool _importing = false;
+  bool _checkingUpdate = false;
+  String? _appVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _appVersion = info.version);
+    } catch (_) {
+      // Leave version null; UI falls back to a generic label.
+    }
+  }
+
+  bool get _busy => _exporting || _importing || _checkingUpdate;
+
+  Future<void> _checkForUpdates() async {
+    if (_busy) return;
+    setState(() => _checkingUpdate = true);
+    final checker = AppUpdateChecker();
+    try {
+      final result = await checker.checkForUpdate();
+      if (!mounted) {
+        checker.dispose();
+        return;
+      }
+      if (!result.isUpdateAvailable || result.update == null) {
+        checker.dispose();
+        AppSnackBar.success(
+          context,
+          'You are on the latest version (${result.currentVersion}).',
+        );
+        return;
+      }
+      await showForceUpdateDialog(
+        context: context,
+        currentVersion: result.currentVersion,
+        update: result.update!,
+        checker: checker,
+      );
+    } on AppException catch (e) {
+      checker.dispose();
+      if (mounted) AppSnackBar.error(context, e.message);
+    } catch (_) {
+      checker.dispose();
+      if (mounted) {
+        AppSnackBar.error(
+          context,
+          'Could not check for updates. Try again later.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _checkingUpdate = false);
+    }
+  }
 
   Future<void> _exportDatabase() async {
-    if (_exporting || _importing) return;
+    if (_busy) return;
     setState(() => _exporting = true);
     try {
       final db = ref.read(databaseProvider);
@@ -89,7 +152,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _importDatabase() async {
-    if (_exporting || _importing) return;
+    if (_busy) return;
 
     final confirmed = await showConfirmationDialog(
       context: context,
@@ -178,9 +241,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'Version 1.0.0',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                Text(
+                  _appVersion == null ? 'Version' : 'Version $_appVersion',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  label: 'Check for updates',
+                  icon: Icons.system_update_outlined,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: _busy ? null : _checkForUpdates,
+                  isLoading: _checkingUpdate,
                 ),
               ],
             ),
@@ -200,7 +274,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 AppButton(
                   label: 'Export database',
                   icon: Icons.upload_file_outlined,
-                  onPressed: _exporting || _importing ? null : _exportDatabase,
+                  onPressed: _busy ? null : _exportDatabase,
                   isLoading: _exporting,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -208,7 +282,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   label: 'Import database',
                   icon: Icons.download_outlined,
                   variant: AppButtonVariant.secondary,
-                  onPressed: _exporting || _importing ? null : _importDatabase,
+                  onPressed: _busy ? null : _importDatabase,
                   isLoading: _importing,
                 ),
               ],
