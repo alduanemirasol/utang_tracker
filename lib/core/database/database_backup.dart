@@ -63,8 +63,25 @@ class DatabaseBackup {
     );
   }
 
+  /// Allowed backup file extensions (no leading dot).
+  static const allowedExtensions = {'sqlite', 'db'};
+
+  /// True when [fileNameOrPath] ends with `.sqlite` or `.db` (case-insensitive).
+  static bool hasAllowedExtension(String fileNameOrPath) {
+    final ext = p.extension(fileNameOrPath).toLowerCase();
+    if (ext.isEmpty) return false;
+    // p.extension includes the leading dot, e.g. ".sqlite"
+    return allowedExtensions.contains(ext.substring(1));
+  }
+
   /// Validate that [filePath] looks like an Utang Tracker SQLite database.
   static void validateBackupFile(String filePath) {
+    if (!hasAllowedExtension(filePath)) {
+      throw const AppException(
+        'Only .sqlite or .db backup files can be imported.',
+      );
+    }
+
     final file = File(filePath);
     if (!file.existsSync()) {
       throw const AppException('Selected file does not exist.');

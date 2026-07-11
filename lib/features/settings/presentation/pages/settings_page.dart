@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/database/database_backup.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
@@ -44,6 +48,46 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
+  /// Resolve a readable local path for the picked backup.
+  ///
+  /// Android does not map `.sqlite` / `.db` to MIME types, so the picker uses
+  /// [FileType.any] there. Some picks only expose bytes (no filesystem path).
+  Future<String> _resolveImportPath(PlatformFile file) async {
+    final displayName = file.name;
+    if (displayName.isNotEmpty &&
+        !DatabaseBackup.hasAllowedExtension(displayName)) {
+      throw const AppException(
+        'Only .sqlite or .db backup files can be imported.',
+      );
+    }
+
+    final path = file.path;
+    if (path != null && path.isNotEmpty) {
+      if (!DatabaseBackup.hasAllowedExtension(path)) {
+        throw const AppException(
+          'Only .sqlite or .db backup files can be imported.',
+        );
+      }
+      return path;
+    }
+
+    final bytes = file.bytes ?? await file.xFile.readAsBytes();
+    if (bytes.isEmpty) {
+      throw const AppException('Selected file is empty or unreadable.');
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final name = displayName.isNotEmpty ? displayName : 'import_backup.sqlite';
+    if (!DatabaseBackup.hasAllowedExtension(name)) {
+      throw const AppException(
+        'Only .sqlite or .db backup files can be imported.',
+      );
+    }
+    final dest = File(p.join(tempDir.path, 'utang_import_$name'));
+    await dest.writeAsBytes(bytes, flush: true);
+    return dest.path;
+  }
+
   Future<void> _importDatabase() async {
     if (_exporting || _importing) return;
 
@@ -51,35 +95,34 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       context: context,
       title: 'Import database?',
       message:
-          'This replaces all current data on this device with the selected backup. This cannot be undone.',
+          'This replaces all current data on this device with the selected backup. This cannot be undone.\n\nOnly .sqlite or .db files are accepted.',
       confirmLabel: 'Import',
       isDestructive: true,
     );
     if (!confirmed || !mounted) return;
 
+    // Android: FileType.custom + sqlite/db fails (unknown MIME types).
+    // Desktop: extension filter works and improves UX.
+    final useExtensionFilter = !Platform.isAndroid;
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: const ['sqlite', 'db'],
+      type: useExtensionFilter ? FileType.custom : FileType.any,
+      allowedExtensions:
+          useExtensionFilter ? const ['sqlite', 'db'] : null,
       withData: false,
     );
     if (result == null || result.files.isEmpty) return;
 
-    final path = result.files.single.path;
-    if (path == null || path.isEmpty) {
-      if (!mounted) return;
-      AppSnackBar.error(context, 'Could not read the selected file path.');
-      return;
-    }
-
     setState(() => _importing = true);
     try {
+      final importPath = await _resolveImportPath(result.files.single);
+
       final db = ref.read(databaseProvider);
       final livePath = await DatabaseBackup.resolveDatabasePath(db);
       await db.close();
 
       await DatabaseBackup.replaceDatabaseFile(
         livePath: livePath,
-        importPath: path,
+        importPath: importPath,
       );
 
       // Re-open DB and refresh all screens.
@@ -154,7 +197,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 const Text(
-                  'Export a full backup of customers, debts, and payments, or import a previous backup to restore this device.',
+                  'Export a full backup of customers, debts, and payments, or import a previous .sqlite backup to restore this device.',
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.lg),
