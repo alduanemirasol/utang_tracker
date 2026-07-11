@@ -44,7 +44,11 @@ class AppTextField extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// Renders [label] with any `*` characters in [AppColors.danger].
-  static Widget buildLabel(BuildContext context, String label, {TextStyle? style}) {
+  static Widget buildLabel(
+    BuildContext context,
+    String label, {
+    TextStyle? style,
+  }) {
     final baseStyle =
         style ??
         Theme.of(context).textTheme.labelLarge?.copyWith(
