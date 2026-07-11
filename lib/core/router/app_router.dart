@@ -12,11 +12,12 @@ import 'package:utang_tracker/features/payments/presentation/pages/payments_list
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
+/// Root navigator for full-screen routes and global dialogs (e.g. force update).
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 GoRouter createAppRouter() {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/dashboard',
     routes: [
       StatefulShellRoute.indexedStack(
@@ -40,12 +41,12 @@ GoRouter createAppRouter() {
                 routes: [
                   GoRoute(
                     path: 'new',
-                    parentNavigatorKey: _rootNavigatorKey,
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const CustomerFormPage(),
                   ),
                   GoRoute(
                     path: ':id',
-                    parentNavigatorKey: _rootNavigatorKey,
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
                       return CustomerDetailPage(customerId: id);
@@ -53,7 +54,7 @@ GoRouter createAppRouter() {
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        parentNavigatorKey: _rootNavigatorKey,
+                        parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
                           final id = state.pathParameters['id']!;
                           return CustomerFormPage(customerId: id);
@@ -73,7 +74,7 @@ GoRouter createAppRouter() {
                 routes: [
                   GoRoute(
                     path: 'new',
-                    parentNavigatorKey: _rootNavigatorKey,
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final customerId =
                           state.uri.queryParameters['customerId'];
@@ -82,7 +83,7 @@ GoRouter createAppRouter() {
                   ),
                   GoRoute(
                     path: ':id',
-                    parentNavigatorKey: _rootNavigatorKey,
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
                       return DebtDetailPage(debtId: id);
@@ -90,7 +91,7 @@ GoRouter createAppRouter() {
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        parentNavigatorKey: _rootNavigatorKey,
+                        parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
                           final id = state.pathParameters['id']!;
                           return DebtFormPage(debtId: id);
@@ -110,7 +111,7 @@ GoRouter createAppRouter() {
                 routes: [
                   GoRoute(
                     path: 'new',
-                    parentNavigatorKey: _rootNavigatorKey,
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final debtId = state.uri.queryParameters['debtId'];
                       return RecordPaymentPage(initialDebtId: debtId);

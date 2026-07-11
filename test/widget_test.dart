@@ -17,7 +17,9 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    // Flush post-frame force-update delay and fail-open network check.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(seconds: 2));
 
     expect(find.text(AppConstants.appName), findsOneWidget);
     expect(find.text('Store overview'), findsOneWidget);
