@@ -42,8 +42,7 @@ class PaymentsListPage extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () =>
-                ref.read(paymentsListProvider.notifier).refresh(),
+            onRefresh: () => ref.read(paymentsListProvider.notifier).refresh(),
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pagePadding,
@@ -52,8 +51,7 @@ class PaymentsListPage extends ConsumerWidget {
                 88,
               ),
               itemCount: payments.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
                 final payment = payments[index];
                 return AppCard(

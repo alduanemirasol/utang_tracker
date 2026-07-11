@@ -37,17 +37,17 @@ class Debt extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        customerId,
-        totalAmount,
-        paidAmount,
-        balance,
-        status,
-        transactionDate,
-        dueDate,
-        notes,
-        createdAt,
-        updatedAt,
-        customerName,
-      ];
+    id,
+    customerId,
+    totalAmount,
+    paidAmount,
+    balance,
+    status,
+    transactionDate,
+    dueDate,
+    notes,
+    createdAt,
+    updatedAt,
+    customerName,
+  ];
 }

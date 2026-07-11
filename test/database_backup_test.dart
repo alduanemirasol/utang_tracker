@@ -52,10 +52,9 @@ void _createMinimalBackup(String path, {String customerName = 'Alice'}) {
       deleted_at INTEGER NULL
     );
   ''');
-  db.execute(
-    "INSERT INTO customers VALUES ('c1', ?, NULL, NULL, 1, 1, NULL)",
-    [customerName],
-  );
+  db.execute("INSERT INTO customers VALUES ('c1', ?, NULL, NULL, 1, 1, NULL)", [
+    customerName,
+  ]);
   db.execute('PRAGMA user_version = 3');
   db.close();
 }
@@ -140,7 +139,10 @@ void main() {
       importPath: importPath,
     );
 
-    final check = sqlite3.sqlite3.open(livePath, mode: sqlite3.OpenMode.readOnly);
+    final check = sqlite3.sqlite3.open(
+      livePath,
+      mode: sqlite3.OpenMode.readOnly,
+    );
     final rows = check.select('SELECT name FROM customers');
     check.close();
     expect(rows.single['name'], 'Bob');

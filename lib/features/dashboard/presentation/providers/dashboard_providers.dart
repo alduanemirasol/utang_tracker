@@ -9,8 +9,8 @@ final getDashboardSummaryProvider = Provider((ref) {
 
 final dashboardSummaryProvider =
     AsyncNotifierProvider<DashboardSummaryNotifier, DashboardSummary>(
-  DashboardSummaryNotifier.new,
-);
+      DashboardSummaryNotifier.new,
+    );
 
 class DashboardSummaryNotifier extends AsyncNotifier<DashboardSummary> {
   @override
@@ -20,6 +20,8 @@ class DashboardSummaryNotifier extends AsyncNotifier<DashboardSummary> {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => ref.read(getDashboardSummaryProvider)());
+    state = await AsyncValue.guard(
+      () => ref.read(getDashboardSummaryProvider)(),
+    );
   }
 }

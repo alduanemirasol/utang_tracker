@@ -19,8 +19,14 @@ class DebtItem extends Equatable {
   final Money subtotal;
 
   @override
-  List<Object?> get props =>
-      [id, debtId, productName, quantity, unitPrice, subtotal];
+  List<Object?> get props => [
+    id,
+    debtId,
+    productName,
+    quantity,
+    unitPrice,
+    subtotal,
+  ];
 }
 
 /// Input for creating/editing a line item (id assigned by repository).

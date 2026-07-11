@@ -22,11 +22,7 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class DebtFormPage extends ConsumerStatefulWidget {
-  const DebtFormPage({
-    super.key,
-    this.debtId,
-    this.initialCustomerId,
-  });
+  const DebtFormPage({super.key, this.debtId, this.initialCustomerId});
 
   final String? debtId;
   final String? initialCustomerId;
@@ -39,9 +35,9 @@ class DebtFormPage extends ConsumerStatefulWidget {
 
 class _LineItemControllers {
   _LineItemControllers()
-      : product = TextEditingController(),
-        quantity = TextEditingController(text: '1'),
-        unitPrice = TextEditingController();
+    : product = TextEditingController(),
+      quantity = TextEditingController(text: '1'),
+      unitPrice = TextEditingController();
 
   final TextEditingController product;
   final TextEditingController quantity;
@@ -166,11 +162,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         return null;
       }
       result.add(
-        DebtItemInput(
-          productName: name,
-          quantity: qty,
-          unitPrice: price,
-        ),
+        DebtItemInput(productName: name, quantity: qty, unitPrice: price),
       );
     }
     return result;
@@ -209,11 +201,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           notes: _notesController.text,
           items: items,
         );
-        invalidateBusinessData(
-          ref,
-          customerId: _customerId,
-          debtId: debt.id,
-        );
+        invalidateBusinessData(ref, customerId: _customerId, debtId: debt.id);
       }
 
       if (!mounted) return;
@@ -311,9 +299,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   Widget _buildForm() {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit debt' : 'New debt'),
-      ),
+      appBar: AppBar(title: Text(widget.isEditing ? 'Edit debt' : 'New debt')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
@@ -378,7 +364,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ),
               const Spacer(),
               TextButton.icon(
-                onPressed: () => setState(() => _items.add(_LineItemControllers())),
+                onPressed: () =>
+                    setState(() => _items.add(_LineItemControllers())),
                 icon: const Icon(Icons.add),
                 label: const Text('Add item'),
               ),
@@ -487,10 +474,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(
-              _error!,
-              style: const TextStyle(color: AppColors.danger),
-            ),
+            Text(_error!, style: const TextStyle(color: AppColors.danger)),
           ],
           const SizedBox(height: AppSpacing.xl),
           AppButton(
@@ -622,9 +606,7 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Expanded(
-            child: _buildBody(customers),
-          ),
+          Expanded(child: _buildBody(customers)),
           SafeArea(
             top: false,
             child: Padding(

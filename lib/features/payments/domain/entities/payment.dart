@@ -28,14 +28,14 @@ class Payment extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        debtId,
-        amount,
-        paymentDate,
-        paymentMethod,
-        notes,
-        createdAt,
-        customerName,
-        customerId,
-      ];
+    id,
+    debtId,
+    amount,
+    paymentDate,
+    paymentMethod,
+    notes,
+    createdAt,
+    customerName,
+    customerId,
+  ];
 }

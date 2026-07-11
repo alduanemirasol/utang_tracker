@@ -187,10 +187,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _DebtField(
-            label: _debtFieldLabel,
-            onTap: _pickDebt,
-          ),
+          _DebtField(label: _debtFieldLabel, onTap: _pickDebt),
           if (selected != null) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -206,9 +203,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             controller: _amountController,
             label: 'Amount *',
             hint: 'e.g. 100.00',
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: true,
-            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
             ],
@@ -216,10 +211,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Payment date *',
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
+          Text('Payment date *', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: AppSpacing.sm),
           InkWell(
             onTap: _pickDate,
@@ -266,9 +258,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                     try {
                       final amt = Money.fromPesoString(_amountController.text);
                       final after = selected.balance - amt;
-                      return MoneyText(
-                        after.isNegative ? Money.zero() : after,
-                      );
+                      return MoneyText(after.isNegative ? Money.zero() : after);
                     } catch (_) {
                       return MoneyText(selected.balance);
                     }
@@ -294,10 +284,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 }
 
 class _DebtField extends StatelessWidget {
-  const _DebtField({
-    required this.label,
-    required this.onTap,
-  });
+  const _DebtField({required this.label, required this.onTap});
 
   final String? label;
   final VoidCallback onTap;
@@ -364,12 +351,10 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       final filtered = trimmed.isEmpty
           ? open
           : open
-              .where(
-                (d) => (d.customerName ?? '')
-                    .toLowerCase()
-                    .contains(trimmed),
-              )
-              .toList();
+                .where(
+                  (d) => (d.customerName ?? '').toLowerCase().contains(trimmed),
+                )
+                .toList();
 
       if (!mounted) return;
       setState(() {

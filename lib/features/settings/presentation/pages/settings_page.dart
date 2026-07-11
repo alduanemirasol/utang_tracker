@@ -106,8 +106,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final useExtensionFilter = !Platform.isAndroid;
     final result = await FilePicker.platform.pickFiles(
       type: useExtensionFilter ? FileType.custom : FileType.any,
-      allowedExtensions:
-          useExtensionFilter ? const ['sqlite', 'db'] : null,
+      allowedExtensions: useExtensionFilter ? const ['sqlite', 'db'] : null,
       withData: false,
     );
     if (result == null || result.files.isEmpty) return;
@@ -191,10 +190,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Data',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('Data', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.md),
                 const Text(
                   'Export a full backup of customers, debts, and payments, or import a previous .sqlite backup to restore this device.',

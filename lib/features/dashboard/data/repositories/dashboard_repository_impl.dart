@@ -62,8 +62,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
       ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 
-    final recentActivity =
-        merged.take(AppConstants.recentItemsLimit).toList(growable: false);
+    final recentActivity = merged
+        .take(AppConstants.recentItemsLimit)
+        .toList(growable: false);
 
     return DashboardSummary(
       outstandingBalance: Money.fromCentavos(outstanding),

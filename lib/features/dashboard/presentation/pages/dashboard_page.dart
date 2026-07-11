@@ -37,8 +37,8 @@ class DashboardPage extends ConsumerWidget {
                 Text(
                   'Store overview',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Row(
@@ -48,9 +48,7 @@ class DashboardPage extends ConsumerWidget {
                         label: 'Total Receivables',
                         child: MoneyText(
                           summary.outstandingBalance,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
+                          style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                           color: summary.outstandingBalance.isZero
                               ? AppColors.paid
@@ -64,9 +62,7 @@ class DashboardPage extends ConsumerWidget {
                         label: 'Collected today',
                         child: MoneyText(
                           summary.collectedToday,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
+                          style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                           color: AppColors.paid,
                         ),
@@ -82,9 +78,7 @@ class DashboardPage extends ConsumerWidget {
                         label: 'Active debts',
                         child: Text(
                           '${summary.activeDebtsCount}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
+                          style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -95,9 +89,7 @@ class DashboardPage extends ConsumerWidget {
                         label: 'Customers',
                         child: Text(
                           '${summary.totalCustomers}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
+                          style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -132,8 +124,9 @@ class DashboardPage extends ConsumerWidget {
                                 children: [
                                   Text(
                                     item.customerName,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -198,11 +191,7 @@ class _ActivityTypeBadge extends StatelessWidget {
       ),
       child: Text(
         type.label,
-        style: TextStyle(
-          color: fg,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -26,8 +26,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])
-      ..where(_activeDebt & _activeCustomer);
+    ])..where(_activeDebt & _activeCustomer);
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }
@@ -43,18 +42,19 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<List<Debt>> getByCustomer(String customerId) async {
-    final query = _db.select(_db.debts).join([
-      innerJoin(
-        _db.customers,
-        _db.customers.id.equalsExp(_db.debts.customerId),
-      ),
-    ])
-      ..where(
-        _db.debts.customerId.equals(customerId) &
-            _activeDebt &
-            _activeCustomer,
-      )
-      ..orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
+    final query =
+        _db.select(_db.debts).join([
+            innerJoin(
+              _db.customers,
+              _db.customers.id.equalsExp(_db.debts.customerId),
+            ),
+          ])
+          ..where(
+            _db.debts.customerId.equals(customerId) &
+                _activeDebt &
+                _activeCustomer,
+          )
+          ..orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
 
     final rows = await query.get();
     return rows.map((row) {
@@ -71,19 +71,16 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])
-      ..where(
-        _db.debts.id.equals(id) & _activeDebt & _activeCustomer,
-      );
+    ])..where(_db.debts.id.equals(id) & _activeDebt & _activeCustomer);
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
 
     final debtRow = row.readTable(_db.debts);
     final customer = row.readTable(_db.customers);
-    final items = await (_db.select(_db.debtItems)
-          ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
-        .get();
+    final items = await (_db.select(
+      _db.debtItems,
+    )..where((t) => t.debtId.equals(id) & t.deletedAt.isNull())).get();
 
     return DebtDetail(
       debt: mapDebt(debtRow, customerName: customer.name),
@@ -98,8 +95,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])
-      ..where(_activeDebt & _activeCustomer);
+    ])..where(_activeDebt & _activeCustomer);
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }
@@ -125,9 +121,10 @@ class DebtRepositoryImpl implements DebtRepository {
   }) async {
     _validateItems(items);
 
-    final customer = await (_db.select(_db.customers)
-          ..where((t) => t.id.equals(customerId) & t.deletedAt.isNull()))
-        .getSingleOrNull();
+    final customer =
+        await (_db.select(_db.customers)
+              ..where((t) => t.id.equals(customerId) & t.deletedAt.isNull()))
+            .getSingleOrNull();
     if (customer == null) {
       throw const NotFoundException('Customer not found.');
     }
@@ -139,16 +136,15 @@ class DebtRepositoryImpl implements DebtRepository {
       totalAmount: total,
       paidAmount: paid,
     );
-    final status = DebtMath.deriveStatus(
-      totalAmount: total,
-      paidAmount: paid,
-    );
+    final status = DebtMath.deriveStatus(totalAmount: total, paidAmount: paid);
 
     final now = DateTime.now().toUtc();
     final debtId = _uuid.v4();
 
     await _db.transaction(() async {
-      await _db.into(_db.debts).insert(
+      await _db
+          .into(_db.debts)
+          .insert(
             DebtsCompanion.insert(
               id: debtId,
               customerId: customerId,
@@ -165,7 +161,9 @@ class DebtRepositoryImpl implements DebtRepository {
           );
 
       for (final item in prepared) {
-        await _db.into(_db.debtItems).insert(
+        await _db
+            .into(_db.debtItems)
+            .insert(
               DebtItemsCompanion.insert(
                 id: _uuid.v4(),
                 debtId: debtId,
@@ -208,10 +206,7 @@ class DebtRepositoryImpl implements DebtRepository {
       totalAmount: total,
       paidAmount: paid,
     );
-    final status = DebtMath.deriveStatus(
-      totalAmount: total,
-      paidAmount: paid,
-    );
+    final status = DebtMath.deriveStatus(totalAmount: total, paidAmount: paid);
     final now = DateTime.now().toUtc();
 
     await _db.transaction(() async {
@@ -220,26 +215,29 @@ class DebtRepositoryImpl implements DebtRepository {
             ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
           .write(DebtItemsCompanion(deletedAt: Value(now)));
 
-      final updated = await (_db.update(_db.debts)
-            ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
-          .write(
-        DebtsCompanion(
-          totalAmount: Value(total.centavos),
-          paidAmount: Value(paid.centavos),
-          balance: Value(balance.centavos),
-          status: Value(status.value),
-          transactionDate: Value(transactionDate.toUtc()),
-          dueDate: Value(dueDate?.toUtc()),
-          notes: Value(_emptyToNull(notes)),
-          updatedAt: Value(now),
-        ),
-      );
+      final updated =
+          await (_db.update(
+            _db.debts,
+          )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
+            DebtsCompanion(
+              totalAmount: Value(total.centavos),
+              paidAmount: Value(paid.centavos),
+              balance: Value(balance.centavos),
+              status: Value(status.value),
+              transactionDate: Value(transactionDate.toUtc()),
+              dueDate: Value(dueDate?.toUtc()),
+              notes: Value(_emptyToNull(notes)),
+              updatedAt: Value(now),
+            ),
+          );
       if (updated == 0) {
         throw const NotFoundException('Debt not found.');
       }
 
       for (final item in prepared) {
-        await _db.into(_db.debtItems).insert(
+        await _db
+            .into(_db.debtItems)
+            .insert(
               DebtItemsCompanion.insert(
                 id: _uuid.v4(),
                 debtId: id,
@@ -306,7 +304,7 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   List<({String productName, double quantity, Money unitPrice, Money subtotal})>
-      _prepareItems(List<DebtItemInput> items) {
+  _prepareItems(List<DebtItemInput> items) {
     return items.map((item) {
       final subtotal = DebtMath.computeSubtotal(
         quantity: item.quantity,

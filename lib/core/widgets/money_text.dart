@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 
 class MoneyText extends StatelessWidget {
-  const MoneyText(
-    this.money, {
-    super.key,
-    this.style,
-    this.color,
-  });
+  const MoneyText(this.money, {super.key, this.style, this.color});
 
   final Money money;
   final TextStyle? style;

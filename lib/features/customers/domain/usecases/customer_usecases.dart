@@ -22,11 +22,7 @@ class GetCustomerById {
 class CreateCustomer {
   const CreateCustomer(this._repository);
   final CustomerRepository _repository;
-  Future<Customer> call({
-    required String name,
-    String? phone,
-    String? notes,
-  }) {
+  Future<Customer> call({required String name, String? phone, String? notes}) {
     return _repository.create(name: name, phone: phone, notes: notes);
   }
 }

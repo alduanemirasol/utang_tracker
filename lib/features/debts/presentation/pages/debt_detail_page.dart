@@ -78,8 +78,7 @@ class DebtDetailPage extends ConsumerWidget {
                                   context.push('/customers/${debt.customerId}'),
                               child: Text(
                                 debt.customerName ?? 'Customer',
-                                style:
-                                    Theme.of(context).textTheme.titleLarge,
+                                style: Theme.of(context).textTheme.titleLarge,
                               ),
                             ),
                           ),
@@ -113,7 +112,9 @@ class DebtDetailPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           debt.notes!,
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ],

@@ -13,8 +13,8 @@ final recordPaymentUseCaseProvider = Provider((ref) {
 
 final paymentsListProvider =
     AsyncNotifierProvider<PaymentsListNotifier, List<Payment>>(
-  PaymentsListNotifier.new,
-);
+      PaymentsListNotifier.new,
+    );
 
 class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
   @override

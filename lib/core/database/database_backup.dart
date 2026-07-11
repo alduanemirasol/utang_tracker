@@ -46,18 +46,13 @@ class DatabaseBackup {
     }
 
     final tempDir = await getTemporaryDirectory();
-    final fileName = 'utang_tracker_backup_${_stamp.format(DateTime.now())}.sqlite';
+    final fileName =
+        'utang_tracker_backup_${_stamp.format(DateTime.now())}.sqlite';
     final dest = File(p.join(tempDir.path, fileName));
     await source.copy(dest.path);
 
     await Share.shareXFiles(
-      [
-        XFile(
-          dest.path,
-          mimeType: 'application/x-sqlite3',
-          name: fileName,
-        ),
-      ],
+      [XFile(dest.path, mimeType: 'application/x-sqlite3', name: fileName)],
       subject: 'Utang Tracker backup',
       text: 'Database backup for Utang Tracker.',
     );

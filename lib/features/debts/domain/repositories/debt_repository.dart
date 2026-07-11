@@ -3,10 +3,7 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 
 class DebtDetail {
-  const DebtDetail({
-    required this.debt,
-    required this.items,
-  });
+  const DebtDetail({required this.debt, required this.items});
 
   final Debt debt;
   final List<DebtItem> items;

@@ -45,11 +45,7 @@ DebtItem mapDebtItem(DebtItemRow row) {
   );
 }
 
-Payment mapPayment(
-  PaymentRow row, {
-  String? customerName,
-  String? customerId,
-}) {
+Payment mapPayment(PaymentRow row, {String? customerName, String? customerId}) {
   return Payment(
     id: row.id,
     debtId: row.debtId,

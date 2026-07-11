@@ -21,15 +21,16 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   @override
   Future<List<Payment>> getAll() async {
-    final query = _db.select(_db.payments).join([
-      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
-      innerJoin(
-        _db.customers,
-        _db.customers.id.equalsExp(_db.debts.customerId),
-      ),
-    ])
-      ..where(_activePayment & _activeDebt & _activeCustomer)
-      ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
+    final query =
+        _db.select(_db.payments).join([
+            innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+            innerJoin(
+              _db.customers,
+              _db.customers.id.equalsExp(_db.debts.customerId),
+            ),
+          ])
+          ..where(_activePayment & _activeDebt & _activeCustomer)
+          ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
     final rows = await query.get();
     return rows.map((row) {
@@ -46,29 +47,31 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   @override
   Future<List<Payment>> getByDebt(String debtId) async {
-    final rows = await (_db.select(_db.payments)
-          ..where((t) => t.debtId.equals(debtId) & t.deletedAt.isNull())
-          ..orderBy([(t) => OrderingTerm.desc(t.paymentDate)]))
-        .get();
+    final rows =
+        await (_db.select(_db.payments)
+              ..where((t) => t.debtId.equals(debtId) & t.deletedAt.isNull())
+              ..orderBy([(t) => OrderingTerm.desc(t.paymentDate)]))
+            .get();
     return rows.map(mapPayment).toList();
   }
 
   @override
   Future<List<Payment>> getByCustomer(String customerId) async {
-    final query = _db.select(_db.payments).join([
-      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
-      innerJoin(
-        _db.customers,
-        _db.customers.id.equalsExp(_db.debts.customerId),
-      ),
-    ])
-      ..where(
-        _db.debts.customerId.equals(customerId) &
-            _activePayment &
-            _activeDebt &
-            _activeCustomer,
-      )
-      ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
+    final query =
+        _db.select(_db.payments).join([
+            innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+            innerJoin(
+              _db.customers,
+              _db.customers.id.equalsExp(_db.debts.customerId),
+            ),
+          ])
+          ..where(
+            _db.debts.customerId.equals(customerId) &
+                _activePayment &
+                _activeDebt &
+                _activeCustomer,
+          )
+          ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
 
     final rows = await query.get();
     return rows.map((row) {
@@ -85,16 +88,17 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   @override
   Future<List<Payment>> getRecent({int limit = 5}) async {
-    final query = _db.select(_db.payments).join([
-      innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
-      innerJoin(
-        _db.customers,
-        _db.customers.id.equalsExp(_db.debts.customerId),
-      ),
-    ])
-      ..where(_activePayment & _activeDebt & _activeCustomer)
-      ..orderBy([OrderingTerm.desc(_db.payments.createdAt)])
-      ..limit(limit);
+    final query =
+        _db.select(_db.payments).join([
+            innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+            innerJoin(
+              _db.customers,
+              _db.customers.id.equalsExp(_db.debts.customerId),
+            ),
+          ])
+          ..where(_activePayment & _activeDebt & _activeCustomer)
+          ..orderBy([OrderingTerm.desc(_db.payments.createdAt)])
+          ..limit(limit);
 
     final rows = await query.get();
     return rows.map((row) {
@@ -119,8 +123,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
       ..addColumns([sum])
       ..where(
         _activePayment &
-            _db.payments.paymentDate
-                .isBetweenValues(start.toUtc(), end.toUtc()),
+            _db.payments.paymentDate.isBetweenValues(
+              start.toUtc(),
+              end.toUtc(),
+            ),
       );
     final row = await query.getSingle();
     return Money.fromCentavos(row.read(sum) ?? 0);
@@ -135,7 +141,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
     String? notes,
   }) async {
     if (!amount.isPositive) {
-      throw const ValidationException('Payment amount must be greater than zero.');
+      throw const ValidationException(
+        'Payment amount must be greater than zero.',
+      );
     }
     if (paymentMethod.trim().isEmpty) {
       throw const ValidationException('Payment method is required.');
@@ -145,9 +153,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
     final now = DateTime.now().toUtc();
 
     await _db.transaction(() async {
-      final debt = await (_db.select(_db.debts)
-            ..where((t) => t.id.equals(debtId) & t.deletedAt.isNull()))
-          .getSingleOrNull();
+      final debt =
+          await (_db.select(_db.debts)
+                ..where((t) => t.id.equals(debtId) & t.deletedAt.isNull()))
+              .getSingleOrNull();
       if (debt == null) {
         throw const NotFoundException('Debt not found.');
       }
@@ -164,7 +173,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
         );
       }
 
-      await _db.into(_db.payments).insert(
+      await _db
+          .into(_db.payments)
+          .insert(
             PaymentsCompanion.insert(
               id: paymentId,
               debtId: debtId,
@@ -187,9 +198,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
         paidAmount: newPaid,
       );
 
-      await (_db.update(_db.debts)
-            ..where((t) => t.id.equals(debtId) & t.deletedAt.isNull()))
-          .write(
+      await (_db.update(
+        _db.debts,
+      )..where((t) => t.id.equals(debtId) & t.deletedAt.isNull())).write(
         DebtsCompanion(
           paidAmount: Value(newPaid.centavos),
           balance: Value(newBalance.centavos),
@@ -199,9 +210,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
       );
     });
 
-    final row = await (_db.select(_db.payments)
-          ..where((t) => t.id.equals(paymentId) & t.deletedAt.isNull()))
-        .getSingle();
+    final row = await (_db.select(
+      _db.payments,
+    )..where((t) => t.id.equals(paymentId) & t.deletedAt.isNull())).getSingle();
     return mapPayment(row);
   }
 

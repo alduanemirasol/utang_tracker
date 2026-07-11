@@ -21,20 +21,20 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          await _createIndexes();
-        },
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.addColumn(customers, customers.deletedAt);
-            await m.addColumn(debts, debts.deletedAt);
-            await m.addColumn(debtItems, debtItems.deletedAt);
-            await m.addColumn(payments, payments.deletedAt);
-          }
-          if (from < 3) {
-            // Drop debt_items.unit (SQLite: recreate table).
-            await customStatement('''
+    onCreate: (m) async {
+      await m.createAll();
+      await _createIndexes();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(customers, customers.deletedAt);
+        await m.addColumn(debts, debts.deletedAt);
+        await m.addColumn(debtItems, debtItems.deletedAt);
+        await m.addColumn(payments, payments.deletedAt);
+      }
+      if (from < 3) {
+        // Drop debt_items.unit (SQLite: recreate table).
+        await customStatement('''
 CREATE TABLE debt_items_new (
   id TEXT NOT NULL PRIMARY KEY,
   debt_id TEXT NOT NULL REFERENCES debts (id),
@@ -45,23 +45,23 @@ CREATE TABLE debt_items_new (
   deleted_at INTEGER NULL
 );
 ''');
-            await customStatement('''
+        await customStatement('''
 INSERT INTO debt_items_new (
   id, debt_id, product_name, quantity, unit_price, subtotal, deleted_at
 )
 SELECT id, debt_id, product_name, quantity, unit_price, subtotal, deleted_at
 FROM debt_items;
 ''');
-            await customStatement('DROP TABLE debt_items;');
-            await customStatement(
-              'ALTER TABLE debt_items_new RENAME TO debt_items;',
-            );
-            await customStatement(
-              'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
-            );
-          }
-        },
-      );
+        await customStatement('DROP TABLE debt_items;');
+        await customStatement(
+          'ALTER TABLE debt_items_new RENAME TO debt_items;',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
+        );
+      }
+    },
+  );
 
   Future<void> _createIndexes() async {
     await customStatement(

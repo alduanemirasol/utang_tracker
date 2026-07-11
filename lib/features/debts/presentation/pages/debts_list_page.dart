@@ -60,8 +60,9 @@ class DebtsListPage extends ConsumerWidget {
                         const SizedBox(width: AppSpacing.sm),
                         ...DebtStatus.values.map(
                           (s) => Padding(
-                            padding:
-                                const EdgeInsets.only(right: AppSpacing.sm),
+                            padding: const EdgeInsets.only(
+                              right: AppSpacing.sm,
+                            ),
                             child: _FilterChip(
                               label: s.label,
                               selected: filter == s,
@@ -105,10 +106,7 @@ class DebtsListPage extends ConsumerWidget {
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(AppSpacing.sm),
-                    child: Icon(
-                      Icons.sort,
-                      color: AppColors.textPrimary,
-                    ),
+                    child: Icon(Icons.sort, color: AppColors.textPrimary),
                   ),
                 ),
               ],
@@ -157,8 +155,9 @@ class DebtsListPage extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     debt.customerName ?? 'Customer',
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -221,9 +220,7 @@ class _FilterChip extends StatelessWidget {
         fontWeight: FontWeight.w600,
       ),
       backgroundColor: AppColors.surfaceCard,
-      side: BorderSide(
-        color: selected ? AppColors.primary : AppColors.outline,
-      ),
+      side: BorderSide(color: selected ? AppColors.primary : AppColors.outline),
     );
   }
 }

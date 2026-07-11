@@ -44,8 +44,8 @@ final customerSearchQueryProvider =
 
 final customersListProvider =
     AsyncNotifierProvider<CustomersListNotifier, List<Customer>>(
-  CustomersListNotifier.new,
-);
+      CustomersListNotifier.new,
+    );
 
 class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
   @override
@@ -83,25 +83,27 @@ class CustomerDetailData {
   final Money outstandingBalance;
 }
 
-final customerDetailProvider = FutureProvider.family<CustomerDetailData?, String>(
-  (ref, id) async {
-    final customer = await ref.watch(getCustomerByIdProvider)(id);
-    if (customer == null) return null;
+final customerDetailProvider =
+    FutureProvider.family<CustomerDetailData?, String>((ref, id) async {
+      final customer = await ref.watch(getCustomerByIdProvider)(id);
+      if (customer == null) return null;
 
-    final debts = await GetDebtsByCustomer(ref.watch(debtRepositoryProvider))(id);
-    final payments =
-        await GetPaymentsByCustomer(ref.watch(paymentRepositoryProvider))(id);
+      final debts = await GetDebtsByCustomer(ref.watch(debtRepositoryProvider))(
+        id,
+      );
+      final payments = await GetPaymentsByCustomer(
+        ref.watch(paymentRepositoryProvider),
+      )(id);
 
-    var outstanding = Money.zero();
-    for (final d in debts) {
-      outstanding = outstanding + d.balance;
-    }
+      var outstanding = Money.zero();
+      for (final d in debts) {
+        outstanding = outstanding + d.balance;
+      }
 
-    return CustomerDetailData(
-      customer: customer,
-      debts: debts,
-      payments: payments,
-      outstandingBalance: outstanding,
-    );
-  },
-);
+      return CustomerDetailData(
+        customer: customer,
+        debts: debts,
+        payments: payments,
+        outstandingBalance: outstanding,
+      );
+    });

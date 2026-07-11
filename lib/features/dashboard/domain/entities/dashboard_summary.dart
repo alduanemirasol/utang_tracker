@@ -19,10 +19,10 @@ class DashboardSummary extends Equatable {
 
   @override
   List<Object?> get props => [
-        outstandingBalance,
-        collectedToday,
-        activeDebtsCount,
-        totalCustomers,
-        recentActivity,
-      ];
+    outstandingBalance,
+    collectedToday,
+    activeDebtsCount,
+    totalCustomers,
+    recentActivity,
+  ];
 }

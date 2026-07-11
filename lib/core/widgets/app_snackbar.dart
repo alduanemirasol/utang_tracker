@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 
 /// Typed snackbars so success / error states share consistent colors.
-enum AppSnackBarKind {
-  success,
-  error,
-  info,
-}
+enum AppSnackBarKind { success, error, info }
 
 class AppSnackBar {
   AppSnackBar._();
@@ -28,10 +24,7 @@ class AppSnackBar {
         SnackBar(
           content: Text(
             message,
-            style: TextStyle(
-              color: foreground,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: foreground, fontWeight: FontWeight.w500),
           ),
           backgroundColor: background,
           behavior: SnackBarBehavior.floating,

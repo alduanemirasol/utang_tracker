@@ -6,9 +6,9 @@ enum RecentActivityType {
   payment;
 
   String get label => switch (this) {
-        RecentActivityType.debt => 'Debt',
-        RecentActivityType.payment => 'Payment',
-      };
+    RecentActivityType.debt => 'Debt',
+    RecentActivityType.payment => 'Payment',
+  };
 }
 
 /// Unified home-screen log entry for a recent debt or payment.

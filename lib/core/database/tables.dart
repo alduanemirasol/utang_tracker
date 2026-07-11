@@ -22,6 +22,7 @@ class Customers extends Table {
 class Debts extends Table {
   TextColumn get id => text()();
   TextColumn get customerId => text().references(Customers, #id)();
+
   /// Stored as integer centavos (DECIMAL 10,2 semantics).
   IntColumn get totalAmount => integer()();
   IntColumn get paidAmount => integer()();
@@ -43,6 +44,7 @@ class DebtItems extends Table {
   TextColumn get id => text()();
   TextColumn get debtId => text().references(Debts, #id)();
   TextColumn get productName => text()();
+
   /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   RealColumn get quantity => real()();
   IntColumn get unitPrice => integer()();

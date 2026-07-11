@@ -41,8 +41,9 @@ class DebtSortFilter extends Notifier<DebtSortOrder> {
   void setSort(DebtSortOrder order) => state = order;
 }
 
-final debtSortOrderProvider =
-    NotifierProvider<DebtSortFilter, DebtSortOrder>(DebtSortFilter.new);
+final debtSortOrderProvider = NotifierProvider<DebtSortFilter, DebtSortOrder>(
+  DebtSortFilter.new,
+);
 
 final debtsListProvider = AsyncNotifierProvider<DebtsListNotifier, List<Debt>>(
   DebtsListNotifier.new,
@@ -71,37 +72,31 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
     final sorted = List<Debt>.from(debts);
     switch (sort) {
       case DebtSortOrder.newest:
-        sorted.sort(
-          (a, b) => b.transactionDate.compareTo(a.transactionDate),
-        );
+        sorted.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
       case DebtSortOrder.highestBalance:
-        sorted.sort(
-          (a, b) => b.balance.centavos.compareTo(a.balance.centavos),
-        );
+        sorted.sort((a, b) => b.balance.centavos.compareTo(a.balance.centavos));
       case DebtSortOrder.lowestBalance:
-        sorted.sort(
-          (a, b) => a.balance.centavos.compareTo(b.balance.centavos),
-        );
+        sorted.sort((a, b) => a.balance.centavos.compareTo(b.balance.centavos));
     }
     return sorted;
   }
 }
 
 class DebtDetailViewData {
-  const DebtDetailViewData({
-    required this.detail,
-    required this.payments,
-  });
+  const DebtDetailViewData({required this.detail, required this.payments});
 
   final DebtDetail detail;
   final List<Payment> payments;
 }
 
-final debtDetailProvider =
-    FutureProvider.family<DebtDetailViewData?, String>((ref, id) async {
+final debtDetailProvider = FutureProvider.family<DebtDetailViewData?, String>((
+  ref,
+  id,
+) async {
   final detail = await ref.watch(getDebtDetailProvider)(id);
   if (detail == null) return null;
-  final payments =
-      await GetPaymentsByDebt(ref.watch(paymentRepositoryProvider))(id);
+  final payments = await GetPaymentsByDebt(
+    ref.watch(paymentRepositoryProvider),
+  )(id);
   return DebtDetailViewData(detail: detail, payments: payments);
 });

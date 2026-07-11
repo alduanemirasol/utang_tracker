@@ -95,8 +95,9 @@ class CustomersListPage extends ConsumerWidget {
                                 children: [
                                   Text(
                                     customer.name,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),

@@ -105,8 +105,8 @@ class CustomerDetailPage extends ConsumerWidget {
                       Text(
                         'Outstanding balance',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       MoneyText(
@@ -121,8 +121,11 @@ class CustomerDetailPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         Row(
                           children: [
-                            const Icon(Icons.phone_outlined,
-                                size: 18, color: AppColors.textSecondary),
+                            const Icon(
+                              Icons.phone_outlined,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(width: AppSpacing.sm),
                             Text(customer.phone!),
                           ],
@@ -133,9 +136,7 @@ class CustomerDetailPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           customer.notes!,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
+                          style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
@@ -217,10 +218,7 @@ class CustomerDetailPage extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            MoneyText(
-                              payment.amount,
-                              color: AppColors.paid,
-                            ),
+                            MoneyText(payment.amount, color: AppColors.paid),
                           ],
                         ),
                       ),
