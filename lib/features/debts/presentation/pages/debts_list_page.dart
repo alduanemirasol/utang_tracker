@@ -179,19 +179,7 @@ class DebtsListPage extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    const Text(
-                                      'Balance',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                    MoneyText(debt.balance),
-                                  ],
-                                ),
+                                MoneyText(debt.balance),
                               ],
                             ),
                           ],

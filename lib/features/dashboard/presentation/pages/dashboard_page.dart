@@ -9,7 +9,7 @@ import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
-import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -45,7 +45,7 @@ class DashboardPage extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _StatCard(
-                        label: 'Outstanding',
+                        label: 'Total Receivables',
                         child: MoneyText(
                           summary.outstandingBalance,
                           style: Theme.of(context)
@@ -105,33 +105,25 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                Row(
-                  children: [
-                    Text(
-                      'Recent debts',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => context.go('/debts'),
-                      child: const Text('See all'),
-                    ),
-                  ],
+                Text(
+                  'Recent activity',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                if (summary.recentDebts.isEmpty)
+                const SizedBox(height: AppSpacing.md),
+                if (summary.recentActivity.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                     child: Text(
-                      'No debts yet.',
+                      'No activity yet.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   )
                 else
-                  ...summary.recentDebts.map(
-                    (debt) => Padding(
+                  ...summary.recentActivity.map(
+                    (item) => Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: AppCard(
-                        onTap: () => context.push('/debts/${debt.id}'),
+                        onTap: () => context.push('/debts/${item.debtId}'),
                         child: Row(
                           children: [
                             Expanded(
@@ -139,16 +131,14 @@ class DashboardPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    debt.customerName ?? 'Customer',
+                                    item.customerName,
                                     style:
                                         Theme.of(context).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
-                                    DateFormatters.formatDate(
-                                      debt.transactionDate,
-                                    ),
+                                    DateFormatters.formatDate(item.date),
                                     style: const TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 13,
@@ -160,70 +150,16 @@ class DashboardPage extends ConsumerWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                MoneyText(debt.balance),
+                                MoneyText(
+                                  item.amount,
+                                  color: item.type == RecentActivityType.payment
+                                      ? AppColors.paid
+                                      : AppColors.unpaid,
+                                ),
                                 const SizedBox(height: 4),
-                                StatusBadge(status: debt.status),
+                                _ActivityTypeBadge(type: item.type),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Text(
-                      'Recent payments',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => context.go('/payments'),
-                      child: const Text('See all'),
-                    ),
-                  ],
-                ),
-                if (summary.recentPayments.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child: Text(
-                      'No payments yet.',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  )
-                else
-                  ...summary.recentPayments.map(
-                    (payment) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: AppCard(
-                        onTap: () => context.push('/debts/${payment.debtId}'),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    payment.customerName ?? 'Customer',
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    DateFormatters.formatDate(
-                                      payment.paymentDate,
-                                    ),
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            MoneyText(payment.amount, color: AppColors.paid),
                           ],
                         ),
                       ),
@@ -234,6 +170,39 @@ class DashboardPage extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ActivityTypeBadge extends StatelessWidget {
+  const _ActivityTypeBadge({required this.type});
+
+  final RecentActivityType type;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = switch (type) {
+      RecentActivityType.debt => (AppColors.unpaidBg, AppColors.unpaid),
+      RecentActivityType.payment => (AppColors.paidBg, AppColors.paid),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm + 2,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        type.label,
+        style: TextStyle(
+          color: fg,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

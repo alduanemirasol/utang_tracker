@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:utang_tracker/core/utils/money.dart';
-import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
-import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
+import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 
 class DashboardSummary extends Equatable {
   const DashboardSummary({
@@ -9,16 +8,14 @@ class DashboardSummary extends Equatable {
     required this.collectedToday,
     required this.activeDebtsCount,
     required this.totalCustomers,
-    required this.recentPayments,
-    required this.recentDebts,
+    required this.recentActivity,
   });
 
   final Money outstandingBalance;
   final Money collectedToday;
   final int activeDebtsCount;
   final int totalCustomers;
-  final List<Payment> recentPayments;
-  final List<Debt> recentDebts;
+  final List<RecentActivityItem> recentActivity;
 
   @override
   List<Object?> get props => [
@@ -26,7 +23,6 @@ class DashboardSummary extends Equatable {
         collectedToday,
         activeDebtsCount,
         totalCustomers,
-        recentPayments,
-        recentDebts,
+        recentActivity,
       ];
 }

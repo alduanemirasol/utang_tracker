@@ -53,6 +53,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (trimmed.isEmpty) {
       throw const ValidationException('Customer name is required.');
     }
+    await _ensureUniqueName(trimmed);
 
     final now = DateTime.now().toUtc();
     final id = _uuid.v4();
@@ -76,6 +77,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (trimmed.isEmpty) {
       throw const ValidationException('Customer name is required.');
     }
+    await _ensureUniqueName(trimmed, excludeId: customer.id);
 
     final now = DateTime.now().toUtc();
     final updated = await (_db.update(_db.customers)
@@ -140,6 +142,28 @@ class CustomerRepositoryImpl implements CustomerRepository {
           ..limit(1))
         .getSingleOrNull();
     return row != null;
+  }
+
+  /// Active customers must have unique names (case-insensitive).
+  /// Soft-deleted customers are ignored so a name can be reused after delete.
+  Future<void> _ensureUniqueName(String name, {String? excludeId}) async {
+    final existing = await (_db.select(_db.customers)
+          ..where((t) {
+            var expr =
+                t.deletedAt.isNull() & t.name.lower().equals(name.toLowerCase());
+            if (excludeId != null) {
+              expr = expr & t.id.equals(excludeId).not();
+            }
+            return expr;
+          })
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      throw const ConflictException(
+        'A customer with this name already exists.',
+      );
+    }
   }
 
   String? _emptyToNull(String? value) {

@@ -49,7 +49,6 @@ Allowed values for `status`:
 | debt_id      | UUID          | Yes      |
 | product_name | TEXT          | Yes      |
 | quantity     | DECIMAL(10,2) | Yes      |
-| unit         | TEXT          | Yes      |
 | unit_price   | DECIMAL(10,2) | Yes      |
 | subtotal     | DECIMAL(10,2) | Yes      |
 | deleted_at   | DATETIME      | No       |
@@ -94,3 +93,4 @@ Allowed values for `status`:
 - Soft delete: set `deleted_at` instead of removing rows. Active records have `deleted_at` null.
 - Default lists, counts, and aggregates include only active records (`deleted_at` is null).
 - Customers with active debts cannot be deleted.
+- Customer names must be unique among active customers (case-insensitive).

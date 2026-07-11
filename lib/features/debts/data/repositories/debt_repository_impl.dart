@@ -92,14 +92,18 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<List<Debt>> getRecent({int limit = 5}) async {
+  Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status}) async {
     final query = _db.select(_db.debts).join([
       innerJoin(
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
     ])
-      ..where(_activeDebt & _activeCustomer)
+      ..where(_activeDebt & _activeCustomer);
+    if (status != null) {
+      query.where(_db.debts.status.equals(status.value));
+    }
+    query
       ..orderBy([OrderingTerm.desc(_db.debts.createdAt)])
       ..limit(limit);
 
@@ -167,7 +171,6 @@ class DebtRepositoryImpl implements DebtRepository {
                 debtId: debtId,
                 productName: item.productName,
                 quantity: item.quantity,
-                unit: item.unit,
                 unitPrice: item.unitPrice.centavos,
                 subtotal: item.subtotal.centavos,
               ),
@@ -242,7 +245,6 @@ class DebtRepositoryImpl implements DebtRepository {
                 debtId: id,
                 productName: item.productName,
                 quantity: item.quantity,
-                unit: item.unit,
                 unitPrice: item.unitPrice.centavos,
                 subtotal: item.subtotal.centavos,
               ),
@@ -297,16 +299,13 @@ class DebtRepositoryImpl implements DebtRepository {
       if (item.quantity <= 0) {
         throw const ValidationException('Quantity must be greater than zero.');
       }
-      if (item.unit.trim().isEmpty) {
-        throw const ValidationException('Unit is required.');
-      }
       if (!item.unitPrice.isPositive) {
-        throw const ValidationException('Unit price must be greater than zero.');
+        throw const ValidationException('Price must be greater than zero.');
       }
     }
   }
 
-  List<({String productName, double quantity, String unit, Money unitPrice, Money subtotal})>
+  List<({String productName, double quantity, Money unitPrice, Money subtotal})>
       _prepareItems(List<DebtItemInput> items) {
     return items.map((item) {
       final subtotal = DebtMath.computeSubtotal(
@@ -316,7 +315,6 @@ class DebtRepositoryImpl implements DebtRepository {
       return (
         productName: item.productName.trim(),
         quantity: item.quantity,
-        unit: item.unit.trim(),
         unitPrice: item.unitPrice,
         subtotal: subtotal,
       );

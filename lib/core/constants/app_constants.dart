@@ -14,13 +14,5 @@ class AppConstants {
     'Other',
   ];
 
-  static const List<String> commonUnits = [
-    'pc',
-    'kg',
-    'pack',
-    'sachet',
-    'bottle',
-  ];
-
   static const int recentItemsLimit = 5;
 }

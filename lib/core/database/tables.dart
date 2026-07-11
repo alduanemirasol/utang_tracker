@@ -43,9 +43,8 @@ class DebtItems extends Table {
   TextColumn get id => text()();
   TextColumn get debtId => text().references(Debts, #id)();
   TextColumn get productName => text()();
-  /// Quantity supports fractions (e.g. 0.5 kg); stored as REAL.
+  /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   RealColumn get quantity => real()();
-  TextColumn get unit => text()();
   IntColumn get unitPrice => integer()();
   IntColumn get subtotal => integer()();
   DateTimeColumn get deletedAt => dateTime().nullable()();

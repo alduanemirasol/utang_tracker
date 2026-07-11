@@ -7,7 +7,6 @@ class DebtItem extends Equatable {
     required this.debtId,
     required this.productName,
     required this.quantity,
-    required this.unit,
     required this.unitPrice,
     required this.subtotal,
   });
@@ -16,13 +15,12 @@ class DebtItem extends Equatable {
   final String debtId;
   final String productName;
   final double quantity;
-  final String unit;
   final Money unitPrice;
   final Money subtotal;
 
   @override
   List<Object?> get props =>
-      [id, debtId, productName, quantity, unit, unitPrice, subtotal];
+      [id, debtId, productName, quantity, unitPrice, subtotal];
 }
 
 /// Input for creating/editing a line item (id assigned by repository).
@@ -30,15 +28,13 @@ class DebtItemInput extends Equatable {
   const DebtItemInput({
     required this.productName,
     required this.quantity,
-    required this.unit,
     required this.unitPrice,
   });
 
   final String productName;
   final double quantity;
-  final String unit;
   final Money unitPrice;
 
   @override
-  List<Object?> get props => [productName, quantity, unit, unitPrice];
+  List<Object?> get props => [productName, quantity, unitPrice];
 }

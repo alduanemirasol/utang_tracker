@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 class DateFormatters {
   DateFormatters._();
 
-  static final _display = DateFormat('MMM d, yyyy');
-  static final _displayWithTime = DateFormat('MMM d, yyyy · h:mm a');
+  static final _display = DateFormat('MMMM d, yyyy');
+  static final _displayWithTime = DateFormat('MMMM d, yyyy · h:mm a');
   static final _dayKey = DateFormat('yyyy-MM-dd');
 
   static String formatDate(DateTime date) => _display.format(date.toLocal());

@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
+import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
@@ -80,24 +81,20 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.isEditing ? 'Customer updated' : 'Customer added',
-          ),
-        ),
+      AppSnackBar.success(
+        context,
+        widget.isEditing ? 'Customer updated' : 'Customer added',
       );
       context.pop();
+    } on ConflictException catch (e) {
+      if (!mounted) return;
+      setState(() => _nameError = e.message);
     } on AppException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      AppSnackBar.error(context, e.message);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      AppSnackBar.error(context, e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }

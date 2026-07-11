@@ -16,7 +16,7 @@ abstract class DebtRepository {
   Future<List<Debt>> getAll({DebtStatus? status});
   Future<List<Debt>> getByCustomer(String customerId);
   Future<DebtDetail?> getById(String id);
-  Future<List<Debt>> getRecent({int limit = 5});
+  Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status});
   Future<Debt> create({
     required String customerId,
     required DateTime transactionDate,

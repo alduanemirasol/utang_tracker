@@ -34,13 +34,11 @@ void main() {
         DebtItemInput(
           productName: 'Bigas',
           quantity: 2,
-          unit: 'kg',
           unitPrice: Money.fromPesos(50),
         ),
         DebtItemInput(
           productName: 'Noodles',
           quantity: 3,
-          unit: 'pc',
           unitPrice: Money.fromPesos(10),
         ),
       ],
@@ -94,7 +92,6 @@ void main() {
         DebtItemInput(
           productName: 'Soda',
           quantity: 1,
-          unit: 'bottle',
           unitPrice: Money.fromPesos(20),
         ),
       ],
@@ -120,7 +117,6 @@ void main() {
         DebtItemInput(
           productName: 'Item',
           quantity: 1,
-          unit: 'pc',
           unitPrice: Money.fromPesos(10),
         ),
       ],
