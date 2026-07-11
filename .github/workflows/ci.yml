@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main, develop, new-ui]
+    tags: ["v*"]
   pull_request:
     branches: [main, develop, new-ui]
   workflow_dispatch:
@@ -50,6 +51,9 @@ jobs:
     name: Build APK
     needs: quality
     runs-on: ubuntu-latest
+    # Releases need write access to create/update GitHub Releases.
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,10 +76,63 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Name APK for release
+        id: apk
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+            NAME="utang-tracker-${TAG}.apk"
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            TAG="latest"
+            NAME="utang-tracker-latest.apk"
+          else
+            TAG=""
+            NAME="app-release.apk"
+          fi
+          SRC="build/app/outputs/flutter-apk/app-release.apk"
+          if [[ -n "$TAG" ]]; then
+            cp "$SRC" "build/app/outputs/flutter-apk/${NAME}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "path=build/app/outputs/flutter-apk/${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: utang-tracker-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
+
+      # Versioned release: push a tag like v1.0.0
+      - name: Publish versioned GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.apk.outputs.path }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Rolling release on main: always available under Releases → "latest"
+      - name: Publish latest GitHub Release (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          target_commitish: ${{ github.sha }}
+          body: |
+            Continuous release APK from `main`.
+
+            - Commit: `${{ github.sha }}`
+            - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Download **utang-tracker-latest.apk** below.
+          files: ${{ steps.apk.outputs.path }}
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
