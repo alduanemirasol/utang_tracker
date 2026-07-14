@@ -17,6 +17,8 @@ jobs:
   quality:
     name: Lint, test, verify
     runs-on: ubuntu-latest
+    env:
+      PUB_CACHE: ~/.pub-cache
 
     steps:
       - name: Checkout
@@ -31,8 +33,16 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.32.x'
           channel: stable
           cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies
         run: flutter pub get
@@ -40,11 +50,16 @@ jobs:
       - name: Lint
         run: flutter analyze --fatal-infos
 
+      - name: Verify generated code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code
+
       - name: Test
         run: flutter test
 
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed .
+        run: dart format --set-exit-if-changed .
 
       - name: Check lockfile
         run: flutter pub get --enforce-lockfile
@@ -56,6 +71,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      PUB_CACHE: ~/.pub-cache
 
     steps:
       - name: Checkout
@@ -70,8 +87,16 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.32.x'
           channel: stable
           cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies
         run: flutter pub get
