@@ -174,18 +174,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          Text.rich(
-            TextSpan(
-              style: Theme.of(context).textTheme.labelLarge,
-              children: const [
-                TextSpan(text: 'Debt'),
-                TextSpan(
-                  text: ' *',
-                  style: TextStyle(color: AppColors.danger),
-                ),
-              ],
-            ),
-          ),
+          AppTextField.buildLabel(context, 'Debt *'),
           const SizedBox(height: AppSpacing.sm),
           _DebtField(label: _debtFieldLabel, onTap: _pickDebt),
           if (selected != null) ...[
@@ -202,12 +191,12 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           AppTextField(
             controller: _amountController,
             label: 'Amount *',
-            hint: 'e.g. 100.00',
+
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
             ],
-            prefixIcon: const Icon(Icons.payments_outlined),
+
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -220,7 +209,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               decoration: const InputDecoration(
                 suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
               ),
-              child: Text(DateFormatters.formatDate(_paymentDate)),
+              child: Text(
+                DateFormatters.formatDate(_paymentDate),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -230,7 +222,12 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             // ignore: deprecated_member_use
             value: _method,
             items: AppConstants.paymentMethods
-                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                .map(
+                  (m) => DropdownMenuItem(
+                    value: m,
+                    child: Text(m, style: Theme.of(context).textTheme.bodyLarge),
+                  ),
+                )
                 .toList(),
             onChanged: (v) {
               if (v != null) setState(() => _method = v);
@@ -302,7 +299,7 @@ class _DebtField extends StatelessWidget {
         ),
         child: Text(
           hasLabel ? label! : 'Select debt',
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: hasLabel ? AppColors.textPrimary : AppColors.textMuted,
           ),
           maxLines: 1,
