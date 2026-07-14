@@ -225,7 +225,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 .map(
                   (m) => DropdownMenuItem(
                     value: m,
-                    child: Text(m, style: Theme.of(context).textTheme.bodyLarge),
+                    child: Text(
+                      m,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                   ),
                 )
                 .toList(),
