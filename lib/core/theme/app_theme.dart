@@ -6,6 +6,8 @@ import 'package:utang_tracker/core/theme/app_spacing.dart';
 class AppTheme {
   AppTheme._();
 
+  static const _fontFamily = 'Poppins';
+
   static ThemeData light() {
     final base = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
@@ -17,6 +19,7 @@ class AppTheme {
     final textTheme = Typography.material2021(platform: TargetPlatform.android)
         .black
         .apply(
+          fontFamily: _fontFamily,
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
         )
@@ -49,6 +52,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: _fontFamily,
       colorScheme: base,
       scaffoldBackgroundColor: AppColors.surface,
       textTheme: textTheme,
@@ -60,6 +64,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -97,7 +102,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.danger),
         ),
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        labelStyle: const TextStyle(
+          fontFamily: _fontFamily,
+          color: AppColors.textSecondary,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -108,7 +116,11 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: _fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -119,14 +131,22 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: _fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
           foregroundColor: AppColors.primary,
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: _fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -137,8 +157,13 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.primaryLight,
         selectedColor: AppColors.primary,
-        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        labelStyle: const TextStyle(
+          fontFamily: _fontFamily,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
         secondaryLabelStyle: const TextStyle(
+          fontFamily: _fontFamily,
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: Colors.white,
@@ -159,15 +184,17 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         selectedLabelStyle: TextStyle(
+          fontFamily: _fontFamily,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: TextStyle(fontSize: 12),
+        unselectedLabelStyle: TextStyle(fontFamily: _fontFamily, fontSize: 12),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.primaryDark,
         contentTextStyle: const TextStyle(
+          fontFamily: _fontFamily,
           color: Colors.white,
           fontWeight: FontWeight.w500,
         ),
