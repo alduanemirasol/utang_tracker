@@ -1,120 +1,149 @@
 # Database Rules
 
+The application uses Drift with SQLite. The current schema version is `5`.
+
+## Storage Conventions
+
+- IDs are UUID v4 values stored as SQLite `TEXT`.
+- Money is stored as integer centavos (`INTEGER`), where 100 centavos equals one peso. Floating-point values are not used for money.
+- Quantities are stored as SQLite `REAL` values so fractional quantities are supported.
+- Drift `DateTime` values are stored as SQLite `INTEGER` values. Application repositories normalize persisted dates and timestamps to UTC.
+- A row is active when `deleted_at IS NULL`.
+- Unless noted otherwise, validation and derived-value rules are enforced by the repositories rather than by SQLite `CHECK` or `UNIQUE` constraints.
+
 ## Tables
 
-### customers
+### `customers`
 
-| Column     | Type     | Required |
-| ---------- | -------- | -------- |
-| id         | UUID     | Yes      |
-| name       | TEXT     | Yes      |
-| phone      | TEXT     | No       |
-| notes      | TEXT     | No       |
-| created_at | DATETIME | Yes      |
-| updated_at | DATETIME | Yes      |
-| deleted_at | DATETIME | No       |
+| Column | SQLite type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `TEXT` | No | Primary key; UUID v4 |
+| `name` | `TEXT` | No | Trimmed, non-empty customer name |
+| `phone` | `TEXT` | Yes | Trimmed; an empty value is stored as `NULL` |
+| `notes` | `TEXT` | Yes | Trimmed; an empty value is stored as `NULL` |
+| `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `updated_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `deleted_at` | `INTEGER` | Yes | Drift `DateTime`, UTC; `NULL` means active |
 
----
+### `debts`
 
-### debts
+| Column | SQLite type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `TEXT` | No | Primary key; UUID v4 |
+| `customer_id` | `TEXT` | No | Foreign key to `customers.id` |
+| `total_amount` | `INTEGER` | No | Total debt amount in centavos |
+| `paid_amount` | `INTEGER` | No | Amount paid in centavos |
+| `balance` | `INTEGER` | No | Remaining amount in centavos |
+| `status` | `TEXT` | No | `UNPAID`, `PARTIAL`, or `PAID` |
+| `transaction_date` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `due_date` | `INTEGER` | Yes | Drift `DateTime`, UTC |
+| `notes` | `TEXT` | Yes | Trimmed; an empty value is stored as `NULL` |
+| `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `updated_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `deleted_at` | `INTEGER` | Yes | Drift `DateTime`, UTC; `NULL` means active |
 
-| Column           | Type          | Required |
-| ---------------- | ------------- | -------- |
-| id               | UUID          | Yes      |
-| customer_id      | UUID          | Yes      |
-| total_amount     | DECIMAL(10,2) | Yes      |
-| paid_amount      | DECIMAL(10,2) | Yes      |
-| balance          | DECIMAL(10,2) | Yes      |
-| status           | TEXT          | Yes      |
-| transaction_date | DATETIME      | Yes      |
-| due_date         | DATETIME      | No       |
-| notes            | TEXT          | No       |
-| created_at       | DATETIME      | Yes      |
-| updated_at       | DATETIME      | Yes      |
-| deleted_at       | DATETIME      | No       |
+### `debt_items`
 
-Allowed values for `status`:
+| Column | SQLite type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `TEXT` | No | Primary key; UUID v4 |
+| `debt_id` | `TEXT` | No | Foreign key to `debts.id` |
+| `product_name` | `TEXT` | No | Trimmed, non-empty product name |
+| `quantity` | `REAL` | No | Must be greater than zero |
+| `unit` | `TEXT` | No | Defaults to `piece`; maximum 24 characters |
+| `price` | `INTEGER` | No | Final custom line amount in centavos; must be greater than zero |
+| `deleted_at` | `INTEGER` | Yes | Drift `DateTime`, UTC; `NULL` means active |
 
-- UNPAID
-- PARTIAL
-- PAID
+Common unit values are:
 
----
+- `piece`
+- `pack`
+- `box`
+- `bottle`
+- `kg`
+- `g`
+- `liter`
+- `ml`
+- `can`
+- `sachet`
+- `bag`
+- `dozen`
+- `tray`
+- `bundle`
 
-### debt_items
+Common units are normalized case-insensitively to the values above. A trimmed, non-empty custom unit is also allowed. Items that predate unit support migrate to `piece`.
 
-| Column       | Type          | Required |
-| ------------ | ------------- | -------- |
-| id           | UUID          | Yes      |
-| debt_id      | UUID          | Yes      |
-| product_name | TEXT          | Yes      |
-| quantity     | DECIMAL(10,2) | Yes      |
-| unit         | TEXT          | Yes      |
-| price        | DECIMAL(10,2) | Yes      |
-| deleted_at   | DATETIME      | No       |
+### `payments`
 
----
-
-Recommended values for `debt_items.unit`:
-
-- piece
-- pack
-- box
-- bottle
-- kg
-- g
-- liter
-- ml
-- can
-- sachet
-- bag
-- dozen
-- tray
-- bundle
-
-Custom non-empty unit values are allowed. Existing items created before units
-were introduced default to `piece`.
-
----
-
-### payments
-
-| Column         | Type          | Required |
-| -------------- | ------------- | -------- |
-| id             | UUID          | Yes      |
-| debt_id        | UUID          | Yes      |
-| amount         | DECIMAL(10,2) | Yes      |
-| payment_date   | DATETIME      | Yes      |
-| payment_method | TEXT          | Yes      |
-| notes          | TEXT          | No       |
-| created_at     | DATETIME      | Yes      |
-| deleted_at     | DATETIME      | No       |
-
----
+| Column | SQLite type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `TEXT` | No | Primary key; UUID v4 |
+| `debt_id` | `TEXT` | No | Foreign key to `debts.id` |
+| `amount` | `INTEGER` | No | Payment amount in centavos |
+| `payment_date` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `payment_method` | `TEXT` | No | Trimmed, non-empty value |
+| `notes` | `TEXT` | Yes | Trimmed; an empty value is stored as `NULL` |
+| `created_at` | `INTEGER` | No | Drift `DateTime`, UTC |
+| `deleted_at` | `INTEGER` | Yes | Drift `DateTime`, UTC; `NULL` means active |
 
 ## Relationships
 
-- `customers.id` → `debts.customer_id` (1:N)
-- `debts.id` → `debt_items.debt_id` (1:N)
-- `debts.id` → `payments.debt_id` (1:N)
+- One customer can have many debts: `debts.customer_id` references `customers.id`.
+- One debt can have many debt items: `debt_items.debt_id` references `debts.id`.
+- One debt can have many payments: `payments.debt_id` references `debts.id`.
+- The schema does not define cascading deletes. Related history is retained.
 
----
+## Indexes
+
+Fresh databases create these indexes:
+
+- `idx_debts_customer_id` on `debts.customer_id`
+- `idx_debts_status` on `debts.status`
+- `idx_debts_transaction_date` on `debts.transaction_date`
+- `idx_debt_items_debt_id` on `debt_items.debt_id`
+- `idx_payments_debt_id` on `payments.debt_id`
+- `idx_payments_payment_date` on `payments.payment_date`
 
 ## Business Rules
 
-- One customer can have many debts.
-- One debt belongs to one customer.
-- One debt can contain many debt items.
-- Every debt item has a non-empty selling unit.
-- One debt can have multiple payments.
-- `debt_items.price` is the final custom line amount; quantity does not multiply it.
-- `debts.total_amount` is the sum of active debt item prices.
-- `balance = total_amount - paid_amount`
-- Update `paid_amount`, `balance`, and `status` whenever a payment is recorded.
-- `due_date` is optional.
-- `phone` and `notes` are optional for customers.
-- `notes` is optional for debts and payments.
-- Soft delete: set `deleted_at` instead of removing rows. Active records have `deleted_at` null.
-- Default lists, counts, and aggregates include only active records (`deleted_at` is null).
-- Customers with active debts cannot be deleted.
-- Customer names must be unique among active customers (case-insensitive).
+### Customers
+
+- Customer names are required and unique among active customers, using a case-insensitive repository check. Soft-deleted names may be reused.
+- A customer cannot be deleted while any active debt exists for that customer, regardless of debt status.
+- Customer deletion is a soft delete that sets `deleted_at` and `updated_at`.
+
+### Debts and debt items
+
+- A debt can be created only for an active customer and must contain at least one valid item.
+- `debt_items.price` is the final custom line amount. Quantity does not multiply price.
+- `total_amount = sum(active debt item prices)`.
+- A new debt starts with `paid_amount = 0`, `balance = total_amount`, and `status = UNPAID`.
+- A debt is editable only while `paid_amount = 0`.
+- Editing a debt is atomic: existing active items are soft-deleted, replacement items are inserted, and the debt totals and dates are updated in the same transaction.
+
+### Payments and debt status
+
+- A payment amount must be greater than zero and cannot exceed the debt's current balance.
+- Payments can be recorded only against an active debt that is not already `PAID`.
+- Recording a payment is atomic: the payment is inserted and the debt's `paid_amount`, `balance`, `status`, and `updated_at` are updated in the same transaction.
+- `balance = total_amount - paid_amount`.
+- Status is derived from the paid amount:
+  - `UNPAID` when `paid_amount <= 0`
+  - `PARTIAL` when `0 < paid_amount < total_amount`
+  - `PAID` when `paid_amount >= total_amount`
+
+## Active-Record Query Behavior
+
+- Customer lists, searches, lookups, and counts include only active customers.
+- Debt lists and detail lookups include only active debts whose customer is active; debt items in a detail view must also be active.
+- Active-debt counts and outstanding-balance totals include active debts with `UNPAID` or `PARTIAL` status.
+- General payment lists include only active payments whose debt and customer are active. Debt-specific payment history filters active payments by debt ID.
+- Collected-amount totals include active payments within the requested UTC date range.
+- The current repositories expose soft deletion for customers and use soft deletion when replacing debt items. They do not expose debt or payment deletion operations.
+
+## Migration History
+
+- Version 2 added `deleted_at` to all four tables.
+- Version 3 recreated the legacy `debt_items` table without its earlier unit column.
+- Version 4 added the current `unit` column with a `piece` default.
+- Version 5 replaced the legacy `unit_price` and `subtotal` columns with `price`, preserving each existing item's former subtotal as its final custom line amount.

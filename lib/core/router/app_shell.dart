@@ -50,11 +50,6 @@ class AppShell extends StatelessWidget {
                 selectedIcon: Icon(Icons.payments_rounded),
                 label: 'Payments',
               ),
-              NavigationDestination(
-                icon: Icon(Icons.tune_outlined),
-                selectedIcon: Icon(Icons.tune_rounded),
-                label: 'Settings',
-              ),
             ],
           ),
         ),
