@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._();
 
   static const String appName = 'Utang Tracker';
-  static const String logoAsset = 'assets/images/new_logo.png';
+  static const String logoAsset = 'assets/images/utang_tracker_logo_v2.png';
   static const String currencySymbol = '₱';
 
   /// Public GitHub repo used for in-app force updates (versioned releases).
