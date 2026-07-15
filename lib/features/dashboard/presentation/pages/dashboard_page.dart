@@ -72,7 +72,7 @@ class DashboardPage extends ConsumerWidget {
                     Expanded(
                       child: _QuickAction(
                         icon: Icons.add_rounded,
-                        label: 'New debt',
+                        label: 'New utang',
                         color: AppColors.accent,
                         foregroundColor: AppColors.primaryDark,
                         onTap: () => context.push('/debts/new'),
@@ -371,7 +371,12 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          child: Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontSize: 20),
+          ),
         ),
         if (actionLabel != null)
           TextButton(onPressed: onAction, child: Text(actionLabel!)),
@@ -389,17 +394,24 @@ class _ActivityLedger extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            _ActivityRow(
-              item: items[i],
-              onTap: () => context.push('/debts/${items[i].debtId}'),
-            ),
-            if (i != items.length - 1)
-              const Divider(indent: 66, endIndent: AppSpacing.lg),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              _ActivityRow(
+                item: items[i],
+                onTap: () => context.push('/debts/${items[i].debtId}'),
+              ),
+              if (i != items.length - 1)
+                const Divider(
+                  height: AppSpacing.md,
+                  indent: 66,
+                  endIndent: AppSpacing.md,
+                ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
