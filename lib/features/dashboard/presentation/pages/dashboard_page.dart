@@ -12,6 +12,9 @@ import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'package:utang_tracker/features/notifications/domain/entities/debt_notification.dart';
+import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
+import 'package:utang_tracker/features/notifications/presentation/widgets/debt_notifications_sheet.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -19,9 +22,23 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(dashboardSummaryProvider);
+    final notifications = ref.watch(debtNotificationsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
+      appBar: AppBar(
+        title: const Text(AppConstants.appName),
+        actions: [
+          _NotificationAction(
+            notifications: notifications,
+            onTap: () async {
+              final debtId = await showDebtNotificationsSheet(context);
+              if (debtId == null || !context.mounted) return;
+              context.push('/debts/$debtId');
+            },
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+      ),
       body: async.when(
         loading: () => const LoadingIndicator(message: 'Opening your ledger'),
         error: (e, _) => ErrorView(
@@ -30,8 +47,12 @@ class DashboardPage extends ConsumerWidget {
         ),
         data: (summary) {
           return RefreshIndicator(
-            onRefresh: () =>
+            onRefresh: () async {
+              await Future.wait([
                 ref.read(dashboardSummaryProvider.notifier).refresh(),
+                ref.read(debtNotificationsProvider.notifier).refresh(),
+              ]);
+            },
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pagePadding,
@@ -92,6 +113,64 @@ class DashboardPage extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationAction extends StatelessWidget {
+  const _NotificationAction({required this.notifications, required this.onTap});
+
+  final AsyncValue<DebtNotificationFeed> notifications;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final urgentCount = notifications.value?.urgentCount ?? 0;
+    final label = urgentCount > 0
+        ? 'Due reminders, $urgentCount urgent'
+        : 'Due reminders';
+
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: IconButton(
+        tooltip: label,
+        onPressed: onTap,
+        icon: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.notifications_none_rounded),
+            if (urgentCount > 0)
+              Positioned(
+                top: -6,
+                right: -8,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger,
+                    borderRadius: BorderRadius.circular(99),
+                    border: Border.all(color: AppColors.surface, width: 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    urgentCount > 99 ? '99+' : '$urgentCount',
+                    style: const TextStyle(
+                      color: AppColors.textOnPrimary,
+                      fontSize: 9,
+                      height: 1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

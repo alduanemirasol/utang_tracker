@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/app.dart';
@@ -23,5 +24,12 @@ void main() {
 
     expect(find.text(AppConstants.appName), findsOneWidget);
     expect(find.text('Store overview'), findsNothing);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Due reminders'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Due reminders'), findsOneWidget);
+    expect(find.text('Nothing needs attention'), findsOneWidget);
   });
 }
