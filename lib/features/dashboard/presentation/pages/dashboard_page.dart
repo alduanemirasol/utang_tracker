@@ -63,12 +63,8 @@ class DashboardPage extends ConsumerWidget {
               children: [
                 _LedgerBalanceCard(
                   balance: summary.outstandingBalance,
-                  collectedToday: summary.collectedToday,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                _StoreSnapshot(
                   activeDebts: summary.activeDebtsCount,
-                  customers: summary.totalCustomers,
+                  collectedToday: summary.collectedToday,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
@@ -76,8 +72,7 @@ class DashboardPage extends ConsumerWidget {
                     Expanded(
                       child: _QuickAction(
                         icon: Icons.add_rounded,
-                        label: 'New utang',
-                        caption: 'Add items',
+                        label: 'New debt',
                         color: AppColors.accent,
                         foregroundColor: AppColors.primaryDark,
                         onTap: () => context.push('/debts/new'),
@@ -88,7 +83,6 @@ class DashboardPage extends ConsumerWidget {
                       child: _QuickAction(
                         icon: Icons.arrow_downward_rounded,
                         label: 'Bayad',
-                        caption: 'Record payment',
                         color: AppColors.surfaceCard,
                         foregroundColor: AppColors.primaryDark,
                         onTap: () => context.push('/payments/new'),
@@ -179,38 +173,30 @@ class _NotificationAction extends StatelessWidget {
 class _LedgerBalanceCard extends StatelessWidget {
   const _LedgerBalanceCard({
     required this.balance,
+    required this.activeDebts,
     required this.collectedToday,
   });
 
   final Money balance;
+  final int activeDebts;
   final Money collectedToday;
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: const _ReceiptClipper(),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
       child: ColoredBox(
         color: AppColors.primaryDark,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
+          padding: const EdgeInsets.all(22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.menu_book_rounded,
-                    size: 18,
-                    color: AppColors.accent,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Total Receivables',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.textOnPrimaryMuted,
-                    ),
-                  ),
-                ],
+              Text(
+                'Total Receivables',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: AppColors.textOnPrimaryMuted,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               MoneyText(
@@ -225,31 +211,58 @@ class _LedgerBalanceCard extends StatelessWidget {
               const _DashedRule(),
               const SizedBox(height: AppSpacing.lg),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryRaised,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.savings_outlined,
-                      size: 19,
-                      color: AppColors.accent,
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Active Debts',
+                          style: TextStyle(
+                            color: AppColors.textOnPrimarySoft,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          '$activeDebts',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: AppColors.textOnPrimary,
+                                fontFamily: 'monospace',
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  const Expanded(
-                    child: Text(
-                      'Collected Today',
-                      style: TextStyle(color: AppColors.textOnPrimarySoft),
+                  const SizedBox(width: AppSpacing.lg),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'Collected Today',
+                          style: TextStyle(
+                            color: AppColors.textOnPrimarySoft,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: MoneyText(
+                            collectedToday,
+                            color: AppColors.accent,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  MoneyText(
-                    collectedToday,
-                    color: AppColors.accent,
-                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
               ),
@@ -259,41 +272,6 @@ class _LedgerBalanceCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ReceiptClipper extends CustomClipper<Path> {
-  const _ReceiptClipper();
-
-  @override
-  Path getClip(Size size) {
-    const radius = 18.0;
-    const tooth = 10.0;
-    final bottom = size.height - tooth;
-    final path = Path()
-      ..moveTo(radius, 0)
-      ..lineTo(size.width - radius, 0)
-      ..quadraticBezierTo(size.width, 0, size.width, radius)
-      ..lineTo(size.width, bottom);
-
-    var x = size.width;
-    while (x > 0) {
-      final midpoint = (x - tooth / 2).clamp(0.0, size.width);
-      final end = (x - tooth).clamp(0.0, size.width);
-      path
-        ..lineTo(midpoint, size.height)
-        ..lineTo(end, bottom);
-      x -= tooth;
-    }
-
-    path
-      ..lineTo(0, radius)
-      ..quadraticBezierTo(0, 0, radius, 0)
-      ..close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _DashedRule extends StatelessWidget {
@@ -326,7 +304,6 @@ class _QuickAction extends StatelessWidget {
   const _QuickAction({
     required this.icon,
     required this.label,
-    required this.caption,
     required this.color,
     required this.foregroundColor,
     required this.onTap,
@@ -334,7 +311,6 @@ class _QuickAction extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final String caption;
   final Color color;
   final Color foregroundColor;
   final VoidCallback onTap;
@@ -361,107 +337,20 @@ class _QuickAction extends StatelessWidget {
               Icon(icon, color: foregroundColor, size: 23),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: foregroundColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      caption,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: foregroundColor.withValues(alpha: 0.72),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foregroundColor,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StoreSnapshot extends StatelessWidget {
-  const _StoreSnapshot({required this.activeDebts, required this.customers});
-
-  final int activeDebts;
-  final int customers;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      color: AppColors.surfaceRaised,
-      child: Row(
-        children: [
-          Expanded(
-            child: _SnapshotMetric(
-              label: 'ACTIVE DEBTS',
-              value: '$activeDebts',
-              icon: Icons.pending_actions_outlined,
-            ),
-          ),
-          const SizedBox(
-            height: 48,
-            child: VerticalDivider(width: AppSpacing.xl),
-          ),
-          Expanded(
-            child: _SnapshotMetric(
-              label: 'CUSTOMERS',
-              value: '$customers',
-              icon: Icons.group_outlined,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SnapshotMetric extends StatelessWidget {
-  const _SnapshotMetric({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.primaryDark, size: 20),
-        const SizedBox(width: AppSpacing.sm),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-          ],
-        ),
-      ],
     );
   }
 }
