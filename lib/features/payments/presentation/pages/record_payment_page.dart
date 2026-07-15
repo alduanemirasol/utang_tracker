@@ -450,7 +450,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         return ListTile(
           title: Text(debt.customerName ?? 'Customer'),
           subtitle: Text(
-            DateFormatters.formatDate(debt.transactionDate),
+            DateFormatters.formatDateTime(debt.transactionDate),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,

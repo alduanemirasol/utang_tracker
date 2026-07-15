@@ -173,7 +173,7 @@ class DebtsListPage extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    DateFormatters.formatDate(
+                                    DateFormatters.formatDateTime(
                                       debt.transactionDate,
                                     ),
                                     style: const TextStyle(

@@ -5,12 +5,15 @@ class DateFormatters {
 
   static final _display = DateFormat('MMMM d, yyyy');
   static final _displayWithTime = DateFormat('MMMM d, yyyy · h:mm a');
+  static final _time = DateFormat('h:mm a');
   static final _dayKey = DateFormat('yyyy-MM-dd');
 
   static String formatDate(DateTime date) => _display.format(date.toLocal());
 
   static String formatDateTime(DateTime date) =>
       _displayWithTime.format(date.toLocal());
+
+  static String formatTime(DateTime date) => _time.format(date.toLocal());
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 

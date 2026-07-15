@@ -91,7 +91,7 @@ class DebtDetailPage extends ConsumerWidget {
                       _kv(
                         context,
                         'Date',
-                        DateFormatters.formatDate(debt.transactionDate),
+                        DateFormatters.formatDateTime(debt.transactionDate),
                         valueAlignRight: true,
                       ),
                       if (debt.dueDate != null)
@@ -160,7 +160,9 @@ class DebtDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormatters.formatDate(p.paymentDate),
+                                    DateFormatters.formatDateTime(
+                                      p.paymentDate,
+                                    ),
                                   ),
                                   Text(
                                     p.paymentMethod,

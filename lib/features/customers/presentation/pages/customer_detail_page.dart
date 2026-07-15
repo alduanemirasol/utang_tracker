@@ -169,7 +169,7 @@ class CustomerDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormatters.formatDate(
+                                    DateFormatters.formatDateTime(
                                       debt.transactionDate,
                                     ),
                                   ),
@@ -208,7 +208,7 @@ class CustomerDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormatters.formatDate(
+                                    DateFormatters.formatDateTime(
                                       payment.paymentDate,
                                     ),
                                   ),

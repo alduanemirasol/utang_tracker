@@ -76,24 +76,55 @@ class PaymentsListPage extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              payment.customerName ?? 'Customer',
-                              style: Theme.of(context).textTheme.titleMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    payment.customerName ?? 'Customer',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                MoneyText(
+                                  payment.amount,
+                                  color: AppColors.paid,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              '${DateFormatters.formatDate(payment.paymentDate)} · ${payment.paymentMethod}',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${DateFormatters.formatDate(payment.paymentDate)} · ${payment.paymentMethod}',
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  DateFormatters.formatTime(
+                                    payment.paymentDate,
+                                  ),
+                                  style: const TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      MoneyText(payment.amount, color: AppColors.paid),
                     ],
                   ),
                 );

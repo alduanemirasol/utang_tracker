@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
@@ -27,7 +28,7 @@ void main() {
     final customer = await customers.create(name: 'Maria Santos');
     final debt = await debts.create(
       customerId: customer.id,
-      transactionDate: DateTime.utc(2026, 7, 15),
+      transactionDate: DateTime(2026, 7, 15, 14, 5),
       items: [
         DebtItemInput(
           productName: 'Softdrinks',
@@ -59,6 +60,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(
+      find.text(DateFormatters.formatDateTime(debt.transactionDate)),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('debt-items-card')), findsOneWidget);
     expect(find.text('Softdrinks'), findsOneWidget);
     expect(find.text('2 pcs'), findsOneWidget);
