@@ -313,7 +313,7 @@ class _DebtItemRow extends StatelessWidget {
     final subtotalStyle = textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
     final quantityAndUnit =
         '${_formatQuantity(item.quantity)} '
-        '${DebtItemUnits.displayName(item.unit)}';
+        '${DebtItemUnits.displayNameForQuantity(item.unit, item.quantity)}';
 
     return Padding(
       key: ValueKey('debt-item-row-${item.id}'),

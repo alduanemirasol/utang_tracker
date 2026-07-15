@@ -33,8 +33,14 @@ void main() {
         DebtItemInput(
           productName: 'Softdrinks',
           quantity: 2,
-          unit: 'pcs',
+          unit: DebtItemUnits.bottle,
           price: Money.fromPesos(50),
+        ),
+        DebtItemInput(
+          productName: 'Candy',
+          quantity: 2,
+          unit: DebtItemUnits.piece,
+          price: Money.fromPesos(20),
         ),
         DebtItemInput(
           productName: 'Premium long-grain rice refill',
@@ -66,7 +72,9 @@ void main() {
     );
     expect(find.byKey(const Key('debt-items-card')), findsOneWidget);
     expect(find.text('Softdrinks'), findsOneWidget);
-    expect(find.text('2 pcs'), findsOneWidget);
+    expect(find.text('2 Bottles'), findsOneWidget);
+    expect(find.text('Candy'), findsOneWidget);
+    expect(find.text('2 Pieces'), findsOneWidget);
     expect(find.text('Premium long-grain rice refill'), findsOneWidget);
     expect(find.text('0.5 kg'), findsOneWidget);
     expect(find.byKey(const Key('debt-items-total-row')), findsOneWidget);

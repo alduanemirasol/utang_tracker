@@ -1,8 +1,13 @@
 class DebtItemUnitOption {
-  const DebtItemUnitOption({required this.value, required this.label});
+  const DebtItemUnitOption({
+    required this.value,
+    required this.label,
+    required this.pluralLabel,
+  });
 
   final String value;
   final String label;
+  final String pluralLabel;
 }
 
 /// Common selling units for sari-sari store debt items.
@@ -28,20 +33,20 @@ class DebtItemUnits {
   static const String bundle = 'bundle';
 
   static const List<DebtItemUnitOption> common = [
-    DebtItemUnitOption(value: piece, label: 'Piece'),
-    DebtItemUnitOption(value: pack, label: 'Pack'),
-    DebtItemUnitOption(value: box, label: 'Box'),
-    DebtItemUnitOption(value: bottle, label: 'Bottle'),
-    DebtItemUnitOption(value: kilogram, label: 'kg'),
-    DebtItemUnitOption(value: gram, label: 'g'),
-    DebtItemUnitOption(value: liter, label: 'Liter'),
-    DebtItemUnitOption(value: milliliter, label: 'ml'),
-    DebtItemUnitOption(value: can, label: 'Can'),
-    DebtItemUnitOption(value: sachet, label: 'Sachet'),
-    DebtItemUnitOption(value: bag, label: 'Bag'),
-    DebtItemUnitOption(value: dozen, label: 'Dozen'),
-    DebtItemUnitOption(value: tray, label: 'Tray'),
-    DebtItemUnitOption(value: bundle, label: 'Bundle'),
+    DebtItemUnitOption(value: piece, label: 'Piece', pluralLabel: 'Pieces'),
+    DebtItemUnitOption(value: pack, label: 'Pack', pluralLabel: 'Packs'),
+    DebtItemUnitOption(value: box, label: 'Box', pluralLabel: 'Boxes'),
+    DebtItemUnitOption(value: bottle, label: 'Bottle', pluralLabel: 'Bottles'),
+    DebtItemUnitOption(value: kilogram, label: 'kg', pluralLabel: 'kg'),
+    DebtItemUnitOption(value: gram, label: 'g', pluralLabel: 'g'),
+    DebtItemUnitOption(value: liter, label: 'Liter', pluralLabel: 'Liters'),
+    DebtItemUnitOption(value: milliliter, label: 'ml', pluralLabel: 'ml'),
+    DebtItemUnitOption(value: can, label: 'Can', pluralLabel: 'Cans'),
+    DebtItemUnitOption(value: sachet, label: 'Sachet', pluralLabel: 'Sachets'),
+    DebtItemUnitOption(value: bag, label: 'Bag', pluralLabel: 'Bags'),
+    DebtItemUnitOption(value: dozen, label: 'Dozen', pluralLabel: 'Dozen'),
+    DebtItemUnitOption(value: tray, label: 'Tray', pluralLabel: 'Trays'),
+    DebtItemUnitOption(value: bundle, label: 'Bundle', pluralLabel: 'Bundles'),
   ];
 
   static bool isCommon(String value) {
@@ -52,6 +57,16 @@ class DebtItemUnits {
     final normalized = normalize(value);
     for (final option in common) {
       if (option.value == normalized) return option.label;
+    }
+    return value.trim();
+  }
+
+  static String displayNameForQuantity(String value, double quantity) {
+    final normalized = normalize(value);
+    for (final option in common) {
+      if (option.value == normalized) {
+        return quantity == 1 ? option.label : option.pluralLabel;
+      }
     }
     return value.trim();
   }
