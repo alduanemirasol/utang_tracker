@@ -191,7 +191,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           AppTextField(
             controller: _amountController,
             label: 'Amount *',
-
+            hint: 'e.g. 100.00',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),

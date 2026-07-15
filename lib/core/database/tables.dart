@@ -47,6 +47,7 @@ class DebtItems extends Table {
 
   /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   RealColumn get quantity => real()();
+  TextColumn get unit => text().withDefault(const Constant('piece'))();
   IntColumn get unitPrice => integer()();
   IntColumn get subtotal => integer()();
   DateTimeColumn get deletedAt => dateTime().nullable()();

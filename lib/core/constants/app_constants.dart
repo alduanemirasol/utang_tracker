@@ -1,5 +1,4 @@
-/// App-wide constants. Payment methods and units are UI constraints only
-/// (stored as free TEXT per database rules).
+/// App-wide constants.
 class AppConstants {
   AppConstants._();
 

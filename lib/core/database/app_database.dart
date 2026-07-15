@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +59,10 @@ FROM debt_items;
         await customStatement(
           'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
         );
+      }
+      if (from < 4) {
+        // Existing items become pieces; new records always provide a unit.
+        await m.addColumn(debtItems, debtItems.unit);
       }
     },
   );

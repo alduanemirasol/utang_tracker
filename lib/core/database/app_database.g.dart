@@ -1228,6 +1228,16 @@ class $DebtItemsTable extends DebtItems
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('piece'),
+  );
   static const VerificationMeta _unitPriceMeta = const VerificationMeta(
     'unitPrice',
   );
@@ -1267,6 +1277,7 @@ class $DebtItemsTable extends DebtItems
     debtId,
     productName,
     quantity,
+    unit,
     unitPrice,
     subtotal,
     deletedAt,
@@ -1315,6 +1326,12 @@ class $DebtItemsTable extends DebtItems
     } else if (isInserting) {
       context.missing(_quantityMeta);
     }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
     if (data.containsKey('unit_price')) {
       context.handle(
         _unitPriceMeta,
@@ -1362,6 +1379,10 @@ class $DebtItemsTable extends DebtItems
         DriftSqlType.double,
         data['${effectivePrefix}quantity'],
       )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
       unitPrice: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}unit_price'],
@@ -1390,6 +1411,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
 
   /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   final double quantity;
+  final String unit;
   final int unitPrice;
   final int subtotal;
   final DateTime? deletedAt;
@@ -1398,6 +1420,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
     required this.debtId,
     required this.productName,
     required this.quantity,
+    required this.unit,
     required this.unitPrice,
     required this.subtotal,
     this.deletedAt,
@@ -1409,6 +1432,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
     map['debt_id'] = Variable<String>(debtId);
     map['product_name'] = Variable<String>(productName);
     map['quantity'] = Variable<double>(quantity);
+    map['unit'] = Variable<String>(unit);
     map['unit_price'] = Variable<int>(unitPrice);
     map['subtotal'] = Variable<int>(subtotal);
     if (!nullToAbsent || deletedAt != null) {
@@ -1423,6 +1447,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
       debtId: Value(debtId),
       productName: Value(productName),
       quantity: Value(quantity),
+      unit: Value(unit),
       unitPrice: Value(unitPrice),
       subtotal: Value(subtotal),
       deletedAt: deletedAt == null && nullToAbsent
@@ -1441,6 +1466,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
       debtId: serializer.fromJson<String>(json['debtId']),
       productName: serializer.fromJson<String>(json['productName']),
       quantity: serializer.fromJson<double>(json['quantity']),
+      unit: serializer.fromJson<String>(json['unit']),
       unitPrice: serializer.fromJson<int>(json['unitPrice']),
       subtotal: serializer.fromJson<int>(json['subtotal']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -1454,6 +1480,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
       'debtId': serializer.toJson<String>(debtId),
       'productName': serializer.toJson<String>(productName),
       'quantity': serializer.toJson<double>(quantity),
+      'unit': serializer.toJson<String>(unit),
       'unitPrice': serializer.toJson<int>(unitPrice),
       'subtotal': serializer.toJson<int>(subtotal),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -1465,6 +1492,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
     String? debtId,
     String? productName,
     double? quantity,
+    String? unit,
     int? unitPrice,
     int? subtotal,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -1473,6 +1501,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
     debtId: debtId ?? this.debtId,
     productName: productName ?? this.productName,
     quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
     unitPrice: unitPrice ?? this.unitPrice,
     subtotal: subtotal ?? this.subtotal,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -1485,6 +1514,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
           ? data.productName.value
           : this.productName,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
       unitPrice: data.unitPrice.present ? data.unitPrice.value : this.unitPrice,
       subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -1498,6 +1528,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
           ..write('debtId: $debtId, ')
           ..write('productName: $productName, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('unitPrice: $unitPrice, ')
           ..write('subtotal: $subtotal, ')
           ..write('deletedAt: $deletedAt')
@@ -1511,6 +1542,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
     debtId,
     productName,
     quantity,
+    unit,
     unitPrice,
     subtotal,
     deletedAt,
@@ -1523,6 +1555,7 @@ class DebtItemRow extends DataClass implements Insertable<DebtItemRow> {
           other.debtId == this.debtId &&
           other.productName == this.productName &&
           other.quantity == this.quantity &&
+          other.unit == this.unit &&
           other.unitPrice == this.unitPrice &&
           other.subtotal == this.subtotal &&
           other.deletedAt == this.deletedAt);
@@ -1533,6 +1566,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
   final Value<String> debtId;
   final Value<String> productName;
   final Value<double> quantity;
+  final Value<String> unit;
   final Value<int> unitPrice;
   final Value<int> subtotal;
   final Value<DateTime?> deletedAt;
@@ -1542,6 +1576,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
     this.debtId = const Value.absent(),
     this.productName = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
     this.unitPrice = const Value.absent(),
     this.subtotal = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -1552,6 +1587,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
     required String debtId,
     required String productName,
     required double quantity,
+    this.unit = const Value.absent(),
     required int unitPrice,
     required int subtotal,
     this.deletedAt = const Value.absent(),
@@ -1567,6 +1603,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
     Expression<String>? debtId,
     Expression<String>? productName,
     Expression<double>? quantity,
+    Expression<String>? unit,
     Expression<int>? unitPrice,
     Expression<int>? subtotal,
     Expression<DateTime>? deletedAt,
@@ -1577,6 +1614,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
       if (debtId != null) 'debt_id': debtId,
       if (productName != null) 'product_name': productName,
       if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
       if (unitPrice != null) 'unit_price': unitPrice,
       if (subtotal != null) 'subtotal': subtotal,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -1589,6 +1627,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
     Value<String>? debtId,
     Value<String>? productName,
     Value<double>? quantity,
+    Value<String>? unit,
     Value<int>? unitPrice,
     Value<int>? subtotal,
     Value<DateTime?>? deletedAt,
@@ -1599,6 +1638,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
       debtId: debtId ?? this.debtId,
       productName: productName ?? this.productName,
       quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       unitPrice: unitPrice ?? this.unitPrice,
       subtotal: subtotal ?? this.subtotal,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -1620,6 +1660,9 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
     }
     if (quantity.present) {
       map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
     }
     if (unitPrice.present) {
       map['unit_price'] = Variable<int>(unitPrice.value);
@@ -1643,6 +1686,7 @@ class DebtItemsCompanion extends UpdateCompanion<DebtItemRow> {
           ..write('debtId: $debtId, ')
           ..write('productName: $productName, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('unitPrice: $unitPrice, ')
           ..write('subtotal: $subtotal, ')
           ..write('deletedAt: $deletedAt, ')
@@ -3182,6 +3226,7 @@ typedef $$DebtItemsTableCreateCompanionBuilder =
       required String debtId,
       required String productName,
       required double quantity,
+      Value<String> unit,
       required int unitPrice,
       required int subtotal,
       Value<DateTime?> deletedAt,
@@ -3193,6 +3238,7 @@ typedef $$DebtItemsTableUpdateCompanionBuilder =
       Value<String> debtId,
       Value<String> productName,
       Value<double> quantity,
+      Value<String> unit,
       Value<int> unitPrice,
       Value<int> subtotal,
       Value<DateTime?> deletedAt,
@@ -3242,6 +3288,11 @@ class $$DebtItemsTableFilterComposer
 
   ColumnFilters<double> get quantity => $composableBuilder(
     column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3308,6 +3359,11 @@ class $$DebtItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get unitPrice => $composableBuilder(
     column: $table.unitPrice,
     builder: (column) => ColumnOrderings(column),
@@ -3366,6 +3422,9 @@ class $$DebtItemsTableAnnotationComposer
 
   GeneratedColumn<double> get quantity =>
       $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
 
   GeneratedColumn<int> get unitPrice =>
       $composableBuilder(column: $table.unitPrice, builder: (column) => column);
@@ -3432,6 +3491,7 @@ class $$DebtItemsTableTableManager
                 Value<String> debtId = const Value.absent(),
                 Value<String> productName = const Value.absent(),
                 Value<double> quantity = const Value.absent(),
+                Value<String> unit = const Value.absent(),
                 Value<int> unitPrice = const Value.absent(),
                 Value<int> subtotal = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -3441,6 +3501,7 @@ class $$DebtItemsTableTableManager
                 debtId: debtId,
                 productName: productName,
                 quantity: quantity,
+                unit: unit,
                 unitPrice: unitPrice,
                 subtotal: subtotal,
                 deletedAt: deletedAt,
@@ -3452,6 +3513,7 @@ class $$DebtItemsTableTableManager
                 required String debtId,
                 required String productName,
                 required double quantity,
+                Value<String> unit = const Value.absent(),
                 required int unitPrice,
                 required int subtotal,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -3461,6 +3523,7 @@ class $$DebtItemsTableTableManager
                 debtId: debtId,
                 productName: productName,
                 quantity: quantity,
+                unit: unit,
                 unitPrice: unitPrice,
                 subtotal: subtotal,
                 deletedAt: deletedAt,

@@ -49,9 +49,32 @@ Allowed values for `status`:
 | debt_id      | UUID          | Yes      |
 | product_name | TEXT          | Yes      |
 | quantity     | DECIMAL(10,2) | Yes      |
+| unit         | TEXT          | Yes      |
 | unit_price   | DECIMAL(10,2) | Yes      |
 | subtotal     | DECIMAL(10,2) | Yes      |
 | deleted_at   | DATETIME      | No       |
+
+---
+
+Recommended values for `debt_items.unit`:
+
+- piece
+- pack
+- box
+- bottle
+- kg
+- g
+- liter
+- ml
+- can
+- sachet
+- bag
+- dozen
+- tray
+- bundle
+
+Custom non-empty unit values are allowed. Existing items created before units
+were introduced default to `piece`.
 
 ---
 
@@ -83,6 +106,7 @@ Allowed values for `status`:
 - One customer can have many debts.
 - One debt belongs to one customer.
 - One debt can contain many debt items.
+- Every debt item has a non-empty selling unit.
 - One debt can have multiple payments.
 - `subtotal = quantity × unit_price`
 - `balance = total_amount - paid_amount`

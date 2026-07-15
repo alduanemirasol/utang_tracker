@@ -155,12 +155,6 @@ class DebtsListPage extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.calendar_today_outlined,
-                                  size: 14,
-                                  color: AppColors.textMuted,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
                                 Expanded(
                                   child: Text(
                                     debt.customerName ?? 'Customer',

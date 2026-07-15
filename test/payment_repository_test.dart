@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 
@@ -34,6 +35,7 @@ void main() {
         DebtItemInput(
           productName: 'Bigas',
           quantity: 2,
+          unit: DebtItemUnits.kilogram,
           unitPrice: Money.fromPesos(50),
         ),
         DebtItemInput(
@@ -48,6 +50,10 @@ void main() {
     expect(debt.paidAmount.isZero, isTrue);
     expect(debt.balance.centavos, 13000);
     expect(debt.status, DebtStatus.unpaid);
+
+    final createdDetail = await debts.getById(debt.id);
+    expect(createdDetail!.items[0].unit, DebtItemUnits.kilogram);
+    expect(createdDetail.items[1].unit, DebtItemUnits.piece);
 
     await payments.recordPayment(
       debtId: debt.id,

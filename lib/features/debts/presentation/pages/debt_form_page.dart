@@ -19,6 +19,7 @@ import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class DebtFormPage extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class _LineItemControllers {
   final TextEditingController product;
   final TextEditingController quantity;
   final TextEditingController unitPrice;
+  String unit = DebtItemUnits.piece;
 
   void dispose() {
     product.dispose();
@@ -142,6 +144,18 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     });
   }
 
+  Future<void> _pickUnit(_LineItemControllers item) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (context) => _UnitPickerSheet(selectedUnit: item.unit),
+    );
+    if (selected == null || !mounted) return;
+    setState(() => item.unit = selected);
+  }
+
   List<DebtItemInput>? _buildItems() {
     final result = <DebtItemInput>[];
     for (final item in _items) {
@@ -162,7 +176,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         return null;
       }
       result.add(
-        DebtItemInput(productName: name, quantity: qty, unitPrice: price),
+        DebtItemInput(
+          productName: name,
+          quantity: qty,
+          unit: item.unit,
+          unitPrice: price,
+        ),
       );
     }
     return result;
@@ -242,6 +261,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           c.quantity.text = item.quantity % 1 == 0
               ? item.quantity.toInt().toString()
               : item.quantity.toString();
+          c.unit = item.unit;
           c.unitPrice.text = item.unitPrice.pesos.toStringAsFixed(2);
           return c;
         }),
@@ -419,23 +439,25 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          flex: 2,
-                          child: AppTextField(
-                            controller: item.unitPrice,
-                            label: 'Price',
-                            hint: 'e.g. 50.00',
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[\d.]'),
-                              ),
-                            ],
-                            onChanged: (_) => setState(() {}),
+                          child: _UnitField(
+                            unit: item.unit,
+                            onTap: () => _pickUnit(item),
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      controller: item.unitPrice,
+                      label: 'Price',
+                      hint: 'e.g. 50.00',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                      ],
+                      onChanged: (_) => setState(() {}),
                     ),
                   ],
                 ),
@@ -516,6 +538,189 @@ class _CustomerField extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ),
+    );
+  }
+}
+
+class _UnitField extends StatelessWidget {
+  const _UnitField({required this.unit, required this.onTap});
+
+  final String unit;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppTextField.buildLabel(context, 'Unit *'),
+        const SizedBox(height: AppSpacing.sm),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: InputDecorator(
+            decoration: const InputDecoration(),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    DebtItemUnits.displayName(unit),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UnitPickerSheet extends StatelessWidget {
+  const _UnitPickerSheet({required this.selectedUnit});
+
+  final String selectedUnit;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIsCustom = !DebtItemUnits.isCommon(selectedUnit);
+    final height = MediaQuery.sizeOf(context).height * 0.72;
+
+    return SizedBox(
+      height: height,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pagePadding,
+              0,
+              AppSpacing.pagePadding,
+              AppSpacing.md,
+            ),
+            child: Text(
+              'Select unit',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              itemCount: DebtItemUnits.common.length + 1,
+              separatorBuilder: (_, _) => const Divider(
+                height: 1,
+                indent: AppSpacing.lg,
+                endIndent: AppSpacing.lg,
+                color: AppColors.outline,
+              ),
+              itemBuilder: (context, index) {
+                if (index == DebtItemUnits.common.length) {
+                  return ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Custom unit'),
+                    subtitle: selectedIsCustom
+                        ? Text(DebtItemUnits.displayName(selectedUnit))
+                        : const Text('Use another selling unit'),
+                    trailing: selectedIsCustom
+                        ? const Icon(Icons.check, color: AppColors.primary)
+                        : const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      final custom = await showDialog<String>(
+                        context: context,
+                        builder: (context) => _CustomUnitDialog(
+                          initialValue: selectedIsCustom ? selectedUnit : '',
+                        ),
+                      );
+                      if (custom == null || !context.mounted) return;
+                      Navigator.of(context).pop(custom);
+                    },
+                  );
+                }
+
+                final option = DebtItemUnits.common[index];
+                final selected = option.value == selectedUnit;
+                return ListTile(
+                  title: Text(option.label),
+                  trailing: selected
+                      ? const Icon(Icons.check, color: AppColors.primary)
+                      : null,
+                  onTap: () => Navigator.of(context).pop(option.value),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomUnitDialog extends StatefulWidget {
+  const _CustomUnitDialog({required this.initialValue});
+
+  final String initialValue;
+
+  @override
+  State<_CustomUnitDialog> createState() => _CustomUnitDialogState();
+}
+
+class _CustomUnitDialogState extends State<_CustomUnitDialog> {
+  late final TextEditingController _controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final value = DebtItemUnits.normalize(_controller.text);
+    if (value.isEmpty) {
+      setState(() => _error = 'Enter a unit name.');
+      return;
+    }
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Custom unit'),
+      content: AppTextField(
+        controller: _controller,
+        label: 'Unit name *',
+        hint: 'e.g. sack',
+        errorText: _error,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        inputFormatters: [LengthLimitingTextInputFormatter(24)],
+        onChanged: (_) {
+          if (_error != null) setState(() => _error = null);
+        },
+        onSubmitted: (_) => _save(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(onPressed: _save, child: const Text('Use unit')),
+      ],
     );
   }
 }

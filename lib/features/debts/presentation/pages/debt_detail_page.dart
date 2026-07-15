@@ -11,6 +11,7 @@ import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
@@ -145,7 +146,7 @@ class DebtDetailPage extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            '${_fmtQty(item.quantity)} × ${item.unitPrice.format()}',
+                            '${_fmtQty(item.quantity)} ${DebtItemUnits.displayName(item.unit)} × ${item.unitPrice.format()}',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                             ),

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 
 class DebtItem extends Equatable {
   const DebtItem({
@@ -7,6 +8,7 @@ class DebtItem extends Equatable {
     required this.debtId,
     required this.productName,
     required this.quantity,
+    required this.unit,
     required this.unitPrice,
     required this.subtotal,
   });
@@ -15,6 +17,7 @@ class DebtItem extends Equatable {
   final String debtId;
   final String productName;
   final double quantity;
+  final String unit;
   final Money unitPrice;
   final Money subtotal;
 
@@ -24,6 +27,7 @@ class DebtItem extends Equatable {
     debtId,
     productName,
     quantity,
+    unit,
     unitPrice,
     subtotal,
   ];
@@ -34,13 +38,15 @@ class DebtItemInput extends Equatable {
   const DebtItemInput({
     required this.productName,
     required this.quantity,
+    this.unit = DebtItemUnits.piece,
     required this.unitPrice,
   });
 
   final String productName;
   final double quantity;
+  final String unit;
   final Money unitPrice;
 
   @override
-  List<Object?> get props => [productName, quantity, unitPrice];
+  List<Object?> get props => [productName, quantity, unit, unitPrice];
 }

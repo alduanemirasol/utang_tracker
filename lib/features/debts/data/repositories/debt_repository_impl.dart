@@ -7,6 +7,7 @@ import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
 
@@ -169,6 +170,7 @@ class DebtRepositoryImpl implements DebtRepository {
                 debtId: debtId,
                 productName: item.productName,
                 quantity: item.quantity,
+                unit: Value(item.unit),
                 unitPrice: item.unitPrice.centavos,
                 subtotal: item.subtotal.centavos,
               ),
@@ -243,6 +245,7 @@ class DebtRepositoryImpl implements DebtRepository {
                 debtId: id,
                 productName: item.productName,
                 quantity: item.quantity,
+                unit: Value(item.unit),
                 unitPrice: item.unitPrice.centavos,
                 subtotal: item.subtotal.centavos,
               ),
@@ -297,13 +300,27 @@ class DebtRepositoryImpl implements DebtRepository {
       if (item.quantity <= 0) {
         throw const ValidationException('Quantity must be greater than zero.');
       }
+      if (item.unit.trim().isEmpty) {
+        throw const ValidationException('Unit is required.');
+      }
+      if (item.unit.trim().length > 24) {
+        throw const ValidationException('Unit must be 24 characters or fewer.');
+      }
       if (!item.unitPrice.isPositive) {
         throw const ValidationException('Price must be greater than zero.');
       }
     }
   }
 
-  List<({String productName, double quantity, Money unitPrice, Money subtotal})>
+  List<
+    ({
+      String productName,
+      double quantity,
+      String unit,
+      Money unitPrice,
+      Money subtotal,
+    })
+  >
   _prepareItems(List<DebtItemInput> items) {
     return items.map((item) {
       final subtotal = DebtMath.computeSubtotal(
@@ -313,6 +330,7 @@ class DebtRepositoryImpl implements DebtRepository {
       return (
         productName: item.productName.trim(),
         quantity: item.quantity,
+        unit: DebtItemUnits.normalize(item.unit),
         unitPrice: item.unitPrice,
         subtotal: subtotal,
       );
