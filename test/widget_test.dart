@@ -18,7 +18,7 @@ void main() {
       ),
     );
 
-    // Flush post-frame force-update delay and fail-open network check.
+    // Flush post-frame update-check delay and fail-open network check.
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(seconds: 2));
 

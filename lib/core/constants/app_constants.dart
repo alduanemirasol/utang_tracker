@@ -6,7 +6,7 @@ class AppConstants {
   static const String logoAsset = 'assets/images/utang_tracker_logo_v2.png';
   static const String currencySymbol = '₱';
 
-  /// Public GitHub repo used for in-app force updates (versioned releases).
+  /// Public GitHub repo used for in-app update checks (versioned releases).
   static const String githubOwner = 'alduanemirasol';
   static const String githubRepo = 'utang_tracker';
 

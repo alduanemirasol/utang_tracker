@@ -57,7 +57,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         );
         return;
       }
-      await showForceUpdateDialog(
+      await showUpdateDialog(
         context: context,
         currentVersion: result.currentVersion,
         update: result.update!,

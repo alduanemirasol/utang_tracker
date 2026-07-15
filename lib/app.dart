@@ -49,7 +49,7 @@ class _UtangTrackerAppState extends ConsumerState<UtangTrackerApp> {
         return;
       }
 
-      await showForceUpdateDialog(
+      await showUpdateDialog(
         context: ctx,
         currentVersion: result.currentVersion,
         update: result.update!,
