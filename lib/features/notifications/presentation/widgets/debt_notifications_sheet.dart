@@ -146,7 +146,7 @@ class _AttentionSummary extends StatelessWidget {
             urgent > 0
                 ? Icons.notification_important_outlined
                 : Icons.event_available_outlined,
-            color: urgent > 0 ? AppColors.unpaid : AppColors.primary,
+            color: urgent > 0 ? AppColors.unpaid : AppColors.primaryDark,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -358,7 +358,7 @@ IconData _icon(DebtNotificationKind kind) => switch (kind) {
 Color _foreground(DebtNotificationKind kind) => switch (kind) {
   DebtNotificationKind.overdue => AppColors.unpaid,
   DebtNotificationKind.dueToday => AppColors.partial,
-  DebtNotificationKind.dueSoon => AppColors.primary,
+  DebtNotificationKind.dueSoon => AppColors.primaryDark,
 };
 
 Color _background(DebtNotificationKind kind) => switch (kind) {

@@ -703,7 +703,7 @@ class _UnitPickerSheet extends StatelessWidget {
                         ? Text(DebtItemUnits.displayName(selectedUnit))
                         : const Text('Use another selling unit'),
                     trailing: selectedIsCustom
-                        ? const Icon(Icons.check, color: AppColors.primary)
+                        ? const Icon(Icons.check, color: AppColors.primaryDark)
                         : const Icon(Icons.chevron_right),
                     onTap: () async {
                       final custom = await showDialog<String>(
@@ -723,7 +723,7 @@ class _UnitPickerSheet extends StatelessWidget {
                 return ListTile(
                   title: Text(option.label),
                   trailing: selected
-                      ? const Icon(Icons.check, color: AppColors.primary)
+                      ? const Icon(Icons.check, color: AppColors.primaryDark)
                       : null,
                   onTap: () => Navigator.of(context).pop(option.value),
                 );

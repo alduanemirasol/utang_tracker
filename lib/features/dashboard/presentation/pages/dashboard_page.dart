@@ -90,7 +90,7 @@ class DashboardPage extends ConsumerWidget {
                         label: 'Bayad',
                         caption: 'Record payment',
                         color: AppColors.surfaceCard,
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: AppColors.primaryDark,
                         onTap: () => context.push('/payments/new'),
                       ),
                     ),
@@ -444,7 +444,7 @@ class _SnapshotMetric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary, size: 20),
+        Icon(icon, color: AppColors.primaryDark, size: 20),
         const SizedBox(width: AppSpacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,

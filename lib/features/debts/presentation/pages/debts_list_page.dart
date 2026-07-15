@@ -94,7 +94,7 @@ class DebtsListPage extends ConsumerWidget {
                                   ? const Icon(
                                       Icons.check,
                                       size: 18,
-                                      color: AppColors.primary,
+                                      color: AppColors.primaryDark,
                                     )
                                   : null,
                             ),
@@ -217,13 +217,15 @@ class _FilterChip extends StatelessWidget {
       selected: selected,
       onSelected: (_) => onSelected(),
       showCheckmark: false,
-      selectedColor: AppColors.primary,
+      selectedColor: AppColors.primaryDark,
       labelStyle: TextStyle(
         color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
       backgroundColor: AppColors.surfaceCard,
-      side: BorderSide(color: selected ? AppColors.primary : AppColors.outline),
+      side: BorderSide(
+        color: selected ? AppColors.primaryDark : AppColors.outline,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }

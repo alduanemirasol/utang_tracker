@@ -10,7 +10,7 @@ class AppTheme {
 
   static ThemeData light() {
     const base = ColorScheme.light(
-      primary: AppColors.primary,
+      primary: AppColors.primaryDark,
       onPrimary: AppColors.textOnPrimary,
       primaryContainer: AppColors.primaryLight,
       onPrimaryContainer: AppColors.primaryDark,
@@ -143,7 +143,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -162,7 +162,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.primaryDark,
           foregroundColor: AppColors.textOnPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -178,7 +178,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryDark,
           backgroundColor: AppColors.surfaceCard,
           side: const BorderSide(color: AppColors.outline),
           shape: RoundedRectangleBorder(
@@ -194,7 +194,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryDark,
           textStyle: const TextStyle(
             fontFamily: _fontFamily,
             fontSize: 15,
@@ -212,7 +212,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.primaryLight,
-        selectedColor: AppColors.primary,
+        selectedColor: AppColors.primaryDark,
         labelStyle: const TextStyle(
           fontFamily: _fontFamily,
           fontSize: 13,
