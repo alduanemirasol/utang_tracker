@@ -492,15 +492,15 @@ class _EmptyActivity extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       color: AppColors.surfaceRaised,
-      child: const Row(
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.history_rounded, color: AppColors.textMuted),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              'Your newest debts and payments will appear here.',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            'Your newest debts and payments will appear here.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),

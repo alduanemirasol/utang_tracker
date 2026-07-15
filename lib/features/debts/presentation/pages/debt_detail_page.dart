@@ -142,9 +142,11 @@ class DebtDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
-                  const Text(
-                    'No payments yet.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                  const Center(
+                    child: Text(
+                      'No payments yet.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   )
                 else
                   ...payments.map(

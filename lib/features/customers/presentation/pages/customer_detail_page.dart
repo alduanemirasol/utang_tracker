@@ -150,9 +150,11 @@ class CustomerDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 if (data.debts.isEmpty)
-                  const Text(
-                    'No debts yet.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                  const Center(
+                    child: Text(
+                      'No debts yet.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   )
                 else
                   ...data.debts.map(
@@ -188,9 +190,11 @@ class CustomerDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 if (data.payments.isEmpty)
-                  const Text(
-                    'No payments yet.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                  const Center(
+                    child: Text(
+                      'No payments yet.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   )
                 else
                   ...data.payments.map(
