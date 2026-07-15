@@ -108,7 +108,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           Text(
                             AppConstants.appName,
                             style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(color: Colors.white),
+                                ?.copyWith(color: AppColors.textOnPrimary),
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           const Text(
@@ -124,14 +124,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF284569),
+                        color: AppColors.primaryRaised,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         _appVersion == null ? 'v—' : 'v$_appVersion',
                         style: const TextStyle(
                           fontFamily: 'monospace',
-                          color: Colors.white,
+                          color: AppColors.textOnPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -142,7 +142,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 const SizedBox(height: AppSpacing.lg),
                 const Text(
                   'Customer tabs, purchases, and payments stay organized on this device.',
-                  style: TextStyle(color: Color(0xFFD7E0ED), height: 1.5),
+                  style: TextStyle(
+                    color: AppColors.textOnPrimarySoft,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(

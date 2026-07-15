@@ -242,7 +242,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             controller: _notesController,
             label: 'Notes',
             hint: 'Optional',
-            maxLines: 2,
+            minLines: 4,
+            maxLines: 6,
           ),
           if (selected != null) ...[
             const SizedBox(height: AppSpacing.md),

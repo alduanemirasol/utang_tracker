@@ -7,7 +7,6 @@ import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
-import 'package:utang_tracker/core/widgets/app_logo.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
@@ -22,124 +21,78 @@ class DashboardPage extends ConsumerWidget {
     final async = ref.watch(dashboardSummaryProvider);
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: async.when(
-          loading: () => const LoadingIndicator(message: 'Opening your ledger'),
-          error: (e, _) => ErrorView(
-            message: e.toString(),
-            onRetry: () => ref.invalidate(dashboardSummaryProvider),
-          ),
-          data: (summary) {
-            return RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(dashboardSummaryProvider.notifier).refresh(),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pagePadding,
-                  AppSpacing.lg,
-                  AppSpacing.pagePadding,
-                  AppSpacing.xxl,
+      appBar: AppBar(title: const Text(AppConstants.appName)),
+      body: async.when(
+        loading: () => const LoadingIndicator(message: 'Opening your ledger'),
+        error: (e, _) => ErrorView(
+          message: e.toString(),
+          onRetry: () => ref.invalidate(dashboardSummaryProvider),
+        ),
+        data: (summary) {
+          return RefreshIndicator(
+            onRefresh: () =>
+                ref.read(dashboardSummaryProvider.notifier).refresh(),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding,
+                0,
+                AppSpacing.pagePadding,
+                AppSpacing.xxl,
+              ),
+              children: [
+                _LedgerBalanceCard(
+                  balance: summary.outstandingBalance,
+                  collectedToday: summary.collectedToday,
                 ),
-                children: [
-                  const _DashboardHeader(),
-                  const SizedBox(height: AppSpacing.xl),
-                  _LedgerBalanceCard(
-                    balance: summary.outstandingBalance,
-                    collectedToday: summary.collectedToday,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.add_rounded,
-                          label: 'New utang',
-                          caption: 'Add item lines',
-                          color: AppColors.accent,
-                          foregroundColor: AppColors.primaryDark,
-                          onTap: () => context.push('/debts/new'),
-                        ),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.add_rounded,
+                        label: 'New utang',
+                        caption: 'Add items',
+                        color: AppColors.accent,
+                        foregroundColor: AppColors.primaryDark,
+                        onTap: () => context.push('/debts/new'),
                       ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.arrow_downward_rounded,
-                          label: 'Payment',
-                          caption: 'Record collection',
-                          color: AppColors.surfaceCard,
-                          foregroundColor: AppColors.primary,
-                          onTap: () => context.push('/payments/new'),
-                        ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.arrow_downward_rounded,
+                        label: 'Bayad',
+                        caption: 'Record payment',
+                        color: AppColors.surfaceCard,
+                        foregroundColor: AppColors.primary,
+                        onTap: () => context.push('/payments/new'),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  _StoreSnapshot(
-                    activeDebts: summary.activeDebtsCount,
-                    customers: summary.totalCustomers,
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  _SectionHeader(
-                    title: 'Recent activity',
-                    actionLabel: summary.recentActivity.isEmpty
-                        ? null
-                        : 'View debts',
-                    onAction: () => context.go('/debts'),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  if (summary.recentActivity.isEmpty)
-                    const _EmptyActivity()
-                  else
-                    _ActivityLedger(items: summary.recentActivity),
-                ],
-              ),
-            );
-          },
-        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                _StoreSnapshot(
+                  activeDebts: summary.activeDebtsCount,
+                  customers: summary.totalCustomers,
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                _SectionHeader(
+                  title: 'Recent activity',
+                  actionLabel: summary.recentActivity.isEmpty
+                      ? null
+                      : 'View debts',
+                  onAction: () => context.go('/debts'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                if (summary.recentActivity.isEmpty)
+                  const _EmptyActivity()
+                else
+                  _ActivityLedger(items: summary.recentActivity),
+              ],
+            ),
+          );
+        },
       ),
-    );
-  }
-}
-
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const AppLogo(size: 46, borderRadius: 14),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Store overview',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium?.copyWith(color: AppColors.primary),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                AppConstants.appName,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ),
-        ),
-        IconButton.filledTonal(
-          tooltip: 'Settings',
-          onPressed: () => context.go('/settings'),
-          icon: const Icon(Icons.storefront_outlined, size: 21),
-          style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceCard,
-            foregroundColor: AppColors.primaryDark,
-            side: const BorderSide(color: AppColors.outline),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -173,9 +126,9 @@ class _LedgerBalanceCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'RECEIVABLES LEDGER',
+                    'Total Receivables',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: const Color(0xFFB9C7DC),
+                      color: AppColors.textOnPrimaryMuted,
                     ),
                   ),
                 ],
@@ -183,16 +136,11 @@ class _LedgerBalanceCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               MoneyText(
                 balance,
-                color: Colors.white,
+                color: AppColors.textOnPrimary,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontSize: 36,
                   height: 1.15,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              const Text(
-                'Still to collect across active debts',
-                style: TextStyle(color: Color(0xFFB9C7DC), fontSize: 13),
               ),
               const SizedBox(height: AppSpacing.xl),
               const _DashedRule(),
@@ -203,7 +151,7 @@ class _LedgerBalanceCard extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF284569),
+                      color: AppColors.primaryRaised,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -215,8 +163,8 @@ class _LedgerBalanceCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.md),
                   const Expanded(
                     child: Text(
-                      'Collected today',
-                      style: TextStyle(color: Color(0xFFD7E0ED)),
+                      'Collected Today',
+                      style: TextStyle(color: AppColors.textOnPrimarySoft),
                     ),
                   ),
                   MoneyText(
@@ -286,7 +234,7 @@ class _DashedRule extends StatelessWidget {
             (_) => const SizedBox(
               width: dashWidth,
               height: 1,
-              child: ColoredBox(color: Color(0xFF526985)),
+              child: ColoredBox(color: AppColors.primaryDivider),
             ),
           ),
         );
@@ -321,7 +269,7 @@ class _QuickAction extends StatelessWidget {
         side: BorderSide(
           color: color == AppColors.surfaceCard
               ? AppColors.outline
-              : Colors.transparent,
+              : AppColors.transparent,
         ),
       ),
       clipBehavior: Clip.antiAlias,

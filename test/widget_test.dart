@@ -22,6 +22,6 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
 
     expect(find.text(AppConstants.appName), findsOneWidget);
-    expect(find.text('Store overview'), findsOneWidget);
+    expect(find.text('Store overview'), findsNothing);
   });
 }

@@ -9,13 +9,40 @@ class AppTheme {
   static const _fontFamily = 'Poppins';
 
   static ThemeData light() {
-    final base = ColorScheme.fromSeed(
-      seedColor: AppColors.primaryDark,
+    const base = ColorScheme.light(
       primary: AppColors.primary,
+      onPrimary: AppColors.textOnPrimary,
+      primaryContainer: AppColors.primaryLight,
+      onPrimaryContainer: AppColors.primaryDark,
       secondary: AppColors.accent,
+      onSecondary: AppColors.primaryDark,
+      secondaryContainer: AppColors.accentLight,
+      onSecondaryContainer: AppColors.primaryDark,
+      tertiary: AppColors.paid,
+      onTertiary: AppColors.textOnPrimary,
+      tertiaryContainer: AppColors.paidBg,
+      onTertiaryContainer: AppColors.paid,
       surface: AppColors.surface,
+      onSurface: AppColors.textPrimary,
+      surfaceBright: AppColors.surfaceCard,
+      surfaceContainerLowest: AppColors.surfaceCard,
+      surfaceContainerLow: AppColors.surfaceRaised,
+      surfaceContainer: AppColors.surface,
+      surfaceContainerHigh: AppColors.surfaceRaised,
+      surfaceContainerHighest: AppColors.primaryLight,
+      onSurfaceVariant: AppColors.textSecondary,
+      outline: AppColors.outline,
+      outlineVariant: AppColors.outline,
       error: AppColors.danger,
-      brightness: Brightness.light,
+      onError: AppColors.textOnPrimary,
+      errorContainer: AppColors.unpaidBg,
+      onErrorContainer: AppColors.danger,
+      shadow: AppColors.shadow,
+      scrim: AppColors.scrim,
+      inverseSurface: AppColors.primaryDark,
+      onInverseSurface: AppColors.textOnPrimary,
+      inversePrimary: AppColors.accent,
+      surfaceTint: AppColors.transparent,
     );
 
     final textTheme = Typography.material2021(platform: TargetPlatform.android)
@@ -136,7 +163,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.textOnPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -177,7 +204,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.primaryDark,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -195,7 +222,7 @@ class AppTheme {
           fontFamily: _fontFamily,
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: Colors.white,
+          color: AppColors.textOnPrimary,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -210,7 +237,7 @@ class AppTheme {
         height: 72,
         elevation: 0,
         backgroundColor: AppColors.surfaceCard,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         indicatorColor: AppColors.accentLight,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -241,22 +268,22 @@ class AppTheme {
         backgroundColor: AppColors.primaryDark,
         contentTextStyle: const TextStyle(
           fontFamily: _fontFamily,
-          color: Colors.white,
+          color: AppColors.textOnPrimary,
           fontWeight: FontWeight.w500,
         ),
-        actionTextColor: Colors.white,
+        actionTextColor: AppColors.textOnPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surfaceCard,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceCard,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );

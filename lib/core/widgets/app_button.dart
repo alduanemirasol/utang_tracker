@@ -32,7 +32,7 @@ class AppButton extends StatelessWidget {
               strokeWidth: 2,
               color: variant == AppButtonVariant.secondary
                   ? AppColors.primary
-                  : Colors.white,
+                  : AppColors.textOnPrimary,
             ),
           )
         : Row(
@@ -60,7 +60,7 @@ class AppButton extends StatelessWidget {
           onPressed: effectiveOnPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.danger,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.textOnPrimary,
           ),
           child: child,
         );

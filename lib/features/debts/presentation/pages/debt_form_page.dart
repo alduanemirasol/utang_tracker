@@ -462,7 +462,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             controller: _notesController,
             label: 'Notes',
             hint: 'Optional',
-            maxLines: 2,
+            minLines: 4,
+            maxLines: 6,
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -659,7 +660,13 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       itemCount: customers.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(
+        height: 1,
+        thickness: 1,
+        indent: AppSpacing.lg,
+        endIndent: AppSpacing.lg,
+        color: AppColors.outline,
+      ),
       itemBuilder: (context, index) {
         final customer = customers[index];
         return ListTile(

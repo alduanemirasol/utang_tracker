@@ -225,7 +225,7 @@ class _FilterChip extends StatelessWidget {
       showCheckmark: false,
       selectedColor: AppColors.primary,
       labelStyle: TextStyle(
-        color: selected ? Colors.white : AppColors.textPrimary,
+        color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
       backgroundColor: AppColors.surfaceCard,

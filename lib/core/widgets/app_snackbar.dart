@@ -13,9 +13,9 @@ class AppSnackBar {
     AppSnackBarKind kind = AppSnackBarKind.info,
   }) {
     final (background, foreground) = switch (kind) {
-      AppSnackBarKind.success => (AppColors.success, Colors.white),
-      AppSnackBarKind.error => (AppColors.danger, Colors.white),
-      AppSnackBarKind.info => (AppColors.primaryDark, Colors.white),
+      AppSnackBarKind.success => (AppColors.success, AppColors.textOnPrimary),
+      AppSnackBarKind.error => (AppColors.danger, AppColors.textOnPrimary),
+      AppSnackBarKind.info => (AppColors.primaryDark, AppColors.textOnPrimary),
     };
 
     ScaffoldMessenger.of(context)

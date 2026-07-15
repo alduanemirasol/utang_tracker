@@ -51,9 +51,9 @@ class AppTextField extends StatelessWidget {
   }) {
     final baseStyle =
         style ??
-        Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        );
+        Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(color: AppColors.textPrimary);
 
     if (!label.contains('*')) {
       return Text(label, style: baseStyle);
