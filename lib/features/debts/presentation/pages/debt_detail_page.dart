@@ -11,6 +11,7 @@ import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
@@ -133,33 +134,7 @@ class DebtDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xl),
                 Text('Items', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
-                ...items.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.productName,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            '${_fmtQty(item.quantity)} ${DebtItemUnits.displayName(item.unit)}',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: MoneyText(item.price),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
                   'Payments',
@@ -265,9 +240,122 @@ class DebtDetailPage extends ConsumerWidget {
       ),
     );
   }
+}
 
-  String _fmtQty(double q) {
-    if (q % 1 == 0) return q.toInt().toString();
-    return q.toString();
+class _DebtItemsCard extends StatelessWidget {
+  const _DebtItemsCard({required this.items, required this.totalAmount});
+
+  final List<DebtItem> items;
+  final Money totalAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      key: const Key('debt-items-card'),
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (var index = 0; index < items.length; index++) ...[
+            _DebtItemRow(item: items[index]),
+            if (index < items.length - 1)
+              const Divider(
+                height: 1,
+                indent: AppSpacing.cardPadding,
+                endIndent: AppSpacing.cardPadding,
+              ),
+          ],
+          const Divider(height: 1),
+          Padding(
+            key: const Key('debt-items-total-row'),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.cardPadding,
+              vertical: AppSpacing.lg,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                MoneyText(
+                  totalAmount,
+                  key: const Key('debt-items-total-amount'),
+                  color: AppColors.primaryDark,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+class _DebtItemRow extends StatelessWidget {
+  const _DebtItemRow({required this.item});
+
+  final DebtItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final descriptionStyle =
+        textTheme.bodyMedium ?? const TextStyle(fontSize: 14);
+    final subtotalStyle = textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
+    final quantityAndUnit =
+        '${_formatQuantity(item.quantity)} '
+        '${DebtItemUnits.displayName(item.unit)}';
+
+    return Padding(
+      key: ValueKey('debt-item-row-${item.id}'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.cardPadding,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.productName,
+                  key: ValueKey('debt-item-name-${item.id}'),
+                  style: descriptionStyle.copyWith(
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  quantityAndUnit,
+                  key: ValueKey('debt-item-meta-${item.id}'),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          MoneyText(
+            item.price,
+            key: ValueKey('debt-item-subtotal-${item.id}'),
+            style: subtotalStyle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatQuantity(double quantity) {
+  if (quantity % 1 == 0) return quantity.toInt().toString();
+  return quantity.toString();
 }

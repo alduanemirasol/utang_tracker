@@ -70,7 +70,7 @@ class DashboardPage extends ConsumerWidget {
                   activeDebts: summary.activeDebtsCount,
                   customers: summary.totalCustomers,
                 ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.lg),
                 Row(
                   children: [
                     Expanded(
@@ -96,7 +96,7 @@ class DashboardPage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.lg),
                 _SectionHeader(
                   title: 'Recent activity',
                   actionLabel: summary.recentActivity.isEmpty

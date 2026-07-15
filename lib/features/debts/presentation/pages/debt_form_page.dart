@@ -107,19 +107,18 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Money get _total {
-    final prices = <Money>[];
-    for (final item in _items) {
-      Money price;
-      try {
-        price = Money.fromPesoString(
-          item.price.text.isEmpty ? '0' : item.price.text,
-        );
-      } catch (_) {
-        price = Money.zero();
-      }
-      if (price.isPositive) prices.add(price);
-    }
+    final prices = _items.map(_itemSubtotal).where((price) => price.isPositive);
     return DebtMath.computeTotal(prices);
+  }
+
+  Money _itemSubtotal(_LineItemControllers item) {
+    try {
+      return Money.fromPesoString(
+        item.price.text.isEmpty ? '0' : item.price.text,
+      );
+    } catch (_) {
+      return Money.zero();
+    }
   }
 
   String _collapsedItemSummary(_LineItemControllers item) {
@@ -514,6 +513,25 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                         onChanged: (_) => setState(() {}),
                       ),
                     ],
+                    const Divider(height: AppSpacing.xl),
+                    Row(
+                      key: ValueKey('debt-form-item-subtotal-row-$index'),
+                      children: [
+                        Text(
+                          'Subtotal',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const Spacer(),
+                        MoneyText(
+                          _itemSubtotal(item),
+                          key: ValueKey(
+                            'debt-form-item-subtotal-amount-$index',
+                          ),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
