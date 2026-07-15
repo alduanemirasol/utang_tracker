@@ -12,7 +12,7 @@ import 'package:utang_tracker/features/payments/presentation/pages/payments_list
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 
-/// Root navigator for full-screen routes and global dialogs (e.g. updates).
+/// Root navigator for full-screen form and detail routes.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 GoRouter createAppRouter() {
