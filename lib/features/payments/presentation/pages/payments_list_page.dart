@@ -46,9 +46,9 @@ class PaymentsListPage extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.pagePadding,
-                AppSpacing.lg,
+                AppSpacing.xs,
                 AppSpacing.pagePadding,
-                88,
+                104,
               ),
               itemCount: payments.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
@@ -58,6 +58,20 @@ class PaymentsListPage extends ConsumerWidget {
                   onTap: () => context.push('/debts/${payment.debtId}'),
                   child: Row(
                     children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: AppColors.paidBg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_downward_rounded,
+                          size: 20,
+                          color: AppColors.paid,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

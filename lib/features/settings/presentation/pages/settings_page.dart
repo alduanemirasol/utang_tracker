@@ -84,15 +84,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding,
+          0,
+          AppSpacing.pagePadding,
+          AppSpacing.xxl,
+        ),
         children: [
           AppCard(
+            color: AppColors.primaryDark,
+            borderColor: AppColors.primaryDark,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const AppLogo(size: 56, borderRadius: 12),
+                    const AppLogo(size: 60, borderRadius: 16),
                     const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Column(
@@ -100,25 +107,42 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         children: [
                           Text(
                             AppConstants.appName,
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           const Text(
-                            'Built to help Perly Store track customer utang, payments, and balances on this device.',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            'Perly Store’s pocket ledger',
+                            style: TextStyle(color: AppColors.accent),
                           ),
                         ],
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF284569),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _appVersion == null ? 'v—' : 'v$_appVersion',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  _appVersion == null ? 'Version' : 'Version $_appVersion',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
-                  ),
+                const SizedBox(height: AppSpacing.lg),
+                const Text(
+                  'Customer tabs, purchases, and payments stay organized on this device.',
+                  style: TextStyle(color: Color(0xFFD7E0ED), height: 1.5),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
@@ -131,20 +155,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.xxl),
+          Text('Quick guide', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.md),
           AppCard(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'How to use',
-                  style: Theme.of(context).textTheme.titleMedium,
+              children: const [
+                _GuideStep(
+                  number: '01',
+                  title: 'Add a customer',
+                  detail: 'Save their name and contact details.',
                 ),
-                const SizedBox(height: AppSpacing.md),
-                _tip('1. Add customers from the Customers tab.'),
-                _tip('2. Record utang under Debts with item lines.'),
-                _tip('3. Log payments when customers pay.'),
-                _tip('4. Check the Dashboard for store balances.'),
+                Divider(indent: 64),
+                _GuideStep(
+                  number: '02',
+                  title: 'Record their utang',
+                  detail: 'List each item, quantity, and price.',
+                ),
+                Divider(indent: 64),
+                _GuideStep(
+                  number: '03',
+                  title: 'Log every payment',
+                  detail: 'The remaining balance updates automatically.',
+                ),
               ],
             ),
           ),
@@ -152,11 +187,66 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       ),
     );
   }
+}
 
-  Widget _tip(String text) {
+class _GuideStep extends StatelessWidget {
+  const _GuideStep({
+    required this.number,
+    required this.title,
+    required this.detail,
+  });
+
+  final String number;
+  final String title;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Text(text),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.accentLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              number,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                color: AppColors.primaryDark,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  detail,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -30,9 +30,9 @@ class CustomersListPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.pagePadding,
-              AppSpacing.sm,
+              0,
               AppSpacing.pagePadding,
-              AppSpacing.sm,
+              AppSpacing.md,
             ),
             child: AppSearchBar(
               hintText: 'Search by name',
@@ -63,9 +63,9 @@ class CustomersListPage extends ConsumerWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.pagePadding,
-                      AppSpacing.sm,
+                      AppSpacing.xs,
                       AppSpacing.pagePadding,
-                      88,
+                      104,
                     ),
                     itemCount: customers.length,
                     separatorBuilder: (_, _) =>
@@ -76,14 +76,22 @@ class CustomersListPage extends ConsumerWidget {
                         onTap: () => context.push('/customers/${customer.id}'),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              backgroundColor: AppColors.primaryLight,
-                              foregroundColor: AppColors.primary,
+                            Container(
+                              width: 44,
+                              height: 44,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: index.isEven
+                                    ? AppColors.primaryLight
+                                    : AppColors.accentLight,
+                                borderRadius: BorderRadius.circular(13),
+                              ),
                               child: Text(
                                 customer.name.isNotEmpty
                                     ? customer.name[0].toUpperCase()
                                     : '?',
                                 style: const TextStyle(
+                                  color: AppColors.primaryDark,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -116,7 +124,8 @@ class CustomersListPage extends ConsumerWidget {
                               ),
                             ),
                             const Icon(
-                              Icons.chevron_right,
+                              Icons.arrow_forward_ios_rounded,
+                              size: 15,
                               color: AppColors.textMuted,
                             ),
                           ],

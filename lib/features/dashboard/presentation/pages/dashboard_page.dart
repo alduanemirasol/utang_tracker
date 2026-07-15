@@ -5,7 +5,9 @@ import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_logo.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
@@ -20,205 +22,558 @@ class DashboardPage extends ConsumerWidget {
     final async = ref.watch(dashboardSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
-      body: async.when(
-        loading: () => const LoadingIndicator(),
-        error: (e, _) => ErrorView(
-          message: e.toString(),
-          onRetry: () => ref.invalidate(dashboardSummaryProvider),
+      body: SafeArea(
+        bottom: false,
+        child: async.when(
+          loading: () => const LoadingIndicator(message: 'Opening your ledger'),
+          error: (e, _) => ErrorView(
+            message: e.toString(),
+            onRetry: () => ref.invalidate(dashboardSummaryProvider),
+          ),
+          data: (summary) {
+            return RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(dashboardSummaryProvider.notifier).refresh(),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.pagePadding,
+                  AppSpacing.lg,
+                  AppSpacing.pagePadding,
+                  AppSpacing.xxl,
+                ),
+                children: [
+                  const _DashboardHeader(),
+                  const SizedBox(height: AppSpacing.xl),
+                  _LedgerBalanceCard(
+                    balance: summary.outstandingBalance,
+                    collectedToday: summary.collectedToday,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.add_rounded,
+                          label: 'New utang',
+                          caption: 'Add item lines',
+                          color: AppColors.accent,
+                          foregroundColor: AppColors.primaryDark,
+                          onTap: () => context.push('/debts/new'),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.arrow_downward_rounded,
+                          label: 'Payment',
+                          caption: 'Record collection',
+                          color: AppColors.surfaceCard,
+                          foregroundColor: AppColors.primary,
+                          onTap: () => context.push('/payments/new'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  _StoreSnapshot(
+                    activeDebts: summary.activeDebtsCount,
+                    customers: summary.totalCustomers,
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  _SectionHeader(
+                    title: 'Recent activity',
+                    actionLabel: summary.recentActivity.isEmpty
+                        ? null
+                        : 'View debts',
+                    onAction: () => context.go('/debts'),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  if (summary.recentActivity.isEmpty)
+                    const _EmptyActivity()
+                  else
+                    _ActivityLedger(items: summary.recentActivity),
+                ],
+              ),
+            );
+          },
         ),
-        data: (summary) {
-          return RefreshIndicator(
-            onRefresh: () =>
-                ref.read(dashboardSummaryProvider.notifier).refresh(),
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.pagePadding),
-              children: [
-                Text(
-                  'Store overview',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatCard(
-                        label: 'Total Receivables',
-                        child: MoneyText(
-                          summary.outstandingBalance,
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                          color: summary.outstandingBalance.isZero
-                              ? AppColors.paid
-                              : AppColors.unpaid,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: _StatCard(
-                        label: 'Collected today',
-                        child: MoneyText(
-                          summary.collectedToday,
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                          color: AppColors.paid,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatCard(
-                        label: 'Active debts',
-                        child: Text(
-                          '${summary.activeDebtsCount}',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: _StatCard(
-                        label: 'Customers',
-                        child: Text(
-                          '${summary.totalCustomers}',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Recent activity',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                if (summary.recentActivity.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child: Text(
-                      'No activity yet.',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  )
-                else
-                  ...summary.recentActivity.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: AppCard(
-                        onTap: () => context.push('/debts/${item.debtId}'),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.customerName,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    DateFormatters.formatDate(item.date),
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                MoneyText(
-                                  item.amount,
-                                  color: item.type == RecentActivityType.payment
-                                      ? AppColors.paid
-                                      : AppColors.unpaid,
-                                ),
-                                const SizedBox(height: 4),
-                                _ActivityTypeBadge(type: item.type),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.xxl),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
 }
 
-class _ActivityTypeBadge extends StatelessWidget {
-  const _ActivityTypeBadge({required this.type});
-
-  final RecentActivityType type;
+class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader();
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg) = switch (type) {
-      RecentActivityType.debt => (AppColors.unpaidBg, AppColors.unpaid),
-      RecentActivityType.payment => (AppColors.paidBg, AppColors.paid),
-    };
+    return Row(
+      children: [
+        const AppLogo(size: 46, borderRadius: 14),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Store overview',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: AppColors.primary),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                AppConstants.appName,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+        ),
+        IconButton.filledTonal(
+          tooltip: 'Settings',
+          onPressed: () => context.go('/settings'),
+          icon: const Icon(Icons.storefront_outlined, size: 21),
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.surfaceCard,
+            foregroundColor: AppColors.primaryDark,
+            side: const BorderSide(color: AppColors.outline),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm + 2,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        type.label,
-        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600),
+class _LedgerBalanceCard extends StatelessWidget {
+  const _LedgerBalanceCard({
+    required this.balance,
+    required this.collectedToday,
+  });
+
+  final Money balance;
+  final Money collectedToday;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipPath(
+      clipper: const _ReceiptClipper(),
+      child: ColoredBox(
+        color: AppColors.primaryDark,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.menu_book_rounded,
+                    size: 18,
+                    color: AppColors.accent,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'RECEIVABLES LEDGER',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: const Color(0xFFB9C7DC),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              MoneyText(
+                balance,
+                color: Colors.white,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontSize: 36,
+                  height: 1.15,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              const Text(
+                'Still to collect across active debts',
+                style: TextStyle(color: Color(0xFFB9C7DC), fontSize: 13),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const _DashedRule(),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF284569),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.savings_outlined,
+                      size: 19,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  const Expanded(
+                    child: Text(
+                      'Collected today',
+                      style: TextStyle(color: Color(0xFFD7E0ED)),
+                    ),
+                  ),
+                  MoneyText(
+                    collectedToday,
+                    color: AppColors.accent,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.child});
+class _ReceiptClipper extends CustomClipper<Path> {
+  const _ReceiptClipper();
 
+  @override
+  Path getClip(Size size) {
+    const radius = 18.0;
+    const tooth = 10.0;
+    final bottom = size.height - tooth;
+    final path = Path()
+      ..moveTo(radius, 0)
+      ..lineTo(size.width - radius, 0)
+      ..quadraticBezierTo(size.width, 0, size.width, radius)
+      ..lineTo(size.width, bottom);
+
+    var x = size.width;
+    while (x > 0) {
+      final midpoint = (x - tooth / 2).clamp(0.0, size.width);
+      final end = (x - tooth).clamp(0.0, size.width);
+      path
+        ..lineTo(midpoint, size.height)
+        ..lineTo(end, bottom);
+      x -= tooth;
+    }
+
+    path
+      ..lineTo(0, radius)
+      ..quadraticBezierTo(0, 0, radius, 0)
+      ..close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _DashedRule extends StatelessWidget {
+  const _DashedRule();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dashWidth = 6.0;
+        const gapWidth = 6.0;
+        final count = (constraints.maxWidth / (dashWidth + gapWidth)).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            count,
+            (_) => const SizedBox(
+              width: dashWidth,
+              height: 1,
+              child: ColoredBox(color: Color(0xFF526985)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.caption,
+    required this.color,
+    required this.foregroundColor,
+    required this.onTap,
+  });
+
+  final IconData icon;
   final String label;
-  final Widget child;
+  final String caption;
+  final Color color;
+  final Color foregroundColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: color == AppColors.surfaceCard
+              ? AppColors.outline
+              : Colors.transparent,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              Icon(icon, color: foregroundColor, size: 23),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: foregroundColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      caption,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: foregroundColor.withValues(alpha: 0.72),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreSnapshot extends StatelessWidget {
+  const _StoreSnapshot({required this.activeDebts, required this.customers});
+
+  final int activeDebts;
+  final int customers;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      color: AppColors.surfaceRaised,
+      child: Row(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: _SnapshotMetric(
+              label: 'ACTIVE DEBTS',
+              value: '$activeDebts',
+              icon: Icons.pending_actions_outlined,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          child,
+          const SizedBox(
+            height: 48,
+            child: VerticalDivider(width: AppSpacing.xl),
+          ),
+          Expanded(
+            child: _SnapshotMetric(
+              label: 'CUSTOMERS',
+              value: '$customers',
+              icon: Icons.group_outlined,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SnapshotMetric extends StatelessWidget {
+  const _SnapshotMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.primary, size: 20),
+        const SizedBox(width: AppSpacing.sm),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            Text(label, style: Theme.of(context).textTheme.labelMedium),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String? actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        if (actionLabel != null)
+          TextButton(onPressed: onAction, child: Text(actionLabel!)),
+      ],
+    );
+  }
+}
+
+class _ActivityLedger extends StatelessWidget {
+  const _ActivityLedger({required this.items});
+
+  final List<RecentActivityItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            _ActivityRow(
+              item: items[i],
+              onTap: () => context.push('/debts/${items[i].debtId}'),
+            ),
+            if (i != items.length - 1)
+              const Divider(indent: 66, endIndent: AppSpacing.lg),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityRow extends StatelessWidget {
+  const _ActivityRow({required this.item, required this.onTap});
+
+  final RecentActivityItem item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPayment = item.type == RecentActivityType.payment;
+    final color = isPayment ? AppColors.paid : AppColors.unpaid;
+    final background = isPayment ? AppColors.paidBg : AppColors.unpaidBg;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(
+                isPayment
+                    ? Icons.arrow_downward_rounded
+                    : Icons.receipt_long_outlined,
+                size: 19,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.customerName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '${item.type.label} · ${DateFormatters.formatDate(item.date)}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            MoneyText(item.amount, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyActivity extends StatelessWidget {
+  const _EmptyActivity();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      color: AppColors.surfaceRaised,
+      child: const Row(
+        children: [
+          Icon(Icons.history_rounded, color: AppColors.textMuted),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Your newest debts and payments will appear here.',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
         ],
       ),
     );

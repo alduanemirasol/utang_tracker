@@ -37,9 +37,9 @@ class DebtsListPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.pagePadding,
-              AppSpacing.sm,
-              AppSpacing.sm,
-              AppSpacing.sm,
+              0,
+              AppSpacing.md,
+              AppSpacing.md,
             ),
             child: Row(
               children: [
@@ -106,7 +106,10 @@ class DebtsListPage extends ConsumerWidget {
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(AppSpacing.sm),
-                    child: Icon(Icons.sort, color: AppColors.textPrimary),
+                    child: Icon(
+                      Icons.swap_vert_rounded,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
@@ -136,9 +139,9 @@ class DebtsListPage extends ConsumerWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.pagePadding,
-                      AppSpacing.sm,
+                      AppSpacing.xs,
                       AppSpacing.pagePadding,
-                      88,
+                      104,
                     ),
                     itemCount: debts.length,
                     separatorBuilder: (_, _) =>
@@ -152,6 +155,12 @@ class DebtsListPage extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
+                                const Icon(
+                                  Icons.calendar_today_outlined,
+                                  size: 14,
+                                  color: AppColors.textMuted,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
                                 Expanded(
                                   child: Text(
                                     debt.customerName ?? 'Customer',
@@ -221,6 +230,7 @@ class _FilterChip extends StatelessWidget {
       ),
       backgroundColor: AppColors.surfaceCard,
       side: BorderSide(color: selected ? AppColors.primary : AppColors.outline),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 }
