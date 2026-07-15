@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.4+5
+version: 1.0.5+6
 
 environment:
   sdk: ^3.12.0
@@ -71,16 +71,15 @@ flutter_launcher_icons:
   adaptive_icon_foreground: assets/images/utang_tracker_launcher_v3.png
 
 flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/utang_tracker_logo_v2.png
+  # AppColors.primaryDark
+  color: "#172F55"
+  image: assets/images/utang_tracker_launcher_v3.png
   android: true
   ios: false
   android_12:
-    # Android 12+ always circular-masks the splash icon. This asset is the
-    # logo pre-padded on white so the circle only cuts padding and keeps the
-    # storefront-receipt mark intact.
-    color: "#FFFFFF"
-    image: assets/images/utang_tracker_logo_splash_android12.png
+    # Keep the Android 12 masked icon background flush with primaryDark.
+    color: "#172F55"
+    image: assets/images/utang_tracker_launcher_v3.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
