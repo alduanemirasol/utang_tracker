@@ -5,19 +5,11 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 class DebtMath {
   DebtMath._();
 
-  /// subtotal = quantity × unit_price
-  static Money computeSubtotal({
-    required double quantity,
-    required Money unitPrice,
-  }) {
-    return Money.subtotal(quantity: quantity, unitPrice: unitPrice);
-  }
-
-  /// total_amount = sum of item subtotals
-  static Money computeTotal(Iterable<Money> subtotals) {
+  /// total_amount = sum of custom item prices
+  static Money computeTotal(Iterable<Money> prices) {
     var total = Money.zero();
-    for (final s in subtotals) {
-      total = total + s;
+    for (final price in prices) {
+      total = total + price;
     }
     return total;
   }

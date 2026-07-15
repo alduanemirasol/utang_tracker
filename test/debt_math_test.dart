@@ -5,15 +5,7 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 
 void main() {
   group('DebtMath', () {
-    test('subtotal = quantity × unit_price', () {
-      final subtotal = DebtMath.computeSubtotal(
-        quantity: 2.5,
-        unitPrice: Money.fromPesos(40),
-      );
-      expect(subtotal.centavos, 10000); // ₱100.00
-    });
-
-    test('total is sum of subtotals', () {
+    test('total is sum of custom item prices', () {
       final total = DebtMath.computeTotal([
         Money.fromPesos(50),
         Money.fromPesos(25.50),

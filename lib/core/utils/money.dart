@@ -42,12 +42,6 @@ class Money {
   bool operator >=(Money other) => centavos >= other.centavos;
   bool operator <=(Money other) => centavos <= other.centavos;
 
-  /// quantity × unit price, rounded to nearest centavo.
-  static Money subtotal({required double quantity, required Money unitPrice}) {
-    final raw = quantity * unitPrice.centavos;
-    return Money._(raw.round());
-  }
-
   static final _format = NumberFormat.currency(
     locale: 'en_PH',
     symbol: '₱',

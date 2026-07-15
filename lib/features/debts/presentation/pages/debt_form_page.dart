@@ -38,17 +38,18 @@ class _LineItemControllers {
   _LineItemControllers()
     : product = TextEditingController(),
       quantity = TextEditingController(text: '1'),
-      unitPrice = TextEditingController();
+      price = TextEditingController();
 
   final TextEditingController product;
   final TextEditingController quantity;
-  final TextEditingController unitPrice;
+  final TextEditingController price;
   String unit = DebtItemUnits.piece;
+  bool isExpanded = true;
 
   void dispose() {
     product.dispose();
     quantity.dispose();
-    unitPrice.dispose();
+    price.dispose();
   }
 }
 
@@ -106,24 +107,27 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Money get _total {
-    final subtotals = <Money>[];
+    final prices = <Money>[];
     for (final item in _items) {
-      final qty = double.tryParse(item.quantity.text.trim()) ?? 0;
       Money price;
       try {
         price = Money.fromPesoString(
-          item.unitPrice.text.isEmpty ? '0' : item.unitPrice.text,
+          item.price.text.isEmpty ? '0' : item.price.text,
         );
       } catch (_) {
         price = Money.zero();
       }
-      if (qty > 0 && price.isPositive) {
-        subtotals.add(
-          DebtMath.computeSubtotal(quantity: qty, unitPrice: price),
-        );
-      }
+      if (price.isPositive) prices.add(price);
     }
-    return DebtMath.computeTotal(subtotals);
+    return DebtMath.computeTotal(prices);
+  }
+
+  String _collapsedItemSummary(_LineItemControllers item) {
+    final product = item.product.text.trim();
+    final quantity = item.quantity.text.trim();
+    final unit = DebtItemUnits.displayName(item.unit);
+    return '${product.isEmpty ? 'No product yet' : product} · '
+        '${quantity.isEmpty ? '0' : quantity} $unit';
   }
 
   Future<void> _pickDate({required bool due}) async {
@@ -163,7 +167,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       final qty = double.tryParse(item.quantity.text.trim());
       Money price;
       try {
-        price = Money.fromPesoString(item.unitPrice.text);
+        price = Money.fromPesoString(item.price.text);
       } catch (_) {
         setState(() => _error = 'Enter a valid price.');
         return null;
@@ -180,7 +184,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           productName: name,
           quantity: qty,
           unit: item.unit,
-          unitPrice: price,
+          price: price,
         ),
       );
     }
@@ -262,7 +266,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ? item.quantity.toInt().toString()
               : item.quantity.toString();
           c.unit = item.unit;
-          c.unitPrice.text = item.unitPrice.pesos.toStringAsFixed(2);
+          c.price.text = item.price.pesos.toStringAsFixed(2);
           return c;
         }),
       );
@@ -393,11 +397,59 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          'Item ${index + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Semantics(
+                            button: true,
+                            label: item.isExpanded
+                                ? 'Collapse item ${index + 1}'
+                                : 'Expand item ${index + 1}',
+                            child: InkWell(
+                              onTap: () => setState(
+                                () => item.isExpanded = !item.isExpanded,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.sm,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Item ${index + 1}',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          if (!item.isExpanded)
+                                            Text(
+                                              _collapsedItemSummary(item),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      item.isExpanded
+                                          ? Icons.keyboard_arrow_up_rounded
+                                          : Icons.keyboard_arrow_down_rounded,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        const Spacer(),
                         if (_items.length > 1)
                           IconButton(
                             tooltip: 'Remove item',
@@ -411,54 +463,57 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                           ),
                       ],
                     ),
-                    const Divider(height: AppSpacing.lg),
-                    AppTextField(
-                      controller: item.product,
-                      label: 'Product',
-                      hint: 'e.g. Bigas',
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppTextField(
-                            controller: item.quantity,
-                            label: 'Qty',
-                            hint: 'e.g. 2',
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[\d.]'),
-                              ),
-                            ],
-                            onChanged: (_) => setState(() {}),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: _UnitField(
-                            unit: item.unit,
-                            onTap: () => _pickUnit(item),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    AppTextField(
-                      controller: item.unitPrice,
-                      label: 'Price',
-                      hint: 'e.g. 50.00',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                    if (item.isExpanded) ...[
+                      const Divider(height: AppSpacing.lg),
+                      AppTextField(
+                        controller: item.product,
+                        label: 'Product',
+                        hint: 'e.g. Bigas',
+                        onChanged: (_) => setState(() {}),
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                      ],
-                      onChanged: (_) => setState(() {}),
-                    ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              controller: item.quantity,
+                              label: 'Qty',
+                              hint: 'e.g. 2',
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[\d.]'),
+                                ),
+                              ],
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: _UnitField(
+                              unit: item.unit,
+                              onTap: () => _pickUnit(item),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(
+                        controller: item.price,
+                        label: 'Price',
+                        hint: 'e.g. 50.00',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                        ],
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ],
                   ],
                 ),
               ),

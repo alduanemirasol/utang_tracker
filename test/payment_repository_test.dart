@@ -36,19 +36,20 @@ void main() {
           productName: 'Bigas',
           quantity: 2,
           unit: DebtItemUnits.kilogram,
-          unitPrice: Money.fromPesos(50),
+          price: Money.fromPesos(50),
         ),
         DebtItemInput(
           productName: 'Noodles',
           quantity: 3,
-          unitPrice: Money.fromPesos(10),
+          price: Money.fromPesos(10),
         ),
       ],
     );
 
-    expect(debt.totalAmount.centavos, 13000);
+    // Quantity is descriptive; custom item prices are summed directly.
+    expect(debt.totalAmount.centavos, 6000);
     expect(debt.paidAmount.isZero, isTrue);
-    expect(debt.balance.centavos, 13000);
+    expect(debt.balance.centavos, 6000);
     expect(debt.status, DebtStatus.unpaid);
 
     final createdDetail = await debts.getById(debt.id);
@@ -57,19 +58,19 @@ void main() {
 
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(50),
+      amount: Money.fromPesos(20),
       paymentDate: DateTime.now(),
       paymentMethod: 'Cash',
     );
 
     final partial = await debts.getById(debt.id);
     expect(partial!.debt.status, DebtStatus.partial);
-    expect(partial.debt.paidAmount.centavos, 5000);
-    expect(partial.debt.balance.centavos, 8000);
+    expect(partial.debt.paidAmount.centavos, 2000);
+    expect(partial.debt.balance.centavos, 4000);
 
     await payments.recordPayment(
       debtId: debt.id,
-      amount: Money.fromPesos(80),
+      amount: Money.fromPesos(40),
       paymentDate: DateTime.now(),
       paymentMethod: 'GCash',
     );
@@ -98,7 +99,7 @@ void main() {
         DebtItemInput(
           productName: 'Soda',
           quantity: 1,
-          unitPrice: Money.fromPesos(20),
+          price: Money.fromPesos(20),
         ),
       ],
     );
@@ -123,7 +124,7 @@ void main() {
         DebtItemInput(
           productName: 'Item',
           quantity: 1,
-          unitPrice: Money.fromPesos(10),
+          price: Money.fromPesos(10),
         ),
       ],
     );

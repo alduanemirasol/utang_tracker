@@ -50,8 +50,7 @@ Allowed values for `status`:
 | product_name | TEXT          | Yes      |
 | quantity     | DECIMAL(10,2) | Yes      |
 | unit         | TEXT          | Yes      |
-| unit_price   | DECIMAL(10,2) | Yes      |
-| subtotal     | DECIMAL(10,2) | Yes      |
+| price        | DECIMAL(10,2) | Yes      |
 | deleted_at   | DATETIME      | No       |
 
 ---
@@ -108,7 +107,8 @@ were introduced default to `piece`.
 - One debt can contain many debt items.
 - Every debt item has a non-empty selling unit.
 - One debt can have multiple payments.
-- `subtotal = quantity × unit_price`
+- `debt_items.price` is the final custom line amount; quantity does not multiply it.
+- `debts.total_amount` is the sum of active debt item prices.
 - `balance = total_amount - paid_amount`
 - Update `paid_amount`, `balance`, and `status` whenever a payment is recorded.
 - `due_date` is optional.

@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -63,6 +63,35 @@ FROM debt_items;
       if (from < 4) {
         // Existing items become pieces; new records always provide a unit.
         await m.addColumn(debtItems, debtItems.unit);
+      }
+      if (from < 5) {
+        // Price becomes the final custom line amount. Preserve historical
+        // totals by migrating the previously computed subtotal into price.
+        await customStatement('''
+CREATE TABLE debt_items_v5 (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL REFERENCES debts (id),
+  product_name TEXT NOT NULL,
+  quantity REAL NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'piece',
+  price INTEGER NOT NULL,
+  deleted_at INTEGER NULL
+);
+''');
+        await customStatement('''
+INSERT INTO debt_items_v5 (
+  id, debt_id, product_name, quantity, unit, price, deleted_at
+)
+SELECT id, debt_id, product_name, quantity, unit, subtotal, deleted_at
+FROM debt_items;
+''');
+        await customStatement('DROP TABLE debt_items;');
+        await customStatement(
+          'ALTER TABLE debt_items_v5 RENAME TO debt_items;',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
+        );
       }
     },
   );

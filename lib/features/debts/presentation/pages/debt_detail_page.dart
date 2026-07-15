@@ -146,14 +146,14 @@ class DebtDetailPage extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            '${_fmtQty(item.quantity)} ${DebtItemUnits.displayName(item.unit)} × ${item.unitPrice.format()}',
+                            '${_fmtQty(item.quantity)} ${DebtItemUnits.displayName(item.unit)}',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                             ),
                           ),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: MoneyText(item.subtotal),
+                            child: MoneyText(item.price),
                           ),
                         ],
                       ),

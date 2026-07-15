@@ -48,8 +48,9 @@ class DebtItems extends Table {
   /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   RealColumn get quantity => real()();
   TextColumn get unit => text().withDefault(const Constant('piece'))();
-  IntColumn get unitPrice => integer()();
-  IntColumn get subtotal => integer()();
+
+  /// Final custom line amount in centavos; quantity does not multiply it.
+  IntColumn get price => integer()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override

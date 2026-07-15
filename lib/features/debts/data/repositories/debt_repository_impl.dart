@@ -131,7 +131,7 @@ class DebtRepositoryImpl implements DebtRepository {
     }
 
     final prepared = _prepareItems(items);
-    final total = DebtMath.computeTotal(prepared.map((e) => e.subtotal));
+    final total = DebtMath.computeTotal(prepared.map((e) => e.price));
     final paid = Money.zero();
     final balance = DebtMath.computeBalance(
       totalAmount: total,
@@ -171,8 +171,7 @@ class DebtRepositoryImpl implements DebtRepository {
                 productName: item.productName,
                 quantity: item.quantity,
                 unit: Value(item.unit),
-                unitPrice: item.unitPrice.centavos,
-                subtotal: item.subtotal.centavos,
+                price: item.price.centavos,
               ),
             );
       }
@@ -202,7 +201,7 @@ class DebtRepositoryImpl implements DebtRepository {
 
     _validateItems(items);
     final prepared = _prepareItems(items);
-    final total = DebtMath.computeTotal(prepared.map((e) => e.subtotal));
+    final total = DebtMath.computeTotal(prepared.map((e) => e.price));
     final paid = Money.zero();
     final balance = DebtMath.computeBalance(
       totalAmount: total,
@@ -246,8 +245,7 @@ class DebtRepositoryImpl implements DebtRepository {
                 productName: item.productName,
                 quantity: item.quantity,
                 unit: Value(item.unit),
-                unitPrice: item.unitPrice.centavos,
-                subtotal: item.subtotal.centavos,
+                price: item.price.centavos,
               ),
             );
       }
@@ -306,33 +304,20 @@ class DebtRepositoryImpl implements DebtRepository {
       if (item.unit.trim().length > 24) {
         throw const ValidationException('Unit must be 24 characters or fewer.');
       }
-      if (!item.unitPrice.isPositive) {
+      if (!item.price.isPositive) {
         throw const ValidationException('Price must be greater than zero.');
       }
     }
   }
 
-  List<
-    ({
-      String productName,
-      double quantity,
-      String unit,
-      Money unitPrice,
-      Money subtotal,
-    })
-  >
+  List<({String productName, double quantity, String unit, Money price})>
   _prepareItems(List<DebtItemInput> items) {
     return items.map((item) {
-      final subtotal = DebtMath.computeSubtotal(
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      );
       return (
         productName: item.productName.trim(),
         quantity: item.quantity,
         unit: DebtItemUnits.normalize(item.unit),
-        unitPrice: item.unitPrice,
-        subtotal: subtotal,
+        price: item.price,
       );
     }).toList();
   }

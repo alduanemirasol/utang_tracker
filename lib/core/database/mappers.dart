@@ -41,8 +41,7 @@ DebtItem mapDebtItem(DebtItemRow row) {
     productName: row.productName,
     quantity: row.quantity,
     unit: row.unit,
-    unitPrice: Money.fromCentavos(row.unitPrice),
-    subtotal: Money.fromCentavos(row.subtotal),
+    price: Money.fromCentavos(row.price),
   );
 }
 
