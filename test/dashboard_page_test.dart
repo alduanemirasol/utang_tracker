@@ -11,7 +11,7 @@ import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_r
 import 'package:utang_tracker/features/dashboard/presentation/pages/dashboard_page.dart';
 
 void main() {
-  testWidgets('activity time appears below amount and beside date', (
+  testWidgets('activity date and time appear with label below amount', (
     tester,
   ) async {
     final database = AppDatabase.forTesting();
@@ -25,12 +25,13 @@ void main() {
       totalCustomers: 1,
       recentActivity: [
         RecentActivityItem(
-          type: RecentActivityType.debt,
+          type: RecentActivityType.payment,
           id: 'activity-id',
           debtId: 'debt-id',
           customerName: 'Maria Santos',
           amount: Money.fromPesos(125),
           date: activityDate,
+          paymentMethod: 'GCash',
         ),
       ],
     );
@@ -48,25 +49,26 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final typeAndDate = find.text(
-      'Debt · ${DateFormatters.formatDate(activityDate)}',
+    final dateAndTime = find.text(
+      '${DateFormatters.formatDate(activityDate)} - ${DateFormatters.formatTime(activityDate)}',
     );
-    final time = find.text(DateFormatters.formatTime(activityDate));
+    final label = find.text('Payment');
     final amount = find.text(Money.fromPesos(125).format());
 
-    expect(typeAndDate, findsOneWidget);
-    expect(time, findsOneWidget);
+    expect(dateAndTime, findsOneWidget);
+    expect(label, findsOneWidget);
+    expect(find.text('GCash'), findsNothing);
     expect(amount, findsOneWidget);
     expect(
-      tester.getTopLeft(time).dy,
+      tester.getTopLeft(label).dy,
       greaterThan(tester.getTopLeft(amount).dy),
     );
     expect(
-      tester.getTopLeft(time).dy,
-      closeTo(tester.getTopLeft(typeAndDate).dy, 1),
+      tester.getTopLeft(label).dy,
+      closeTo(tester.getTopLeft(dateAndTime).dy, 1),
     );
     expect(
-      tester.getTopRight(time).dx,
+      tester.getTopRight(label).dx,
       closeTo(tester.getTopRight(amount).dx, 1),
     );
   });

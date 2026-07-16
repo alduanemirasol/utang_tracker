@@ -155,7 +155,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     final debt = _selectedDebt;
     if (debt == null) return null;
     final name = debt.customerName ?? 'Customer';
-    return '$name · ${debt.balance.format()}';
+    return '$name - ${debt.balance.format()}';
   }
 
   @override
@@ -454,7 +454,8 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
             DateFormatters.formatDateTime(debt.transactionDate),
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
             ),
           ),
           trailing: Column(

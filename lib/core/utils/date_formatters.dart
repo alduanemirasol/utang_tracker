@@ -4,7 +4,7 @@ class DateFormatters {
   DateFormatters._();
 
   static final _display = DateFormat('MMMM d, yyyy');
-  static final _displayWithTime = DateFormat('MMMM d, yyyy · h:mm a');
+  static final _displayWithTime = DateFormat('MMMM d, yyyy - h:mm a');
   static final _time = DateFormat('h:mm a');
   static final _dayKey = DateFormat('yyyy-MM-dd');
 

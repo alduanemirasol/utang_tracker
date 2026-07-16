@@ -26,7 +26,7 @@ void main() {
     await _pumpPage(tester, [payment]);
 
     final dateAndMethod = find.text(
-      '${DateFormatters.formatDate(paymentDate)} Â· Cash',
+      '${DateFormatters.formatDate(paymentDate)} - Cash',
     );
     final time = find.text(DateFormatters.formatTime(paymentDate));
     final amount = find.text(payment.amount.format());

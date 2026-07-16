@@ -152,10 +152,11 @@ class PaymentsListPage extends ConsumerWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          '${DateFormatters.formatDate(payment.paymentDate)} Â· ${payment.paymentMethod}',
+                                          '${DateFormatters.formatDate(payment.paymentDate)} - ${payment.paymentMethod}',
                                           style: const TextStyle(
                                             color: AppColors.textSecondary,
-                                            fontSize: 13,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -168,7 +169,8 @@ class PaymentsListPage extends ConsumerWidget {
                                         ),
                                         style: const TextStyle(
                                           color: AppColors.textMuted,
-                                          fontSize: 11,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

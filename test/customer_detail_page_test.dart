@@ -114,7 +114,9 @@ void main() {
     expect(paymentTime, findsOneWidget);
     expect(paymentAmount, findsOneWidget);
     expect(paymentType, findsOneWidget);
-    expect(tester.widget<Text>(paymentType).style?.fontSize, 14);
+    final paymentTypeStyle = tester.widget<Text>(paymentType).style;
+    expect(paymentTypeStyle?.fontSize, 12);
+    expect(paymentTypeStyle?.fontWeight, FontWeight.w400);
     expect(
       tester.getTopLeft(paymentTime).dy,
       greaterThan(tester.getTopLeft(paymentDate).dy),

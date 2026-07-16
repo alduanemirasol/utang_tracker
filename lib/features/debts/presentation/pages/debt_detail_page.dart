@@ -163,12 +163,17 @@ class DebtDetailPage extends ConsumerWidget {
                                     DateFormatters.formatDateTime(
                                       p.paymentDate,
                                     ),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                    ),
                                   ),
                                   Text(
                                     p.paymentMethod,
                                     style: const TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 13,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ],
@@ -209,6 +214,7 @@ class DebtDetailPage extends ConsumerWidget {
             child: Text(
               v,
               textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
             ),
           ),
         ],

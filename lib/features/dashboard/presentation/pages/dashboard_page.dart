@@ -476,10 +476,11 @@ class _ActivityRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${item.type.label} · ${DateFormatters.formatDate(item.date)}',
+                          '${DateFormatters.formatDate(item.date)} - ${DateFormatters.formatTime(item.date)}',
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
+                            fontWeight: FontWeight.w400,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -487,10 +488,11 @@ class _ActivityRow extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        DateFormatters.formatTime(item.date),
+                        item.type.label,
                         style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

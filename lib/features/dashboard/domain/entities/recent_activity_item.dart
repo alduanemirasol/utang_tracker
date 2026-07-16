@@ -20,6 +20,7 @@ class RecentActivityItem extends Equatable {
     required this.customerName,
     required this.amount,
     required this.date,
+    this.paymentMethod,
   });
 
   final RecentActivityType type;
@@ -28,7 +29,16 @@ class RecentActivityItem extends Equatable {
   final String customerName;
   final Money amount;
   final DateTime date;
+  final String? paymentMethod;
 
   @override
-  List<Object?> get props => [type, id, debtId, customerName, amount, date];
+  List<Object?> get props => [
+    type,
+    id,
+    debtId,
+    customerName,
+    amount,
+    date,
+    paymentMethod,
+  ];
 }

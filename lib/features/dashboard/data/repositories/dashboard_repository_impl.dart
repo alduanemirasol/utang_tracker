@@ -58,6 +58,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
           customerName: p.customerName ?? 'Customer',
           amount: p.amount,
           date: p.createdAt,
+          paymentMethod: p.paymentMethod,
         ),
       ),
     ]..sort((a, b) => b.date.compareTo(a.date));

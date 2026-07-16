@@ -266,12 +266,19 @@ class _DebtHistoryList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(DateFormatters.formatDate(debt.transactionDate)),
+                    Text(
+                      DateFormatters.formatDate(debt.transactionDate),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                     Text(
                       DateFormatters.formatTime(debt.transactionDate),
                       style: const TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 11,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -330,12 +337,19 @@ class _PaymentHistoryList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(DateFormatters.formatDate(payment.paymentDate)),
+                    Text(
+                      DateFormatters.formatDate(payment.paymentDate),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                     Text(
                       DateFormatters.formatTime(payment.paymentDate),
                       style: const TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 11,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -350,7 +364,8 @@ class _PaymentHistoryList extends StatelessWidget {
                     payment.paymentMethod,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 14,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
