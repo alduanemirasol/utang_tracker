@@ -48,6 +48,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
+      style: Theme.of(context).textTheme.bodyMedium,
       onChanged: _onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(

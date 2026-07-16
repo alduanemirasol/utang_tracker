@@ -467,7 +467,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                       AppTextField(
                         controller: item.product,
                         label: 'Product',
-                        hint: 'e.g. Bigas',
+                        hint: 'e.g. Bugas',
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -604,7 +604,7 @@ class _CustomerField extends StatelessWidget {
         ),
         child: Text(
           hasName ? name! : 'Select customer',
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: hasName ? AppColors.textPrimary : AppColors.textMuted,
           ),
           maxLines: 1,
@@ -638,6 +638,7 @@ class _UnitField extends StatelessWidget {
                 Expanded(
                   child: Text(
                     DebtItemUnits.displayName(unit),
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1005,7 +1006,7 @@ class _DateField extends StatelessWidget {
                     )
                   : const Icon(Icons.calendar_today_outlined, size: 18),
             ),
-            child: Text(value),
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ),
       ],

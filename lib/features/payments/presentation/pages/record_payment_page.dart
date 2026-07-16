@@ -211,7 +211,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               ),
               child: Text(
                 DateFormatters.formatDate(_paymentDate),
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ),
@@ -221,13 +221,14 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           DropdownButtonFormField<String>(
             // ignore: deprecated_member_use
             value: _method,
+            style: Theme.of(context).textTheme.bodyMedium,
             items: AppConstants.paymentMethods
                 .map(
                   (m) => DropdownMenuItem(
                     value: m,
                     child: Text(
                       m,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 )
@@ -303,7 +304,7 @@ class _DebtField extends StatelessWidget {
         ),
         child: Text(
           hasLabel ? label! : 'Select debt',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: hasLabel ? AppColors.textPrimary : AppColors.textMuted,
           ),
           maxLines: 1,

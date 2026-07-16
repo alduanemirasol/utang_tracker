@@ -153,7 +153,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.danger, width: 2),
         ),
-        hintStyle: const TextStyle(color: AppColors.textMuted),
+        hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
         labelStyle: const TextStyle(
           fontFamily: _fontFamily,
           color: AppColors.textSecondary,
