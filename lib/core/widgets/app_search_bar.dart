@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 
 class AppSearchBar extends StatefulWidget {
@@ -52,6 +53,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
       onChanged: _onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
+        fillColor: AppColors.surfaceCard,
         hintText: widget.hintText,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: _controller.text.isEmpty
