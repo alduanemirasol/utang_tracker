@@ -33,6 +33,15 @@ class _AppSearchBarState extends State<AppSearchBar> {
   }
 
   @override
+  void didUpdateWidget(covariant AppSearchBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _controller.text) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     _controller.dispose();

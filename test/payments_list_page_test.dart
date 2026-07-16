@@ -7,36 +7,26 @@ import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
+import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 void main() {
   testWidgets('payment time appears below amount and beside date', (
     tester,
   ) async {
     final paymentDate = DateTime(2026, 7, 15, 14, 5);
-    final payment = Payment(
+    final payment = _payment(
       id: 'payment-id',
       debtId: 'debt-id',
-      amount: Money.fromPesos(125),
+      amount: 125,
       paymentDate: paymentDate,
       paymentMethod: 'Cash',
-      createdAt: paymentDate,
       customerName: 'Maria Santos',
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          paymentRepositoryProvider.overrideWithValue(
-            _FakePaymentRepository([payment]),
-          ),
-        ],
-        child: const MaterialApp(home: PaymentsListPage()),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _pumpPage(tester, [payment]);
 
     final dateAndMethod = find.text(
-      '${DateFormatters.formatDate(paymentDate)} · Cash',
+      '${DateFormatters.formatDate(paymentDate)} Â· Cash',
     );
     final time = find.text(DateFormatters.formatTime(paymentDate));
     final amount = find.text(payment.amount.format());
@@ -57,6 +47,121 @@ void main() {
       closeTo(tester.getTopRight(amount).dx, 1),
     );
   });
+
+  testWidgets('filters payments by customer search', (tester) async {
+    await _pumpPage(tester, [
+      _payment(id: '1', customerName: 'Maria Santos'),
+      _payment(id: '2', customerName: 'Juan Cruz'),
+    ]);
+
+    await tester.enterText(find.byType(TextField), 'maria');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Maria Santos'), findsOneWidget);
+    expect(find.text('Juan Cruz'), findsNothing);
+  });
+
+  testWidgets('filters payments by method chip', (tester) async {
+    await _pumpPage(tester, [
+      _payment(id: '1', paymentMethod: 'Cash', customerName: 'Maria Santos'),
+      _payment(id: '2', paymentMethod: 'GCash', customerName: 'Juan Cruz'),
+    ]);
+
+    await tester.tap(find.widgetWithText(FilterChip, 'GCash'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Maria Santos'), findsNothing);
+    expect(find.text('Juan Cruz'), findsOneWidget);
+  });
+
+  testWidgets('filters payments by selected date range', (tester) async {
+    final container = await _pumpPage(tester, [
+      _payment(
+        id: '1',
+        paymentDate: DateTime(2026, 7, 15, 9),
+        customerName: 'Maria Santos',
+      ),
+      _payment(
+        id: '2',
+        paymentDate: DateTime(2026, 7, 16, 9),
+        customerName: 'Juan Cruz',
+      ),
+    ]);
+
+    container
+        .read(paymentFiltersProvider.notifier)
+        .setDateRange(
+          startDate: DateTime(2026, 7, 16),
+          endDate: DateTime(2026, 7, 16),
+        );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Maria Santos'), findsNothing);
+    expect(find.text('Juan Cruz'), findsOneWidget);
+  });
+
+  testWidgets('clear filters restores all payments and clears search text', (
+    tester,
+  ) async {
+    final container = await _pumpPage(tester, [
+      _payment(id: '1', customerName: 'Maria Santos'),
+      _payment(id: '2', customerName: 'Juan Cruz'),
+    ]);
+    container.read(paymentFiltersProvider.notifier).setSearchQuery('maria');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Clear filters'));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller?.text, isEmpty);
+    expect(find.text('Maria Santos'), findsOneWidget);
+    expect(find.text('Juan Cruz'), findsOneWidget);
+  });
+}
+
+Future<ProviderContainer> _pumpPage(
+  WidgetTester tester,
+  List<Payment> payments,
+) async {
+  final container = ProviderContainer(
+    overrides: [
+      paymentRepositoryProvider.overrideWithValue(
+        _FakePaymentRepository(payments),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(home: PaymentsListPage()),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return container;
+}
+
+Payment _payment({
+  required String id,
+  String debtId = 'debt-id',
+  double amount = 125,
+  DateTime? paymentDate,
+  String paymentMethod = 'Cash',
+  String customerName = 'Customer',
+}) {
+  final date = paymentDate ?? DateTime(2026, 7, 15, 14, 5);
+  return Payment(
+    id: id,
+    debtId: debtId,
+    amount: Money.fromPesos(amount),
+    paymentDate: date,
+    paymentMethod: paymentMethod,
+    createdAt: date,
+    customerName: customerName,
+  );
 }
 
 class _FakePaymentRepository implements PaymentRepository {
