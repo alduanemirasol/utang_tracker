@@ -58,7 +58,7 @@ class _DebtNotificationsSheet extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       const Text(
-                        'Utang that needs attention now or within 7 days.',
+                        'Due now and soon.',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
@@ -152,8 +152,8 @@ class _AttentionSummary extends StatelessWidget {
           Expanded(
             child: Text(
               urgent > 0
-                  ? '$urgent ${urgent == 1 ? 'debt needs' : 'debts need'} attention today'
-                  : '${feed.items.length} ${feed.items.length == 1 ? 'debt is' : 'debts are'} coming due',
+                  ? '$urgent due now'
+                  : '${feed.items.length} due soon',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -315,12 +315,12 @@ class _EmptyNotifications extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Nothing needs attention',
+              'No reminders',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
             const Text(
-              'Upcoming due dates will appear here seven days before they are due.',
+              'Due utang will show here.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary),
             ),
@@ -340,12 +340,12 @@ String _sectionLabel(DebtNotificationKind kind) => switch (kind) {
 String _timingLabel(DebtNotification notification) {
   return switch (notification.kind) {
     DebtNotificationKind.overdue =>
-      '${notification.daysFromToday.abs()} ${notification.daysFromToday == -1 ? 'day' : 'days'} overdue',
-    DebtNotificationKind.dueToday => 'Due today',
+      '${notification.daysFromToday.abs()}d late',
+    DebtNotificationKind.dueToday => 'Today',
     DebtNotificationKind.dueSoon =>
       notification.daysFromToday == 1
-          ? 'Due tomorrow'
-          : 'Due in ${notification.daysFromToday} days',
+          ? 'Tomorrow'
+          : 'In ${notification.daysFromToday}d',
   };
 }
 

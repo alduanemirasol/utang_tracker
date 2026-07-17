@@ -131,7 +131,10 @@ class DebtDetailPage extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(height: AppSpacing.xl),
-                Text('Items', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Items (${items.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
                 const SizedBox(height: AppSpacing.xl),

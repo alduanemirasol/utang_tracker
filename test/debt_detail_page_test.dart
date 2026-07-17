@@ -70,6 +70,7 @@ void main() {
       find.text(DateFormatters.formatDateTime(debt.transactionDate)),
       findsOneWidget,
     );
+    expect(find.text('Items (3)'), findsOneWidget);
     expect(find.byKey(const Key('debt-items-card')), findsOneWidget);
     expect(find.text('Softdrinks'), findsOneWidget);
     expect(find.text('2 Bottles'), findsOneWidget);

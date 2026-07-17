@@ -28,6 +28,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Due reminders'), findsOneWidget);
-    expect(find.text('Nothing needs attention'), findsOneWidget);
+    expect(find.text('No reminders'), findsOneWidget);
   });
 }
