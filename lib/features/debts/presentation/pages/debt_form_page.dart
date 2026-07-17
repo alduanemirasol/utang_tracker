@@ -322,7 +322,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   Widget _buildForm() {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.isEditing ? 'Edit debt' : 'New debt')),
+      appBar: AppBar(
+        title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
@@ -566,7 +568,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           ],
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            label: widget.isEditing ? 'Save changes' : 'Save debt',
+            label: widget.isEditing ? 'Save changes' : 'Save',
             onPressed: _save,
             isLoading: _saving,
           ),

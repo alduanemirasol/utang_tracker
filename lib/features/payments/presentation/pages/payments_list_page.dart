@@ -22,12 +22,12 @@ class PaymentsListPage extends ConsumerWidget {
     final optionsAsync = ref.watch(paymentFilterOptionsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Payments')),
+      appBar: AppBar(title: const Text('Bayad')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/payments/new'),
-        tooltip: 'Record payment',
+        tooltip: 'Record bayad',
         icon: const Icon(Icons.add),
-        label: const Text('Record payment'),
+        label: const Text('Record bayad'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

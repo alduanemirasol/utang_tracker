@@ -24,12 +24,12 @@ class DebtsListPage extends ConsumerWidget {
     final debtsAsync = ref.watch(debtsListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Debts')),
+      appBar: AppBar(title: const Text('Utang')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/debts/new'),
-        tooltip: 'New debt',
+        tooltip: 'New utang',
         icon: const Icon(Icons.add),
-        label: const Text('New debt'),
+        label: const Text('New utang'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

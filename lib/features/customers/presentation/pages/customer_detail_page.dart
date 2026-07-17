@@ -90,7 +90,7 @@ class CustomerDetailPage extends ConsumerWidget {
               onPressed: () =>
                   context.push('/debts/new?customerId=$customerId'),
               icon: const Icon(Icons.add),
-              label: const Text('New debt'),
+              label: const Text('New utang'),
             ),
             body: RefreshIndicator(
               onRefresh: () =>
@@ -198,8 +198,8 @@ class _HistoryTabBar extends StatelessWidget {
       color: AppColors.surface,
       child: const TabBar(
         tabs: [
-          Tab(text: 'Debts'),
-          Tab(text: 'Payments'),
+          Tab(text: 'Utang'),
+          Tab(text: 'Bayad'),
         ],
       ),
     );

@@ -82,7 +82,7 @@ class DashboardPage extends ConsumerWidget {
                     Expanded(
                       child: _QuickAction(
                         icon: Icons.arrow_downward_rounded,
-                        label: 'Bayad',
+                        label: 'Record bayad',
                         color: AppColors.surfaceCard,
                         foregroundColor: AppColors.primaryDark,
                         onTap: () => context.push('/payments/new'),
@@ -95,7 +95,7 @@ class DashboardPage extends ConsumerWidget {
                   title: 'Recent activity',
                   actionLabel: summary.recentActivity.isEmpty
                       ? null
-                      : 'View debts',
+                      : 'Mga utang',
                   onAction: () => context.go('/debts'),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -194,8 +194,9 @@ class _LedgerBalanceCard extends StatelessWidget {
             children: [
               Text(
                 'Total Receivables',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.textOnPrimaryMuted,
+                style: TextStyle(
+                  color: AppColors.textOnPrimarySoft,
+                  fontSize: 12,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -219,10 +220,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Active Debts',
+                          'Active Utang',
                           style: TextStyle(
                             color: AppColors.textOnPrimarySoft,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -248,7 +249,7 @@ class _LedgerBalanceCard extends StatelessWidget {
                           'Collected Today',
                           style: TextStyle(
                             color: AppColors.textOnPrimarySoft,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -375,7 +376,7 @@ class _SectionHeader extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(fontSize: 20),
+            ).textTheme.titleLarge?.copyWith(fontSize: 18),
           ),
         ),
         if (actionLabel != null)
@@ -522,7 +523,7 @@ class _EmptyActivity extends StatelessWidget {
           Icon(Icons.history_rounded, color: AppColors.textMuted),
           SizedBox(height: AppSpacing.sm),
           Text(
-            'Your newest debts and payments will appear here.',
+            'Your newest utang and bayad will appear here.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),
           ),

@@ -58,7 +58,7 @@ class _DebtNotificationsSheet extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       const Text(
-                        'Debts that need attention now or within 7 days.',
+                        'Utang that needs attention now or within 7 days.',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,

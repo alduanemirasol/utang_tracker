@@ -162,7 +162,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   Widget build(BuildContext context) {
     if (_resolvingInitial && _selectedDebt == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Record payment')),
+        appBar: AppBar(title: const Text('Record bayad')),
         body: const LoadingIndicator(),
       );
     }
@@ -170,11 +170,11 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     final selected = _selectedDebt;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Record payment')),
+      appBar: AppBar(title: const Text('Record bayad')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          AppTextField.buildLabel(context, 'Debt *'),
+          AppTextField.buildLabel(context, 'Utang *'),
           const SizedBox(height: AppSpacing.sm),
           _DebtField(label: _debtFieldLabel, onTap: _pickDebt),
           if (selected != null) ...[
@@ -271,11 +271,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             Text(_error!, style: const TextStyle(color: AppColors.danger)),
           ],
           const SizedBox(height: AppSpacing.xl),
-          AppButton(
-            label: 'Save payment',
-            onPressed: _save,
-            isLoading: _saving,
-          ),
+          AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
         ],
       ),
     );
@@ -303,7 +299,7 @@ class _DebtField extends StatelessWidget {
           ),
         ),
         child: Text(
-          hasLabel ? label! : 'Select debt',
+          hasLabel ? label! : 'Select utang',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: hasLabel ? AppColors.textPrimary : AppColors.textMuted,
           ),
@@ -387,7 +383,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
               AppSpacing.sm,
             ),
             child: Text(
-              'Select debt',
+              'Select utang',
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),

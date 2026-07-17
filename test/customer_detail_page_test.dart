@@ -55,8 +55,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Debts'), findsOneWidget);
-    expect(find.text('Payments'), findsOneWidget);
+    expect(find.text('Utang'), findsOneWidget);
+    expect(find.text('Bayad'), findsOneWidget);
     final tabBar = tester.widget<TabBar>(find.byType(TabBar));
     expect(tabBar.indicator, isNull);
     expect(tabBar.labelColor, isNull);
@@ -95,7 +95,7 @@ void main() {
       closeTo(tester.getTopRight(statusBadge).dx, 1),
     );
 
-    await tester.tap(find.text('Payments'));
+    await tester.tap(find.text('Bayad'));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const PageStorageKey('debt-history')), findsNothing);

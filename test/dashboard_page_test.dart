@@ -52,7 +52,7 @@ void main() {
     final dateAndTime = find.text(
       '${DateFormatters.formatDate(activityDate)} - ${DateFormatters.formatTime(activityDate)}',
     );
-    final label = find.text('Payment');
+    final label = find.text('Bayad');
     final amount = find.text(Money.fromPesos(125).format());
 
     expect(dateAndTime, findsOneWidget);

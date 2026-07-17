@@ -125,8 +125,7 @@ class DebtDetailPage extends ConsumerWidget {
                 if (debt.status != DebtStatus.paid) ...[
                   const SizedBox(height: AppSpacing.lg),
                   AppButton(
-                    label: 'Record payment',
-                    icon: Icons.payments_outlined,
+                    label: 'Record bayad',
                     onPressed: () =>
                         context.push('/payments/new?debtId=$debtId'),
                   ),
@@ -136,10 +135,7 @@ class DebtDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _DebtItemsCard(items: items, totalAmount: debt.totalAmount),
                 const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Payments',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('Bayad', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
                   const Center(
