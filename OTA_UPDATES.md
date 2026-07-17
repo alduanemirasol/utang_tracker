@@ -8,20 +8,22 @@ Play.
 
 1. Increase `version` in `pubspec.yaml`. The value after `+` must increase for
    every Android release.
-2. Commit the version change, then create and push a matching tag:
+2. Commit and push the version change:
 
    ```powershell
-   git tag v1.0.6
-   git push origin v1.0.6
+   git add .
+   git commit -m "new version"
+   git push origin main
    ```
 
-3. GitHub Actions builds and signs `utang-tracker.apk`, calculates its SHA-256,
-   creates `update-manifest.json`, and attaches both files to the GitHub Release.
-   The release becomes the app's update source automatically.
+3. GitHub Actions detects the version change, creates the matching tag, builds
+   and signs `utang-tracker.apk`, calculates its SHA-256, creates
+   `update-manifest.json`, and publishes the GitHub Release. Commits that do not
+   change the version only run quality checks.
 
 ## GitHub secrets
 
-Configure these repository Actions secrets before publishing a tag:
+Configure these repository Actions secrets before pushing a new version:
 
 - `ANDROID_RELEASE_KEYSTORE_BASE64`: base64-encoded release keystore
 - `ANDROID_STORE_PASSWORD`: keystore password
