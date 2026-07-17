@@ -151,9 +151,7 @@ class _AttentionSummary extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              urgent > 0
-                  ? '$urgent due now'
-                  : '${feed.items.length} due soon',
+              urgent > 0 ? '$urgent due now' : '${feed.items.length} due soon',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -339,8 +337,7 @@ String _sectionLabel(DebtNotificationKind kind) => switch (kind) {
 
 String _timingLabel(DebtNotification notification) {
   return switch (notification.kind) {
-    DebtNotificationKind.overdue =>
-      '${notification.daysFromToday.abs()}d late',
+    DebtNotificationKind.overdue => '${notification.daysFromToday.abs()}d late',
     DebtNotificationKind.dueToday => 'Today',
     DebtNotificationKind.dueSoon =>
       notification.daysFromToday == 1
