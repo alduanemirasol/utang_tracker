@@ -54,7 +54,8 @@ jobs:
         run: flutter test
 
   build:
-    name: Build Android APKs
+    name: Build Android APK
+    if: github.event_name != 'pull_request'
     needs: quality
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -81,14 +82,29 @@ jobs:
       - name: Install dependencies
         run: flutter pub get --enforce-lockfile
 
-      - name: Build split release APKs
-        run: flutter build apk --release --split-per-abi
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_PASSWORD"
+          test -n "$KEY_ALIAS"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=app/upload-keystore.jks\n' \
+            "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
+
+      - name: Build release APK
+        run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: utang-tracker-apk
-          path: build/app/outputs/flutter-apk/app-*-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -103,6 +119,11 @@ jobs:
       contents: write
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
       - name: Download APK artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -111,35 +132,43 @@ jobs:
 
       - name: Prepare release files
         run: |
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            prefix="utang-tracker-$GITHUB_REF_NAME"
-          else
-            prefix="utang-tracker-latest"
-          fi
-
           mkdir release
-          for apk in apks/app-*-release.apk; do
-            abi="${apk#apks/app-}"
-            abi="${abi%-release.apk}"
-            cp "$apk" "release/$prefix-$abi.apk"
-          done
+          cp apks/app-release.apk release/utang-tracker.apk
+
+      - name: Create OTA manifest
+        if: github.ref_type == 'tag'
+        run: |
+          app_version=$(sed -n 's/^version: //p' pubspec.yaml)
+          version_name="${app_version%%+*}"
+          version_code="${app_version##*+}"
+          test "$GITHUB_REF_NAME" = "v$version_name" || {
+            echo "Tag $GITHUB_REF_NAME must match pubspec version v$version_name" >&2
+            exit 1
+          }
+          sha256=$(sha256sum release/utang-tracker.apk | cut -d ' ' -f 1)
+          apk_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/utang-tracker.apk"
+          jq -n \
+            --argjson versionCode "$version_code" \
+            --arg versionName "$version_name" \
+            --arg packageName "com.example.utang_tracker" \
+            --arg apkUrl "$apk_url" \
+            --arg sha256 "$sha256" \
+            --arg releaseNotes "A new version is ready." \
+            '{versionCode: $versionCode, versionName: $versionName, packageName: $packageName, apkUrl: $apkUrl, sha256: $sha256, releaseNotes: $releaseNotes, required: false}' \
+            > release/update-manifest.json
 
       - name: Publish versioned release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
-          files: release/*.apk
+          files: |
+            release/utang-tracker.apk
+            release/update-manifest.json
           generate_release_notes: true
           make_latest: true
           fail_on_unmatched_files: true
           body: |
-            Split APKs by CPU architecture (smaller downloads).
-
-            | Device | File |
-            |--------|------|
-            | Most phones (64-bit ARM) | `*-arm64-v8a.apk` |
-            | Older 32-bit ARM phones | `*-armeabi-v7a.apk` |
-            | Emulators (x86_64) | `*-x86_64.apk` |
+            Install `utang-tracker.apk` manually or update from inside the app.
 
       - name: Publish latest prerelease
         if: github.ref == 'refs/heads/main'
@@ -150,19 +179,13 @@ jobs:
           target_commitish: ${{ github.sha }}
           prerelease: true
           make_latest: false
-          files: release/*.apk
+          files: release/utang-tracker.apk
           fail_on_unmatched_files: true
           body: |
-            Continuous split APKs from `main`.
+            Continuous APK from `main`. This prerelease is not offered through OTA.
 
             - Commit: `${{ github.sha }}`
             - Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            | Device | File |
-            |--------|------|
-            | Most phones (64-bit ARM) | `utang-tracker-latest-arm64-v8a.apk` |
-            | Older 32-bit ARM phones | `utang-tracker-latest-armeabi-v7a.apk` |
-            | Emulators (x86_64) | `utang-tracker-latest-x86_64.apk` |
 
             For a versioned user-facing release, tag a version:
             `git tag v1.2.3 && git push origin v1.2.3`

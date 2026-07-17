@@ -1,0 +1,9 @@
+{
+  "versionCode": 7,
+  "versionName": "1.0.6",
+  "packageName": "com.example.utang_tracker",
+  "apkUrl": "https://github.com/alduanemirasol/utang_tracker/releases/download/v1.0.6/utang-tracker.apk",
+  "sha256": "REPLACE_WITH_THE_APK_SHA256",
+  "releaseNotes": "Small fixes and improvements.",
+  "required": false
+}
