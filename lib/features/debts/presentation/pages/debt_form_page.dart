@@ -504,7 +504,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                           Expanded(
                             child: AppTextField(
                               controller: item.quantity,
-                              label: 'Qty *',
+                              label: 'Quantity *',
                               hint: 'e.g. 2',
                               errorText: item.quantityError,
                               keyboardType:

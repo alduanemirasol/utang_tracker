@@ -173,7 +173,7 @@ void main() {
     );
 
     expect(find.text('Product *'), findsOneWidget);
-    expect(find.text('Qty *'), findsOneWidget);
+    expect(find.text('Quantity *'), findsOneWidget);
     expect(find.text('Price *'), findsOneWidget);
 
     final addItem = find.text('Add item');

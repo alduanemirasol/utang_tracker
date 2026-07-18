@@ -61,20 +61,18 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: assets/images/utang_tracker_launcher_v3.png
-  adaptive_icon_background: "#172F55"
-  adaptive_icon_foreground: assets/images/utang_tracker_launcher_v3.png
+  image_path: assets/images/new-logo.png
+  adaptive_icon_background: "#0C2648"
+  adaptive_icon_foreground: assets/images/new-logo.png
 
 flutter_native_splash:
-  # AppColors.primaryDark
-  color: "#172F55"
-  image: assets/images/utang_tracker_launcher_v3.png
+  color: "#0C2648"
+  image: assets/images/new-logo-splash.png
   android: true
   ios: false
   android_12:
-    # Keep the Android 12 masked icon background flush with primaryDark.
-    color: "#172F55"
-    image: assets/images/utang_tracker_launcher_v3.png
+    color: "#0C2648"
+    image: assets/images/new-logo-splash.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
