@@ -10,6 +10,7 @@ import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
+import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
@@ -89,11 +90,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   }
 
   Future<void> _pickDebt() async {
-    final selected = await showModalBottomSheet<Debt>(
+    final selected = await showAppModalBottomSheet<Debt>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (context) => const _DebtPickerSheet(),
     );
     if (selected == null || !mounted) return;
@@ -367,42 +365,18 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.sizeOf(context).height * 0.75;
     final debts = _debts;
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.pagePadding,
-              0,
-              AppSpacing.pagePadding,
-              AppSpacing.sm,
-            ),
-            child: Text(
-              'Select utang',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.pagePadding,
-            ),
-            child: AppSearchBar(
-              hintText: 'Search by customer',
-              onChanged: (value) {
-                _query = value;
-                _load(value);
-              },
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Expanded(child: _buildBody(debts)),
-        ],
+    return AppModalBottomSheet(
+      title: 'Select utang',
+      headerBottom: AppSearchBar(
+        hintText: 'Search by customer',
+        onChanged: (value) {
+          _query = value;
+          _load(value);
+        },
       ),
+      child: _buildBody(debts),
     );
   }
 

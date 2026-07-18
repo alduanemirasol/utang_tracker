@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
@@ -10,10 +11,8 @@ import 'package:utang_tracker/features/notifications/domain/entities/debt_notifi
 import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
 
 Future<String?> showDebtNotificationsSheet(BuildContext context) {
-  return showModalBottomSheet<String>(
+  return showAppModalBottomSheet<String>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => const _DebtNotificationsSheet(),
   );
 }
@@ -24,71 +23,22 @@ class _DebtNotificationsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(debtNotificationsProvider);
-    final height = MediaQuery.sizeOf(context).height * 0.78;
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        children: [
-          const SizedBox(height: AppSpacing.sm),
-          Container(
-            width: 38,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.outline,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.pagePadding,
-              AppSpacing.lg,
-              AppSpacing.sm,
-              AppSpacing.md,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Due reminders',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      const Text(
-                        'Due now and soon.',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Close reminders',
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-          ),
-          const Divider(),
-          Expanded(
-            child: notifications.when(
-              loading: () =>
-                  const LoadingIndicator(message: 'Checking due dates'),
-              error: (error, _) => ErrorView(
-                message: error.toString(),
-                onRetry: () =>
-                    ref.read(debtNotificationsProvider.notifier).refresh(),
-              ),
-              data: (feed) => _NotificationLedger(feed: feed),
-            ),
-          ),
-        ],
+    return AppModalBottomSheet(
+      title: 'Due reminders',
+      subtitle: 'Due now and soon.',
+      trailing: IconButton(
+        tooltip: 'Close reminders',
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.close_rounded),
+      ),
+      child: notifications.when(
+        loading: () => const LoadingIndicator(message: 'Checking due dates'),
+        error: (error, _) => ErrorView(
+          message: error.toString(),
+          onRetry: () => ref.read(debtNotificationsProvider.notifier).refresh(),
+        ),
+        data: (feed) => _NotificationLedger(feed: feed),
       ),
     );
   }

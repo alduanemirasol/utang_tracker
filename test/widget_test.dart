@@ -5,6 +5,7 @@ import 'package:utang_tracker/app.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
+import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 
 void main() {
   testWidgets('app shell shows dashboard title', (tester) async {
@@ -27,7 +28,11 @@ void main() {
     await tester.tap(find.byTooltip('Due reminders'));
     await tester.pumpAndSettle();
 
+    final bottomSheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
+
     expect(find.text('Due reminders'), findsOneWidget);
     expect(find.text('No reminders'), findsOneWidget);
+    expect(find.byType(AppModalBottomSheet), findsOneWidget);
+    expect(bottomSheet.showDragHandle, isTrue);
   });
 }

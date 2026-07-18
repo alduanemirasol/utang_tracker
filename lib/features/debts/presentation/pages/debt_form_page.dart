@@ -11,6 +11,7 @@ import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
@@ -83,11 +84,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _pickCustomer() async {
-    final selected = await showModalBottomSheet<Customer>(
+    final selected = await showAppModalBottomSheet<Customer>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (context) => const _CustomerPickerSheet(),
     );
     if (selected == null || !mounted) return;
@@ -148,11 +146,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _pickUnit(_LineItemControllers item) async {
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showAppModalBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
       builder: (context) => _UnitPickerSheet(selectedUnit: item.unit),
     );
     if (selected == null || !mounted) return;
@@ -668,72 +663,52 @@ class _UnitPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIsCustom = !DebtItemUnits.isCommon(selectedUnit);
-    final height = MediaQuery.sizeOf(context).height * 0.72;
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.pagePadding,
-              0,
-              AppSpacing.pagePadding,
-              AppSpacing.md,
-            ),
-            child: Text(
-              'Select unit',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              itemCount: DebtItemUnits.common.length + 1,
-              separatorBuilder: (_, _) => const Divider(
-                height: 1,
-                indent: AppSpacing.lg,
-                endIndent: AppSpacing.lg,
-                color: AppColors.outline,
-              ),
-              itemBuilder: (context, index) {
-                if (index == DebtItemUnits.common.length) {
-                  return ListTile(
-                    leading: const Icon(Icons.edit_outlined),
-                    title: const Text('Custom unit'),
-                    subtitle: selectedIsCustom
-                        ? Text(DebtItemUnits.displayName(selectedUnit))
-                        : const Text('Use another selling unit'),
-                    trailing: selectedIsCustom
-                        ? const Icon(Icons.check, color: AppColors.primaryDark)
-                        : const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      final custom = await showDialog<String>(
-                        context: context,
-                        builder: (context) => _CustomUnitDialog(
-                          initialValue: selectedIsCustom ? selectedUnit : '',
-                        ),
-                      );
-                      if (custom == null || !context.mounted) return;
-                      Navigator.of(context).pop(custom);
-                    },
-                  );
-                }
-
-                final option = DebtItemUnits.common[index];
-                final selected = option.value == selectedUnit;
-                return ListTile(
-                  title: Text(option.label),
-                  trailing: selected
-                      ? const Icon(Icons.check, color: AppColors.primaryDark)
-                      : null,
-                  onTap: () => Navigator.of(context).pop(option.value),
+    return AppModalBottomSheet(
+      title: 'Select unit',
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        itemCount: DebtItemUnits.common.length + 1,
+        separatorBuilder: (_, _) => const Divider(
+          height: 1,
+          indent: AppSpacing.lg,
+          endIndent: AppSpacing.lg,
+          color: AppColors.outline,
+        ),
+        itemBuilder: (context, index) {
+          if (index == DebtItemUnits.common.length) {
+            return ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Custom unit'),
+              subtitle: selectedIsCustom
+                  ? Text(DebtItemUnits.displayName(selectedUnit))
+                  : const Text('Use another selling unit'),
+              trailing: selectedIsCustom
+                  ? const Icon(Icons.check, color: AppColors.primaryDark)
+                  : const Icon(Icons.chevron_right),
+              onTap: () async {
+                final custom = await showDialog<String>(
+                  context: context,
+                  builder: (context) => _CustomUnitDialog(
+                    initialValue: selectedIsCustom ? selectedUnit : '',
+                  ),
                 );
+                if (custom == null || !context.mounted) return;
+                Navigator.of(context).pop(custom);
               },
-            ),
-          ),
-        ],
+            );
+          }
+
+          final option = DebtItemUnits.common[index];
+          final selected = option.value == selectedUnit;
+          return ListTile(
+            title: Text(option.label),
+            trailing: selected
+                ? const Icon(Icons.check, color: AppColors.primaryDark)
+                : null,
+            onTap: () => Navigator.of(context).pop(option.value),
+          );
+        },
       ),
     );
   }
@@ -847,62 +822,27 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.sizeOf(context).height * 0.75;
     final customers = _customers;
 
-    return SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.pagePadding,
-              0,
-              AppSpacing.pagePadding,
-              AppSpacing.sm,
-            ),
-            child: Text(
-              'Select customer',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.pagePadding,
-            ),
-            child: AppSearchBar(
-              hintText: 'Search customer',
-              onChanged: (value) {
-                _query = value;
-                _load(value);
-              },
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Expanded(child: _buildBody(customers)),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.pagePadding,
-                AppSpacing.sm,
-                AppSpacing.pagePadding,
-                AppSpacing.md,
-              ),
-              child: TextButton.icon(
-                onPressed: () async {
-                  final router = GoRouter.of(context);
-                  Navigator.of(context).pop();
-                  await router.push('/customers/new');
-                },
-                icon: const Icon(Icons.person_add_outlined),
-                label: const Text('Add customer'),
-              ),
-            ),
-          ),
-        ],
+    return AppModalBottomSheet(
+      title: 'Select customer',
+      headerBottom: AppSearchBar(
+        hintText: 'Search customer',
+        onChanged: (value) {
+          _query = value;
+          _load(value);
+        },
       ),
+      footer: TextButton.icon(
+        onPressed: () async {
+          final router = GoRouter.of(context);
+          Navigator.of(context).pop();
+          await router.push('/customers/new');
+        },
+        icon: const Icon(Icons.person_add_outlined),
+        label: const Text('Add customer'),
+      ),
+      child: _buildBody(customers),
     );
   }
 

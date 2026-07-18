@@ -276,7 +276,15 @@ class AppTheme {
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surfaceCard,
+        modalBackgroundColor: AppColors.surfaceCard,
+        modalBarrierColor: AppColors.scrim,
         surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        modalElevation: 2,
+        showDragHandle: true,
+        dragHandleColor: AppColors.textMuted,
+        dragHandleSize: Size(40, 4),
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
