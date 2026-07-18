@@ -116,7 +116,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     Money? amount;
     setState(() {
       _error = null;
-      _debtError = _debtId == null ? 'Select a debt to pay.' : null;
+      _debtError = _debtId == null ? 'Select utang para bayaran' : null;
 
       final amountText = _amountController.text.trim();
       if (amountText.isEmpty) {
