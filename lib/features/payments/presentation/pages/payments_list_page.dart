@@ -86,7 +86,7 @@ class PaymentsListPage extends ConsumerWidget {
                         : 'Wala pay nibayad',
                     message: filters.hasActiveFilters
                         ? 'I-adjust ang filter sa bayad'
-                        : 'I-tap ang "+ Record bayad" aron marecord ang bayad.',
+                        : 'Tap "+ Record bayad" para marecord ang bayad.',
                   );
                 }
 

@@ -340,7 +340,7 @@ class _QuickAction extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: foregroundColor,

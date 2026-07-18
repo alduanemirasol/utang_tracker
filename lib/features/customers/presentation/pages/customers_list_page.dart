@@ -53,8 +53,7 @@ class CustomersListPage extends ConsumerWidget {
                   return EmptyState(
                     icon: Icons.people_outline,
                     title: 'Walay customer',
-                    message:
-                        'I-tap ang "+ Add customer" aron marecord ang customer.',
+                    message: 'Tap "+ Add customer" para marecord ang customer.',
                   );
                 }
 

@@ -128,7 +128,7 @@ class DebtsListPage extends ConsumerWidget {
                     icon: Icons.receipt_long_outlined,
                     title: 'Walay utang',
                     message: filter == null
-                        ? 'I-tap ang "+ New utang" aron marecord ang utang.'
+                        ? 'Tap "+ New utang" para marecord ang utang.'
                         : 'Walay ${filter.label.toLowerCase()} utang.',
                   );
                 }

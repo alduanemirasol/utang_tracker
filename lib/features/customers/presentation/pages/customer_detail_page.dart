@@ -241,7 +241,7 @@ class _DebtHistoryList extends StatelessWidget {
         key: PageStorageKey('empty-debt-history'),
         icon: Icons.receipt_long_outlined,
         title: 'Walay utang',
-        message: 'I-tap ang "+ New utang" aron marecord ang utang.',
+        message: 'Tap "+ New utang" para marecord ang utang.',
       );
     }
 
@@ -313,7 +313,7 @@ class _PaymentHistoryList extends StatelessWidget {
         key: PageStorageKey('empty-payment-history'),
         icon: Icons.payments_outlined,
         title: 'Walay bayad',
-        message: 'I-tap ang "+ Record bayad" aron marecord ang bayad.',
+        message: 'Tap "+ Record bayad" para marecord ang bayad.',
       );
     }
 
