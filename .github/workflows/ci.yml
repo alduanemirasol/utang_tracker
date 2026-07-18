@@ -59,8 +59,6 @@ jobs:
     timeout-minutes: 5
     outputs:
       should_release: ${{ steps.version.outputs.should_release }}
-      version_code: ${{ steps.version.outputs.version_code }}
-      version_name: ${{ steps.version.outputs.version_name }}
       release_tag: ${{ steps.version.outputs.release_tag }}
 
     steps:
@@ -103,8 +101,6 @@ jobs:
           fi
 
           echo "should_release=true" >> "$GITHUB_OUTPUT"
-          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
-          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
           echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
 
   build:
@@ -151,7 +147,7 @@ jobs:
             fi
           done
           if [[ "$missing" -ne 0 ]]; then
-            echo "::error::Configure the Android release secrets documented in OTA_UPDATES.md"
+            echo "::error::Configure the Android release secrets documented in RELEASES.md"
             exit 1
           fi
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
@@ -197,34 +193,14 @@ jobs:
           mkdir release
           cp apks/app-release.apk release/utang-tracker.apk
 
-      - name: Create OTA manifest
-        env:
-          RELEASE_TAG: ${{ needs.prepare_release.outputs.release_tag }}
-          VERSION_CODE: ${{ needs.prepare_release.outputs.version_code }}
-          VERSION_NAME: ${{ needs.prepare_release.outputs.version_name }}
-        run: |
-          sha256=$(sha256sum release/utang-tracker.apk | cut -d ' ' -f 1)
-          apk_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/utang-tracker.apk"
-          jq -n \
-            --argjson versionCode "$VERSION_CODE" \
-            --arg versionName "$VERSION_NAME" \
-            --arg packageName "com.example.utang_tracker" \
-            --arg apkUrl "$apk_url" \
-            --arg sha256 "$sha256" \
-            --arg releaseNotes "A new version is ready." \
-            '{versionCode: $versionCode, versionName: $versionName, packageName: $packageName, apkUrl: $apkUrl, sha256: $sha256, releaseNotes: $releaseNotes, required: false}' \
-            > release/update-manifest.json
-
       - name: Publish versioned release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ needs.prepare_release.outputs.release_tag }}
           target_commitish: ${{ github.sha }}
-          files: |
-            release/utang-tracker.apk
-            release/update-manifest.json
+          files: release/utang-tracker.apk
           generate_release_notes: true
           make_latest: true
           fail_on_unmatched_files: true
           body: |
-            Install `utang-tracker.apk` manually or update from inside the app.
+            Download and install `utang-tracker.apk` manually.

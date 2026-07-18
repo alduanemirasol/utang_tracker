@@ -2,6 +2,9 @@
 
 A new Flutter project.
 
+Android release and signing instructions are documented in
+[RELEASES.md](RELEASES.md).
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
