@@ -101,4 +101,35 @@ void main() {
     expect(dialogSize.height, lessThanOrEqualTo(260));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('adding an item collapses all previous item forms', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
+      ),
+    );
+
+    final addItem = find.text('Add item');
+    await tester.ensureVisible(addItem);
+    await tester.tap(addItem);
+    await tester.pump();
+
+    final collapsedSummary =
+        'No product yet · 1 '
+        '${DebtItemUnits.displayName(DebtItemUnits.piece)}';
+    expect(find.text(collapsedSummary), findsOneWidget);
+    expect(find.text('Product'), findsOneWidget);
+
+    await tester.tap(addItem);
+    await tester.pump();
+
+    expect(find.text(collapsedSummary), findsNWidgets(2));
+    expect(find.text('Product'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -111,7 +111,7 @@ class AppTheme {
         toolbarHeight: 68,
         titleTextStyle: TextStyle(
           fontFamily: _fontFamily,
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
           color: AppColors.textPrimary,

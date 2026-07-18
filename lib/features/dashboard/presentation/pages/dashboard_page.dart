@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
@@ -26,7 +25,7 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConstants.appName),
+        title: const Text("Home"),
         actions: [
           _NotificationAction(
             notifications: notifications,
@@ -204,7 +203,7 @@ class _LedgerBalanceCard extends StatelessWidget {
                 balance,
                 color: AppColors.textOnPrimary,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 36,
+                  fontSize: 28,
                   height: 1.15,
                 ),
               ),
@@ -383,7 +382,7 @@ class _SectionHeader extends StatelessWidget {
         if (actionLabel != null)
           TextButton(
             onPressed: onAction,
-            child: Text(actionLabel!, style: const TextStyle(fontSize: 14)),
+            child: Text(actionLabel!, style: const TextStyle(fontSize: 13)),
           ),
       ],
     );

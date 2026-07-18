@@ -154,6 +154,15 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     setState(() => item.unit = selected);
   }
 
+  void _addItem() {
+    setState(() {
+      for (final item in _items) {
+        item.isExpanded = false;
+      }
+      _items.add(_LineItemControllers());
+    });
+  }
+
   List<DebtItemInput>? _buildItems() {
     final result = <DebtItemInput>[];
     for (final item in _items) {
@@ -376,8 +385,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ),
               const Spacer(),
               TextButton.icon(
-                onPressed: () =>
-                    setState(() => _items.add(_LineItemControllers())),
+                onPressed: _addItem,
                 icon: const Icon(Icons.add),
                 label: const Text('Add item'),
               ),
