@@ -46,6 +46,9 @@ class _LineItemControllers {
   final TextEditingController price;
   String unit = DebtItemUnits.piece;
   bool isExpanded = true;
+  String? productError;
+  String? quantityError;
+  String? priceError;
 
   void dispose() {
     product.dispose();
@@ -63,6 +66,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   final List<_LineItemControllers> _items = [_LineItemControllers()];
   bool _saving = false;
   bool _loaded = false;
+  String? _customerError;
   String? _error;
 
   @override
@@ -93,6 +97,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     setState(() {
       _customerId = selected.id;
       _customerName = selected.name;
+      _customerError = null;
     });
   }
 
@@ -166,44 +171,71 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   List<DebtItemInput>? _buildItems() {
     final result = <DebtItemInput>[];
+    var hasErrors = false;
+    var expandedInvalidItem = false;
+
     for (final item in _items) {
       final name = item.product.text.trim();
-      final qty = double.tryParse(item.quantity.text.trim());
-      Money price;
-      try {
-        price = Money.fromPesoString(item.price.text);
-      } catch (_) {
-        setState(() => _error = 'Enter a valid price.');
-        return null;
+      final quantityText = item.quantity.text.trim();
+      final priceText = item.price.text.trim();
+      final qty = double.tryParse(quantityText);
+
+      item.productError = name.isEmpty ? 'Product is required.' : null;
+      item.quantityError = quantityText.isEmpty
+          ? 'Quantity is required.'
+          : qty == null
+          ? 'Enter a valid quantity.'
+          : qty <= 0
+          ? 'Quantity must be greater than 0.'
+          : null;
+
+      Money? price;
+      if (priceText.isEmpty) {
+        item.priceError = 'Price is required.';
+      } else {
+        try {
+          price = Money.fromPesoString(priceText);
+          item.priceError = price.isPositive
+              ? null
+              : 'Price must be greater than 0.';
+        } catch (_) {
+          item.priceError = 'Enter a valid price.';
+        }
       }
-      if (name.isEmpty || qty == null || qty <= 0 || !price.isPositive) {
-        setState(
-          () => _error =
-              'Each item needs product name, quantity > 0, and price > 0.',
-        );
-        return null;
+
+      final itemHasErrors =
+          item.productError != null ||
+          item.quantityError != null ||
+          item.priceError != null;
+      if (itemHasErrors) {
+        hasErrors = true;
+        if (!expandedInvalidItem) {
+          item.isExpanded = true;
+          expandedInvalidItem = true;
+        }
+        continue;
       }
+
       result.add(
         DebtItemInput(
           productName: name,
-          quantity: qty,
+          quantity: qty!,
           unit: item.unit,
-          price: price,
+          price: price!,
         ),
       );
     }
-    return result;
+    return hasErrors ? null : result;
   }
 
   Future<void> _save() async {
-    setState(() => _error = null);
-
-    if (_customerId == null) {
-      setState(() => _error = 'Select a customer.');
-      return;
-    }
-    final items = _buildItems();
-    if (items == null) return;
+    List<DebtItemInput>? items;
+    setState(() {
+      _error = null;
+      _customerError = _customerId == null ? 'Select a customer.' : null;
+      items = _buildItems();
+    });
+    if (_customerError != null || items == null) return;
 
     setState(() => _saving = true);
     try {
@@ -213,7 +245,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
-          items: items,
+          items: items!,
         );
         invalidateBusinessData(
           ref,
@@ -226,7 +258,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
-          items: items,
+          items: items!,
         );
         invalidateBusinessData(ref, customerId: _customerId, debtId: debt.id);
       }
@@ -339,6 +371,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             name: _customerName,
             enabled: !widget.isEditing,
             onTap: _pickCustomer,
+            errorText: _customerError,
           ),
           const SizedBox(height: AppSpacing.lg),
           _DateField(
@@ -458,9 +491,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                       const Divider(height: AppSpacing.lg),
                       AppTextField(
                         controller: item.product,
-                        label: 'Product',
+                        label: 'Product *',
                         hint: 'e.g. Bugas',
-                        onChanged: (_) => setState(() {}),
+                        errorText: item.productError,
+                        onChanged: (_) => setState(() {
+                          item.productError = null;
+                        }),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Row(
@@ -468,8 +504,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                           Expanded(
                             child: AppTextField(
                               controller: item.quantity,
-                              label: 'Qty',
+                              label: 'Qty *',
                               hint: 'e.g. 2',
+                              errorText: item.quantityError,
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
@@ -479,7 +516,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                   RegExp(r'[\d.]'),
                                 ),
                               ],
-                              onChanged: (_) => setState(() {}),
+                              onChanged: (_) => setState(() {
+                                item.quantityError = null;
+                              }),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
@@ -494,15 +533,18 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                       const SizedBox(height: AppSpacing.md),
                       AppTextField(
                         controller: item.price,
-                        label: 'Price',
+                        label: 'Price *',
                         hint: 'e.g. 50.00',
+                        errorText: item.priceError,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                         ],
-                        onChanged: (_) => setState(() {}),
+                        onChanged: (_) => setState(() {
+                          item.priceError = null;
+                        }),
                       ),
                     ],
                     const Divider(height: AppSpacing.xl),
@@ -576,11 +618,13 @@ class _CustomerField extends StatelessWidget {
     required this.name,
     required this.enabled,
     required this.onTap,
+    this.errorText,
   });
 
   final String? name;
   final bool enabled;
   final VoidCallback onTap;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -590,6 +634,7 @@ class _CustomerField extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: InputDecorator(
         decoration: InputDecoration(
+          errorText: errorText,
           suffixIcon: Icon(
             enabled ? Icons.person_search_outlined : Icons.lock_outline,
             size: 20,

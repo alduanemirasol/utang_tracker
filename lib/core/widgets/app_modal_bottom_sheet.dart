@@ -38,6 +38,8 @@ class AppModalBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return SizedBox(
       key: const Key('app-modal-bottom-sheet'),
       height: MediaQuery.sizeOf(context).height * heightFactor,
@@ -93,7 +95,21 @@ class AppModalBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(child: child),
+          Expanded(
+            child: ListTileTheme.merge(
+              titleTextStyle: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              subtitleTextStyle: textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+              leadingAndTrailingTextStyle: textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              child: child,
+            ),
+          ),
           if (footer != null)
             SafeArea(
               top: false,

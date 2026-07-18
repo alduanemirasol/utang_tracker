@@ -39,6 +39,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   String _method = AppConstants.paymentMethods.first;
   final _notesController = TextEditingController();
   bool _saving = false;
+  String? _debtError;
+  String? _amountError;
   String? _error;
   bool _resolvingInitial = false;
 
@@ -85,6 +87,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       _debtId = debt.id;
       _selectedDebt = debt;
       _amountController.text = debt.balance.pesos.toStringAsFixed(2);
+      _debtError = null;
+      _amountError = null;
       _error = null;
     });
   }
@@ -109,25 +113,35 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   }
 
   Future<void> _save() async {
-    setState(() => _error = null);
-    if (_debtId == null) {
-      setState(() => _error = 'Select a debt to pay.');
-      return;
-    }
+    Money? amount;
+    setState(() {
+      _error = null;
+      _debtError = _debtId == null ? 'Select a debt to pay.' : null;
 
-    Money amount;
-    try {
-      amount = Money.fromPesoString(_amountController.text);
-    } catch (_) {
-      setState(() => _error = 'Enter a valid amount.');
-      return;
-    }
+      final amountText = _amountController.text.trim();
+      if (amountText.isEmpty) {
+        _amountError = 'Amount is required.';
+        return;
+      }
+      try {
+        final parsed = Money.fromPesoString(amountText);
+        if (!parsed.isPositive) {
+          _amountError = 'Amount must be greater than 0.';
+          return;
+        }
+        amount = parsed;
+        _amountError = null;
+      } catch (_) {
+        _amountError = 'Enter a valid amount.';
+      }
+    });
+    if (_debtError != null || amount == null) return;
 
     setState(() => _saving = true);
     try {
       await ref.read(recordPaymentUseCaseProvider)(
         debtId: _debtId!,
-        amount: amount,
+        amount: amount!,
         paymentDate: _paymentDate,
         paymentMethod: _method,
         notes: _notesController.text,
@@ -174,7 +188,11 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         children: [
           AppTextField.buildLabel(context, 'Utang *'),
           const SizedBox(height: AppSpacing.sm),
-          _DebtField(label: _debtFieldLabel, onTap: _pickDebt),
+          _DebtField(
+            label: _debtFieldLabel,
+            onTap: _pickDebt,
+            errorText: _debtError,
+          ),
           if (selected != null) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -190,12 +208,15 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             controller: _amountController,
             label: 'Amount *',
             hint: 'e.g. 100.00',
+            errorText: _amountError,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
             ],
 
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => setState(() {
+              _amountError = null;
+            }),
           ),
           const SizedBox(height: AppSpacing.lg),
           AppTextField.buildLabel(context, 'Payment date *'),
@@ -274,10 +295,11 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 }
 
 class _DebtField extends StatelessWidget {
-  const _DebtField({required this.label, required this.onTap});
+  const _DebtField({required this.label, required this.onTap, this.errorText});
 
   final String? label;
   final VoidCallback onTap;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -286,8 +308,9 @@ class _DebtField extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: InputDecorator(
-        decoration: const InputDecoration(
-          suffixIcon: Icon(
+        decoration: InputDecoration(
+          errorText: errorText,
+          suffixIcon: const Icon(
             Icons.receipt_long_outlined,
             size: 20,
             color: AppColors.textMuted,
@@ -422,13 +445,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         final debt = debts[index];
         return ListTile(
           title: Text(debt.customerName ?? 'Customer'),
-          subtitle: Text(
-            context.smartTimestamp(debt.transactionDate),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          subtitle: Text(context.smartTimestamp(debt.transactionDate)),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,

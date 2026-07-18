@@ -39,10 +39,17 @@ void main() {
               child: TextButton(
                 onPressed: () => showAppModalBottomSheet<void>(
                   context: context,
-                  builder: (_) => const AppModalBottomSheet(
+                  builder: (_) => AppModalBottomSheet(
                     title: 'Select entry',
                     subtitle: 'Choose from the ledger.',
-                    child: Center(child: Text('Sheet content')),
+                    child: ListView(
+                      children: const [
+                        ListTile(
+                          title: Text('Sheet content'),
+                          subtitle: Text('Sheet detail'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 child: const Text('Open sheet'),
@@ -72,6 +79,21 @@ void main() {
     expect(find.text('Select entry'), findsOneWidget);
     expect(find.text('Choose from the ledger.'), findsOneWidget);
     expect(find.text('Sheet content'), findsOneWidget);
+    expect(find.text('Sheet detail'), findsOneWidget);
+
+    final titleStyle = DefaultTextStyle.of(
+      tester.element(find.text('Sheet content')),
+    ).style;
+    final subtitleStyle = DefaultTextStyle.of(
+      tester.element(find.text('Sheet detail')),
+    ).style;
+    final textTheme = Theme.of(tester.element(sheetShell)).textTheme;
+
+    expect(titleStyle.fontSize, textTheme.bodyMedium?.fontSize);
+    expect(titleStyle.fontWeight, FontWeight.w600);
+    expect(subtitleStyle.fontSize, textTheme.bodySmall?.fontSize);
+    expect(subtitleStyle.fontWeight, FontWeight.w500);
+    expect(subtitleStyle.color, AppColors.textSecondary);
     expect(tester.takeException(), isNull);
   });
 }

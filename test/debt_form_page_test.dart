@@ -49,7 +49,7 @@ void main() {
     );
 
     final priceField = find.byWidgetPredicate(
-      (widget) => widget is AppTextField && widget.label == 'Price',
+      (widget) => widget is AppTextField && widget.label == 'Price *',
     );
     await tester.ensureVisible(priceField);
     expect(
@@ -150,13 +150,82 @@ void main() {
         'No product yet · 1 '
         '${DebtItemUnits.displayName(DebtItemUnits.piece)}';
     expect(find.text(collapsedSummary), findsOneWidget);
-    expect(find.text('Product'), findsOneWidget);
+    expect(find.text('Product *'), findsOneWidget);
 
     await tester.tap(addItem);
     await tester.pump();
 
     expect(find.text(collapsedSummary), findsNWidgets(2));
-    expect(find.text('Product'), findsOneWidget);
+    expect(find.text('Product *'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('required debt fields show and clear inline errors', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
+      ),
+    );
+
+    expect(find.text('Product *'), findsOneWidget);
+    expect(find.text('Qty *'), findsOneWidget);
+    expect(find.text('Price *'), findsOneWidget);
+
+    final addItem = find.text('Add item');
+    await tester.ensureVisible(addItem);
+    await tester.tap(addItem);
+    await tester.pump();
+    expect(find.text('Product *'), findsOneWidget);
+    final collapsedSummary =
+        'No product yet · 1 '
+        '${DebtItemUnits.displayName(DebtItemUnits.piece)}';
+    expect(find.text(collapsedSummary), findsOneWidget);
+
+    final save = find.text('Save');
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(save, 500, scrollable: scrollable);
+    await tester.tap(save);
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('Select customer'),
+      -500,
+      scrollable: scrollable,
+    );
+    expect(find.text('Select a customer.'), findsOneWidget);
+    expect(find.text(collapsedSummary), findsNothing);
+
+    final customerDecorator = find.ancestor(
+      of: find.text('Select customer'),
+      matching: find.byType(InputDecorator),
+    );
+    expect(
+      tester.widget<InputDecorator>(customerDecorator).decoration.errorText,
+      'Select a customer.',
+    );
+
+    final productFields = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Product *',
+    );
+    final firstProductInput = find
+        .descendant(of: productFields, matching: find.byType(TextField))
+        .first;
+    expect(
+      tester.widget<TextField>(firstProductInput).decoration?.errorText,
+      'Product is required.',
+    );
+
+    await tester.enterText(firstProductInput, 'Rice');
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(firstProductInput).decoration?.errorText,
+      isNull,
+    );
     expect(tester.takeException(), isNull);
   });
 
