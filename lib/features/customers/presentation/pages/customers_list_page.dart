@@ -52,8 +52,9 @@ class CustomersListPage extends ConsumerWidget {
                 if (customers.isEmpty) {
                   return EmptyState(
                     icon: Icons.people_outline,
-                    title: 'No customers yet',
-                    message: 'Add your first customer to start tracking utang.',
+                    title: 'Walay customer',
+                    message:
+                        'I-tap ang "+ Add customer" aron marecord ang customer.',
                   );
                 }
 

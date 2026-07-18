@@ -240,8 +240,8 @@ class _DebtHistoryList extends StatelessWidget {
       return const _HistoryEmptyState(
         key: PageStorageKey('empty-debt-history'),
         icon: Icons.receipt_long_outlined,
-        title: 'No debts yet',
-        message: 'Tap New debt to start this customer\'s ledger.',
+        title: 'Walay utang',
+        message: 'I-tap ang "+ New utang" aron marecord ang utang.',
       );
     }
 
@@ -312,8 +312,8 @@ class _PaymentHistoryList extends StatelessWidget {
       return const _HistoryEmptyState(
         key: PageStorageKey('empty-payment-history'),
         icon: Icons.payments_outlined,
-        title: 'No payments yet',
-        message: 'Payments will appear here after this customer pays.',
+        title: 'Walay bayad',
+        message: 'I-tap ang "+ Record bayad" aron marecord ang bayad.',
       );
     }
 

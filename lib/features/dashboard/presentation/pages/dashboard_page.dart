@@ -523,7 +523,7 @@ class _EmptyActivity extends StatelessWidget {
           Icon(Icons.history_rounded, color: AppColors.textMuted),
           SizedBox(height: AppSpacing.sm),
           Text(
-            'Your newest utang and bayad will appear here.',
+            'Walay bag-ong kalihokan',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary),
           ),

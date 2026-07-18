@@ -82,11 +82,11 @@ class PaymentsListPage extends ConsumerWidget {
                         ? Icons.filter_alt_off_outlined
                         : Icons.payments_outlined,
                     title: filters.hasActiveFilters
-                        ? 'No payments found'
-                        : 'No payments yet',
+                        ? 'Walay bayad'
+                        : 'Wala pay nibayad',
                     message: filters.hasActiveFilters
-                        ? 'Try changing or clearing your payment filters.'
-                        : 'Record a payment when a customer pays their utang.',
+                        ? 'I-adjust ang filter sa bayad'
+                        : 'I-tap ang "+ Record bayad" aron marecord ang bayad.',
                   );
                 }
 

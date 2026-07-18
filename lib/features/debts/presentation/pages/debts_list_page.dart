@@ -126,10 +126,10 @@ class DebtsListPage extends ConsumerWidget {
                 if (debts.isEmpty) {
                   return EmptyState(
                     icon: Icons.receipt_long_outlined,
-                    title: 'No debts found',
+                    title: 'Walay utang',
                     message: filter == null
-                        ? 'Record a debt when a customer buys on utang.'
-                        : 'No ${filter.label.toLowerCase()} debts.',
+                        ? 'I-tap ang "+ New utang" aron marecord ang utang.'
+                        : 'Walay ${filter.label.toLowerCase()} utang.',
                   );
                 }
 
