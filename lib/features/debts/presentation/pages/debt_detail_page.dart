@@ -51,7 +51,7 @@ class DebtDetailPage extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Debt details'),
+            title: const Text('Utang details'),
             actions: [
               if (debt.isEditable)
                 IconButton(
@@ -113,7 +113,14 @@ class DebtDetailPage extends ConsumerWidget {
                       if (debt.notes != null && debt.notes!.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.md),
                         Text(
+                          'Note',
+                          key: const Key('debt-note-label'),
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
                           debt.notes!,
+                          key: const Key('debt-note-text'),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                           ),
@@ -143,7 +150,7 @@ class DebtDetailPage extends ConsumerWidget {
                 if (payments.isEmpty)
                   const Center(
                     child: Text(
-                      'No payments yet.',
+                      'Wala pay bayad.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   )

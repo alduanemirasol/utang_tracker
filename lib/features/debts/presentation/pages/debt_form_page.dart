@@ -229,7 +229,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       if (!mounted) return;
       AppSnackBar.success(
         context,
-        widget.isEditing ? 'Debt updated' : 'Debt recorded',
+        widget.isEditing ? 'Utang updated' : 'Utang recorded',
       );
       context.pop();
     } on AppException catch (e) {

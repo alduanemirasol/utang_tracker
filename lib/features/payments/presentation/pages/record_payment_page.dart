@@ -140,7 +140,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         debtId: _debtId,
       );
       if (!mounted) return;
-      AppSnackBar.success(context, 'Payment recorded');
+      AppSnackBar.success(context, 'Bayad recorded');
       context.pop();
     } on AppException catch (e) {
       setState(() => _error = e.message);

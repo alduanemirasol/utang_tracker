@@ -377,11 +377,14 @@ class _SectionHeader extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(fontSize: 18),
+            ).textTheme.titleLarge?.copyWith(fontSize: 16),
           ),
         ),
         if (actionLabel != null)
-          TextButton(onPressed: onAction, child: Text(actionLabel!)),
+          TextButton(
+            onPressed: onAction,
+            child: Text(actionLabel!, style: const TextStyle(fontSize: 14)),
+          ),
       ],
     );
   }

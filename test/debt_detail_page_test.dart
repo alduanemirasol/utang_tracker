@@ -71,6 +71,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Items (3)'), findsOneWidget);
+    expect(find.byKey(const Key('debt-note-label')), findsNothing);
+    expect(find.byKey(const Key('debt-note-text')), findsNothing);
     expect(find.byKey(const Key('debt-items-card')), findsOneWidget);
     expect(find.text('Softdrinks'), findsOneWidget);
     expect(find.text('2 Bottles'), findsOneWidget);
@@ -127,6 +129,49 @@ void main() {
     for (final edge in rightEdges.skip(1)) {
       expect(edge, closeTo(rightEdges.first, 0.01));
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('note section shows its label and content when notes exist', (
+    tester,
+  ) async {
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+
+    final customers = CustomerRepositoryImpl(database);
+    final debts = DebtRepositoryImpl(database);
+    final customer = await customers.create(name: 'Maria Santos');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 7, 15, 14, 5),
+      notes: 'Deliver on Friday.',
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          unit: DebtItemUnits.kilogram,
+          price: Money.fromPesos(80),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp(home: DebtDetailPage(debtId: debt.id)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final noteLabel = tester.widget<Text>(
+      find.byKey(const Key('debt-note-label')),
+    );
+    final noteText = tester.widget<Text>(
+      find.byKey(const Key('debt-note-text')),
+    );
+
+    expect(noteLabel.data, 'Note');
+    expect(noteText.data, 'Deliver on Friday.');
     expect(tester.takeException(), isNull);
   });
 }
