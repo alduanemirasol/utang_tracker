@@ -332,18 +332,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          Text.rich(
-            TextSpan(
-              style: Theme.of(context).textTheme.labelLarge,
-              children: const [
-                TextSpan(text: 'Customer'),
-                TextSpan(
-                  text: ' *',
-                  style: TextStyle(color: AppColors.danger),
-                ),
-              ],
-            ),
-          ),
+          AppTextField.buildLabel(context, 'Customer *'),
           const SizedBox(height: AppSpacing.sm),
           _CustomerField(
             name: _customerName,
@@ -371,17 +360,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           const SizedBox(height: AppSpacing.xl),
           Row(
             children: [
-              Text.rich(
-                TextSpan(
-                  style: Theme.of(context).textTheme.titleMedium,
-                  children: const [
-                    TextSpan(text: 'Items'),
-                    TextSpan(
-                      text: ' *',
-                      style: TextStyle(color: AppColors.danger),
-                    ),
-                  ],
-                ),
+              AppTextField.buildLabel(
+                context,
+                'Items *',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               const Spacer(),
               TextButton.icon(
@@ -425,19 +407,25 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                         children: [
                                           Text(
                                             'Item ${index + 1}',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                           if (!item.isExpanded)
                                             Text(
                                               _collapsedItemSummary(item),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: AppColors.textSecondary,
-                                                fontSize: 12,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
                                             ),
                                         ],
                                       ),
@@ -545,10 +533,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           AppCard(
             child: Row(
               children: [
-                const Text(
-                  'Total',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
+                Text('Total', style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
                 MoneyText(
                   _total,
@@ -567,7 +552,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(_error!, style: const TextStyle(color: AppColors.danger)),
+            Text(
+              _error!,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+            ),
           ],
           const SizedBox(height: AppSpacing.xl),
           AppButton(
@@ -865,7 +855,9 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
           child: Text(
             _error.toString(),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.danger),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
           ),
         ),
       );
@@ -880,7 +872,9 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
                 ? 'No customers match your search.'
                 : 'No customers yet. Add one to continue.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -930,19 +924,7 @@ class _DateField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text.rich(
-          TextSpan(
-            style: Theme.of(context).textTheme.labelLarge,
-            children: [
-              TextSpan(text: label),
-              if (required)
-                const TextSpan(
-                  text: ' *',
-                  style: TextStyle(color: AppColors.danger),
-                ),
-            ],
-          ),
-        ),
+        AppTextField.buildLabel(context, required ? '$label *' : label),
         const SizedBox(height: AppSpacing.sm),
         InkWell(
           onTap: onTap,
@@ -956,7 +938,12 @@ class _DateField extends StatelessWidget {
                     )
                   : const Icon(Icons.calendar_today_outlined, size: 18),
             ),
-            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            ),
           ),
         ),
       ],

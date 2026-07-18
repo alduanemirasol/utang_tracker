@@ -24,7 +24,9 @@ class AppSnackBar {
         SnackBar(
           content: Text(
             message,
-            style: TextStyle(color: foreground, fontWeight: FontWeight.w500),
+            style: Theme.of(
+              context,
+            ).snackBarTheme.contentTextStyle?.copyWith(color: foreground),
           ),
           backgroundColor: background,
           behavior: SnackBarBehavior.floating,

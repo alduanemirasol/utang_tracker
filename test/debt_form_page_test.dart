@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
@@ -16,6 +17,15 @@ void main() {
       ProviderScope(
         child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
       ),
+    );
+
+    final transactionDate = find.text(
+      DateFormatters.formatDate(DateTime.now()),
+    );
+    expect(transactionDate, findsOneWidget);
+    expect(
+      tester.widget<Text>(transactionDate).style?.fontWeight,
+      FontWeight.w500,
     );
 
     final firstSubtotal = find.byKey(

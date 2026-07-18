@@ -121,9 +121,8 @@ class DebtDetailPage extends ConsumerWidget {
                         Text(
                           debt.notes!,
                           key: const Key('debt-note-text'),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ],
@@ -148,10 +147,12 @@ class DebtDetailPage extends ConsumerWidget {
                 Text('Bayad', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
-                  const Center(
+                  Center(
                     child: Text(
                       'Wala pay bayad.',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   )
                 else
@@ -169,18 +170,15 @@ class DebtDetailPage extends ConsumerWidget {
                                     DateFormatters.formatDateTime(
                                       p.paymentDate,
                                     ),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(fontWeight: FontWeight.w500),
                                   ),
                                   Text(
                                     p.paymentMethod,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -213,14 +211,18 @@ class DebtDetailPage extends ConsumerWidget {
             width: 100,
             child: Text(
               k,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
           ),
           Expanded(
             child: Text(
               v,
               textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -241,7 +243,7 @@ class DebtDetailPage extends ConsumerWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: emphasize ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -320,9 +322,8 @@ class _DebtItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final descriptionStyle =
-        textTheme.bodyMedium ?? const TextStyle(fontSize: 14);
-    final subtotalStyle = textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
+    final descriptionStyle = textTheme.bodyMedium!;
+    final subtotalStyle = textTheme.bodyLarge!;
     final quantityAndUnit =
         '${_formatQuantity(item.quantity)} '
         '${DebtItemUnits.displayNameForQuantity(item.unit, item.quantity)}';
@@ -343,10 +344,7 @@ class _DebtItemRow extends StatelessWidget {
                 Text(
                   item.productName,
                   key: ValueKey('debt-item-name-${item.id}'),
-                  style: descriptionStyle.copyWith(
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
+                  style: descriptionStyle.copyWith(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(

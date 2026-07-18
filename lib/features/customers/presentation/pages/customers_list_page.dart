@@ -23,7 +23,7 @@ class CustomersListPage extends ConsumerWidget {
         onPressed: () => context.push('/customers/new'),
         tooltip: 'Add customer',
         icon: const Icon(Icons.add, size: 20),
-        label: const Text('Add customer', style: TextStyle(fontSize: 14)),
+        label: const Text('Add customer'),
       ),
       body: Column(
         children: [
@@ -90,10 +90,11 @@ class CustomersListPage extends ConsumerWidget {
                                 customer.name.isNotEmpty
                                     ? customer.name[0].toUpperCase()
                                     : '?',
-                                style: const TextStyle(
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(
+                                      color: AppColors.primaryDark,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.md),

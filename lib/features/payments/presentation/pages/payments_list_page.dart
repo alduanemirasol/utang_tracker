@@ -153,11 +153,13 @@ class PaymentsListPage extends ConsumerWidget {
                                       Expanded(
                                         child: Text(
                                           '${DateFormatters.formatDate(payment.paymentDate)} - ${payment.paymentMethod}',
-                                          style: const TextStyle(
-                                            color: AppColors.textSecondary,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AppColors.textSecondary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -167,11 +169,13 @@ class PaymentsListPage extends ConsumerWidget {
                                         DateFormatters.formatTime(
                                           payment.paymentDate,
                                         ),
-                                        style: const TextStyle(
-                                          color: AppColors.textMuted,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: AppColors.textMuted,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -333,9 +337,8 @@ class _DateFilterChip extends StatelessWidget {
       label: Text(label),
       onPressed: onSelected,
       backgroundColor: selected ? AppColors.primaryDark : AppColors.surfaceCard,
-      labelStyle: TextStyle(
+      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
-        fontWeight: FontWeight.w600,
       ),
       side: BorderSide(
         color: selected ? AppColors.primaryDark : AppColors.outline,
@@ -364,9 +367,8 @@ class _FilterChip extends StatelessWidget {
       onSelected: (_) => onSelected(),
       showCheckmark: false,
       selectedColor: AppColors.primaryDark,
-      labelStyle: TextStyle(
+      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
-        fontWeight: FontWeight.w600,
       ),
       backgroundColor: AppColors.surfaceCard,
       side: BorderSide(

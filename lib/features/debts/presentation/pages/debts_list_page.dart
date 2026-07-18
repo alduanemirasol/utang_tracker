@@ -176,11 +176,11 @@ class DebtsListPage extends ConsumerWidget {
                                     DateFormatters.formatDateTime(
                                       debt.transactionDate,
                                     ),
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                   ),
                                 ),
                                 MoneyText(debt.balance),
@@ -220,9 +220,8 @@ class _FilterChip extends StatelessWidget {
       onSelected: (_) => onSelected(),
       showCheckmark: false,
       selectedColor: AppColors.primaryDark,
-      labelStyle: TextStyle(
+      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
-        fontWeight: FontWeight.w600,
       ),
       backgroundColor: AppColors.surfaceCard,
       side: BorderSide(

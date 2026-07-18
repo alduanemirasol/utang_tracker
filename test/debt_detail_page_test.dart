@@ -66,18 +66,22 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final transactionDate = find.text(
+      DateFormatters.formatDateTime(debt.transactionDate),
+    );
+    expect(transactionDate, findsOneWidget);
     expect(
-      find.text(DateFormatters.formatDateTime(debt.transactionDate)),
-      findsOneWidget,
+      tester.widget<Text>(transactionDate).style?.fontWeight,
+      FontWeight.w500,
     );
     expect(find.text('Items (3)'), findsOneWidget);
     expect(find.byKey(const Key('debt-note-label')), findsNothing);
     expect(find.byKey(const Key('debt-note-text')), findsNothing);
     expect(find.byKey(const Key('debt-items-card')), findsOneWidget);
     expect(find.text('Softdrinks'), findsOneWidget);
-    expect(find.text('2 Bottles'), findsOneWidget);
+    expect(find.text('2 bottles'), findsOneWidget);
     expect(find.text('Candy'), findsOneWidget);
-    expect(find.text('2 Pieces'), findsOneWidget);
+    expect(find.text('2 pieces'), findsOneWidget);
     expect(find.text('Premium long-grain rice refill'), findsOneWidget);
     expect(find.text('0.5 kg'), findsOneWidget);
     expect(find.byKey(const Key('debt-items-total-row')), findsOneWidget);

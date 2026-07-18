@@ -73,10 +73,8 @@ class AppModalBottomSheet extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xs),
                             Text(
                               subtitle!,
-                              style:
-                                  (Theme.of(context).textTheme.bodySmall ??
-                                          const TextStyle(fontSize: 12))
-                                      .copyWith(color: AppColors.textSecondary),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ],

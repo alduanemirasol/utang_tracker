@@ -102,7 +102,9 @@ class _AttentionSummary extends StatelessWidget {
           Expanded(
             child: Text(
               urgent > 0 ? '$urgent due now' : '${feed.items.length} due soon',
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -128,7 +130,7 @@ class _NotificationSection extends StatelessWidget {
               _sectionLabel(kind),
               style: Theme.of(
                 context,
-              ).textTheme.labelMedium?.copyWith(color: _foreground(kind)),
+              ).textTheme.labelSmall?.copyWith(color: _foreground(kind)),
             ),
             const SizedBox(width: AppSpacing.sm),
             Container(
@@ -139,10 +141,10 @@ class _NotificationSection extends StatelessWidget {
               ),
               child: Text(
                 '${items.length}',
-                style: TextStyle(
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: _foreground(kind),
-                  fontSize: 11,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
                 ),
               ),
             ),
@@ -206,17 +208,18 @@ class _NotificationRow extends StatelessWidget {
                     notification.debt.customerName ?? 'Customer',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${_timingLabel(notification)} · ${DateFormatters.formatDate(notification.dueDate)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: _foreground(kind),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -267,10 +270,12 @@ class _EmptyNotifications extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const Text(
+            Text(
               'Due utang will show here.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),

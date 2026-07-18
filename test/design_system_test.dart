@@ -30,4 +30,58 @@ void main() {
           'screens, components, or AppTheme.\n${offenders.join('\n')}',
     );
   });
+
+  test('font sizes are centralized in AppTheme', () {
+    final lib = Directory('lib');
+    final offenders = <String>[];
+    final directFontSize = RegExp(r'\bfontSize\s*:');
+
+    for (final entity in lib.listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith('app_theme.dart')) continue;
+
+      final lines = entity.readAsLinesSync();
+      for (var index = 0; index < lines.length; index++) {
+        final line = lines[index];
+        if (directFontSize.hasMatch(line)) {
+          offenders.add('${entity.path}:${index + 1}: ${line.trim()}');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'Use AppTheme text roles or component themes instead of declaring '
+          'font sizes in screens and widgets.\n${offenders.join('\n')}',
+    );
+  });
+
+  test('font families are centralized in AppTheme', () {
+    final lib = Directory('lib');
+    final offenders = <String>[];
+    final directFontFamily = RegExp(r'\bfontFamily(?:Fallback)?\s*:');
+
+    for (final entity in lib.listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith('app_theme.dart')) continue;
+
+      final lines = entity.readAsLinesSync();
+      for (var index = 0; index < lines.length; index++) {
+        final line = lines[index];
+        if (directFontFamily.hasMatch(line)) {
+          offenders.add('${entity.path}:${index + 1}: ${line.trim()}');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'All screens and widgets must inherit Poppins from AppTheme instead '
+          'of declaring a font family locally.\n${offenders.join('\n')}',
+    );
+  });
 }

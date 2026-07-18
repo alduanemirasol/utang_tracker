@@ -90,7 +90,7 @@ class CustomerDetailPage extends ConsumerWidget {
               onPressed: () =>
                   context.push('/debts/new?customerId=$customerId'),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('New utang', style: TextStyle(fontSize: 14)),
+              label: const Text('New utang'),
             ),
             body: RefreshIndicator(
               onRefresh: () =>
@@ -146,16 +146,15 @@ class _CustomerSummaryCard extends StatelessWidget {
         children: [
           Text(
             'Remaining balance',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
           MoneyText(
             data.outstandingBalance,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.headlineSmall,
             color: data.outstandingBalance.isZero
                 ? AppColors.paid
                 : AppColors.unpaid,
@@ -268,17 +267,15 @@ class _DebtHistoryList extends StatelessWidget {
                   children: [
                     Text(
                       DateFormatters.formatDate(debt.transactionDate),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
                       DateFormatters.formatTime(debt.transactionDate),
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -339,17 +336,15 @@ class _PaymentHistoryList extends StatelessWidget {
                   children: [
                     Text(
                       DateFormatters.formatDate(payment.paymentDate),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
                       DateFormatters.formatTime(payment.paymentDate),
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -362,10 +357,8 @@ class _PaymentHistoryList extends StatelessWidget {
                   MoneyText(payment.amount, color: AppColors.paid),
                   Text(
                     payment.paymentMethod,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],

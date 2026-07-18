@@ -33,6 +33,11 @@ void main() {
 
     expect(dateAndMethod, findsOneWidget);
     expect(time, findsOneWidget);
+    expect(
+      tester.widget<Text>(dateAndMethod).style?.fontWeight,
+      FontWeight.w500,
+    );
+    expect(tester.widget<Text>(time).style?.fontWeight, FontWeight.w500);
     expect(amount, findsOneWidget);
     expect(
       tester.getTopLeft(time).dy,

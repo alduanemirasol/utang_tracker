@@ -153,11 +153,11 @@ class _NotificationAction extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     urgentCount > 99 ? '99+' : '$urgentCount',
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: AppColors.textOnPrimary,
-                      fontSize: 9,
                       height: 1,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
                     ),
                   ),
                 ),
@@ -193,19 +193,15 @@ class _LedgerBalanceCard extends StatelessWidget {
             children: [
               Text(
                 'Total Receivables',
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textOnPrimarySoft,
-                  fontSize: 12,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
               MoneyText(
                 balance,
                 color: AppColors.textOnPrimary,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: 28,
-                  height: 1.15,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: AppSpacing.xl),
               const _DashedRule(),
@@ -218,12 +214,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Active Utang',
-                          style: TextStyle(
-                            color: AppColors.textOnPrimarySoft,
-                            fontSize: 12,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textOnPrimarySoft),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
@@ -231,8 +225,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: AppColors.textOnPrimary,
-                                fontFamily: 'monospace',
                                 fontWeight: FontWeight.w700,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
                               ),
                         ),
                       ],
@@ -244,12 +240,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text(
+                        Text(
                           'Collected Today',
-                          style: TextStyle(
-                            color: AppColors.textOnPrimarySoft,
-                            fontSize: 12,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textOnPrimarySoft),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         FittedBox(
@@ -341,10 +335,9 @@ class _QuickAction extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: foregroundColor,
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
                   ),
                 ),
               ),
@@ -376,13 +369,16 @@ class _SectionHeader extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(fontSize: 16),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
         if (actionLabel != null)
           TextButton(
             onPressed: onAction,
-            child: Text(actionLabel!, style: const TextStyle(fontSize: 13)),
+            child: Text(
+              actionLabel!,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
           ),
       ],
     );
@@ -467,7 +463,8 @@ class _ActivityRow extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.customerName,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -481,11 +478,11 @@ class _ActivityRow extends StatelessWidget {
                       Expanded(
                         child: Text(
                           '${DateFormatters.formatDate(item.date)} - ${DateFormatters.formatTime(item.date)}',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -493,10 +490,8 @@ class _ActivityRow extends StatelessWidget {
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         item.type.label,
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -520,15 +515,17 @@ class _EmptyActivity extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       color: AppColors.surfaceRaised,
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.history_rounded, color: AppColors.textMuted),
-          SizedBox(height: AppSpacing.sm),
+          const Icon(Icons.history_rounded, color: AppColors.textMuted),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Walay bag-ong kalihokan',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

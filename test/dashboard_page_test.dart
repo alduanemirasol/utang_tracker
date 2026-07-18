@@ -56,6 +56,7 @@ void main() {
     final amount = find.text(Money.fromPesos(125).format());
 
     expect(dateAndTime, findsOneWidget);
+    expect(tester.widget<Text>(dateAndTime).style?.fontWeight, FontWeight.w500);
     expect(label, findsOneWidget);
     expect(find.text('GCash'), findsNothing);
     expect(amount, findsOneWidget);

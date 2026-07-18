@@ -14,8 +14,7 @@ class MoneyText extends StatelessWidget {
       money.format(),
       style: (style ?? Theme.of(context).textTheme.titleMedium)?.copyWith(
         color: color,
-        fontFamily: 'monospace',
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         letterSpacing: -0.4,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),

@@ -47,11 +47,6 @@ class AppTheme {
 
     final textTheme = Typography.material2021(platform: TargetPlatform.android)
         .black
-        .apply(
-          fontFamily: _fontFamily,
-          bodyColor: AppColors.textPrimary,
-          displayColor: AppColors.textPrimary,
-        )
         .copyWith(
           bodyLarge: const TextStyle(
             fontSize: 16,
@@ -62,6 +57,13 @@ class AppTheme {
           bodyMedium: const TextStyle(
             fontSize: 14,
             height: 1.45,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textPrimary,
+          ),
+          bodySmall: const TextStyle(
+            fontSize: 12,
+            height: 1.4,
+            fontWeight: FontWeight.w400,
             color: AppColors.textPrimary,
           ),
           headlineMedium: const TextStyle(
@@ -69,6 +71,13 @@ class AppTheme {
             height: 1.15,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.7,
+            color: AppColors.textPrimary,
+          ),
+          headlineSmall: const TextStyle(
+            fontSize: 24,
+            height: 1.2,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
           titleLarge: const TextStyle(
@@ -83,16 +92,30 @@ class AppTheme {
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
-          labelMedium: const TextStyle(
-            fontSize: 11,
+          titleSmall: const TextStyle(
+            fontSize: 15,
             fontWeight: FontWeight.w600,
-            letterSpacing: 1.1,
-            color: AppColors.textSecondary,
+            color: AppColors.textPrimary,
           ),
           labelLarge: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
+          labelMedium: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+          labelSmall: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.1,
+            color: AppColors.textSecondary,
+          ),
+        )
+        .apply(
+          fontFamily: _fontFamily,
+          bodyColor: AppColors.textPrimary,
+          displayColor: AppColors.textPrimary,
         );
 
     return ThemeData(
@@ -101,7 +124,7 @@ class AppTheme {
       colorScheme: base,
       scaffoldBackgroundColor: AppColors.surface,
       textTheme: textTheme,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -109,8 +132,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         toolbarHeight: 68,
-        titleTextStyle: TextStyle(
-          fontFamily: _fontFamily,
+        titleTextStyle: textTheme.titleLarge?.copyWith(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
@@ -154,8 +176,14 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.danger, width: 2),
         ),
         hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-        labelStyle: const TextStyle(
-          fontFamily: _fontFamily,
+        labelStyle: textTheme.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        helperStyle: textTheme.bodySmall?.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        errorStyle: textTheme.bodySmall?.copyWith(color: AppColors.danger),
+        counterStyle: textTheme.bodySmall?.copyWith(
           color: AppColors.textSecondary,
         ),
       ),
@@ -168,11 +196,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: const TextStyle(
-            fontFamily: _fontFamily,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: textTheme.titleMedium,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -184,44 +208,30 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: const TextStyle(
-            fontFamily: _fontFamily,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: textTheme.titleMedium,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTapTarget),
           foregroundColor: AppColors.primaryDark,
-          textStyle: const TextStyle(
-            fontFamily: _fontFamily,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: textTheme.titleSmall,
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primaryDark,
         foregroundColor: AppColors.textOnPrimary,
         elevation: 1,
-        shape: RoundedRectangleBorder(
+        extendedTextStyle: textTheme.labelLarge,
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.primaryLight,
         selectedColor: AppColors.primaryDark,
-        labelStyle: const TextStyle(
-          fontFamily: _fontFamily,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
-        secondaryLabelStyle: const TextStyle(
-          fontFamily: _fontFamily,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
+        labelStyle: textTheme.labelMedium,
+        secondaryLabelStyle: textTheme.labelMedium?.copyWith(
           color: AppColors.textOnPrimary,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -251,9 +261,8 @@ class AppTheme {
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          return TextStyle(
-            fontFamily: _fontFamily,
-            fontSize: 11,
+          return textTheme.labelSmall?.copyWith(
+            letterSpacing: 0,
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w600
                 : FontWeight.w500,
@@ -266,8 +275,7 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.primaryDark,
-        contentTextStyle: const TextStyle(
-          fontFamily: _fontFamily,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textOnPrimary,
           fontWeight: FontWeight.w500,
         ),
@@ -292,7 +300,22 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceCard,
         surfaceTintColor: AppColors.transparent,
+        titleTextStyle: textTheme.titleLarge,
+        contentTextStyle: textTheme.bodyMedium,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelStyle: textTheme.labelLarge,
+        unselectedLabelStyle: textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        titleTextStyle: textTheme.bodyLarge,
+        subtitleTextStyle: textTheme.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        leadingAndTrailingTextStyle: textTheme.bodySmall,
       ),
     );
   }

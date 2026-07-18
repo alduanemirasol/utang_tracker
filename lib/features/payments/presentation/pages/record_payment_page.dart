@@ -179,7 +179,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             const SizedBox(height: AppSpacing.md),
             Text(
               'Remaining balance: ${selected.balance.format()}',
-              style: const TextStyle(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
@@ -209,7 +209,9 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               ),
               child: Text(
                 DateFormatters.formatDate(_paymentDate),
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -266,7 +268,12 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           ],
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(_error!, style: const TextStyle(color: AppColors.danger)),
+            Text(
+              _error!,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+            ),
           ],
           const SizedBox(height: AppSpacing.xl),
           AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
@@ -391,7 +398,9 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
           child: Text(
             _error.toString(),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.danger),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
           ),
         ),
       );
@@ -406,7 +415,9 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
                 ? 'No open debts match your search.'
                 : 'No open debts to pay.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -422,10 +433,9 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
           title: Text(debt.customerName ?? 'Customer'),
           subtitle: Text(
             DateFormatters.formatDateTime(debt.transactionDate),
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
             ),
           ),
           trailing: Column(

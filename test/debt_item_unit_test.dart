@@ -17,19 +17,19 @@ void main() {
     test('uses grammatically correct common unit labels for quantities', () {
       expect(
         DebtItemUnits.displayNameForQuantity(DebtItemUnits.piece, 1),
-        'Piece',
+        'piece',
       );
       expect(
         DebtItemUnits.displayNameForQuantity(DebtItemUnits.piece, 2),
-        'Pieces',
+        'pieces',
       );
       expect(
         DebtItemUnits.displayNameForQuantity(DebtItemUnits.bottle, 2),
-        'Bottles',
+        'bottles',
       );
       expect(
         DebtItemUnits.displayNameForQuantity(DebtItemUnits.box, 2),
-        'Boxes',
+        'boxes',
       );
       expect(
         DebtItemUnits.displayNameForQuantity(DebtItemUnits.kilogram, 0.5),

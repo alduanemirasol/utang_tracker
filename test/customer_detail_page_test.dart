@@ -75,6 +75,8 @@ void main() {
     );
     expect(debtDate, findsOneWidget);
     expect(debtTime, findsOneWidget);
+    expect(tester.widget<Text>(debtDate).style?.fontWeight, FontWeight.w500);
+    expect(tester.widget<Text>(debtTime).style?.fontWeight, FontWeight.w500);
     expect(status, findsOneWidget);
     expect(statusBadge, findsOneWidget);
     expect(debtAmount, findsOneWidget);
@@ -112,6 +114,8 @@ void main() {
     final paymentType = find.text(payment.paymentMethod);
     expect(paymentDate, findsOneWidget);
     expect(paymentTime, findsOneWidget);
+    expect(tester.widget<Text>(paymentDate).style?.fontWeight, FontWeight.w500);
+    expect(tester.widget<Text>(paymentTime).style?.fontWeight, FontWeight.w500);
     expect(paymentAmount, findsOneWidget);
     expect(paymentType, findsOneWidget);
     final paymentTypeStyle = tester.widget<Text>(paymentType).style;
