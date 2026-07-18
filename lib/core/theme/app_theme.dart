@@ -75,7 +75,7 @@ class AppTheme {
             fontSize: 21,
             height: 1.2,
             fontWeight: FontWeight.w700,
-            letterSpacing: -0.3,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
           titleMedium: const TextStyle(
