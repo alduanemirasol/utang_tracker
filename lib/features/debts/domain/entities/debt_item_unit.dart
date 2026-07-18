@@ -33,20 +33,20 @@ class DebtItemUnits {
   static const String bundle = 'bundle';
 
   static const List<DebtItemUnitOption> common = [
-    DebtItemUnitOption(value: piece, label: 'Piece', pluralLabel: 'Pieces'),
-    DebtItemUnitOption(value: pack, label: 'Pack', pluralLabel: 'Packs'),
-    DebtItemUnitOption(value: box, label: 'Box', pluralLabel: 'Boxes'),
-    DebtItemUnitOption(value: bottle, label: 'Bottle', pluralLabel: 'Bottles'),
+    DebtItemUnitOption(value: piece, label: 'piece', pluralLabel: 'pieces'),
+    DebtItemUnitOption(value: pack, label: 'pack', pluralLabel: 'packs'),
+    DebtItemUnitOption(value: box, label: 'box', pluralLabel: 'boxes'),
+    DebtItemUnitOption(value: bottle, label: 'bottle', pluralLabel: 'bottles'),
     DebtItemUnitOption(value: kilogram, label: 'kg', pluralLabel: 'kg'),
-    DebtItemUnitOption(value: gram, label: 'g', pluralLabel: 'g'),
-    DebtItemUnitOption(value: liter, label: 'Liter', pluralLabel: 'Liters'),
+    DebtItemUnitOption(value: gram, label: 'gram', pluralLabel: 'grams'),
+    DebtItemUnitOption(value: liter, label: 'liter', pluralLabel: 'liters'),
     DebtItemUnitOption(value: milliliter, label: 'ml', pluralLabel: 'ml'),
-    DebtItemUnitOption(value: can, label: 'Can', pluralLabel: 'Cans'),
-    DebtItemUnitOption(value: sachet, label: 'Sachet', pluralLabel: 'Sachets'),
-    DebtItemUnitOption(value: bag, label: 'Bag', pluralLabel: 'Bags'),
-    DebtItemUnitOption(value: dozen, label: 'Dozen', pluralLabel: 'Dozen'),
-    DebtItemUnitOption(value: tray, label: 'Tray', pluralLabel: 'Trays'),
-    DebtItemUnitOption(value: bundle, label: 'Bundle', pluralLabel: 'Bundles'),
+    DebtItemUnitOption(value: can, label: 'can', pluralLabel: 'cans'),
+    DebtItemUnitOption(value: sachet, label: 'sachet', pluralLabel: 'sachets'),
+    DebtItemUnitOption(value: bag, label: 'bag', pluralLabel: 'bags'),
+    DebtItemUnitOption(value: dozen, label: 'dozen', pluralLabel: 'dozens'),
+    DebtItemUnitOption(value: tray, label: 'tray', pluralLabel: 'trays'),
+    DebtItemUnitOption(value: bundle, label: 'bundle', pluralLabel: 'bundles'),
   ];
 
   static bool isCommon(String value) {
