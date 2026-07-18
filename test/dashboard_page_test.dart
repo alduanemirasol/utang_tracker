@@ -50,7 +50,12 @@ void main() {
     await tester.pumpAndSettle();
 
     final dateAndTime = find.text(
-      '${DateFormatters.formatDate(activityDate)} - ${DateFormatters.formatTime(activityDate)}',
+      DateFormatters.smartTimestamp(
+        activityDate,
+        relativeTo: DateTime.now(),
+        locale: 'en-US',
+        use24HourFormat: false,
+      ),
     );
     final label = find.text('Bayad');
     final amount = find.text(Money.fromPesos(125).format());

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
@@ -266,15 +266,9 @@ class _DebtHistoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      DateFormatters.formatDate(debt.transactionDate),
+                      context.smartTimestamp(debt.transactionDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      DateFormatters.formatTime(debt.transactionDate),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -335,15 +329,9 @@ class _PaymentHistoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      DateFormatters.formatDate(payment.paymentDate),
+                      context.smartTimestamp(payment.paymentDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      DateFormatters.formatTime(payment.paymentDate),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

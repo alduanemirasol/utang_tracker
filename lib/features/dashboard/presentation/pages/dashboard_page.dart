@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
@@ -477,7 +477,7 @@ class _ActivityRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${DateFormatters.formatDate(item.date)} - ${DateFormatters.formatTime(item.date)}',
+                          context.smartTimestamp(item.date),
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: AppColors.textSecondary,

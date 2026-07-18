@@ -175,16 +175,25 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.danger, width: 2),
         ),
-        hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+        hintStyle: textTheme.bodyMedium?.copyWith(
+          color: AppColors.textMuted,
+          fontWeight: FontWeight.w500,
+        ),
         labelStyle: textTheme.bodyMedium?.copyWith(
           color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
         ),
         helperStyle: textTheme.bodySmall?.copyWith(
           color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
         ),
-        errorStyle: textTheme.bodySmall?.copyWith(color: AppColors.danger),
+        errorStyle: textTheme.bodySmall?.copyWith(
+          color: AppColors.danger,
+          fontWeight: FontWeight.w500,
+        ),
         counterStyle: textTheme.bodySmall?.copyWith(
           color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

@@ -84,4 +84,31 @@ void main() {
           'of declaring a font family locally.\n${offenders.join('\n')}',
     );
   });
+
+  test('date display patterns are centralized in DateFormatters', () {
+    final lib = Directory('lib');
+    final offenders = <String>[];
+    final directDateFormat = RegExp(r'\bDateFormat\s*(?:\.|\()');
+
+    for (final entity in lib.listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith('date_formatters.dart')) continue;
+
+      final lines = entity.readAsLinesSync();
+      for (var index = 0; index < lines.length; index++) {
+        final line = lines[index];
+        if (directDateFormat.hasMatch(line)) {
+          offenders.add('${entity.path}:${index + 1}: ${line.trim()}');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          'All UI dates and timestamps must use the centralized smart '
+          'formatter.\n${offenders.join('\n')}',
+    );
+  });
 }

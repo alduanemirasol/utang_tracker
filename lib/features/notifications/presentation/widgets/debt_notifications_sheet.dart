@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
@@ -181,6 +181,11 @@ class _NotificationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final kind = notification.kind;
+    final timingLabel = _timingLabel(notification);
+    final dueDateLabel = context.smartDate(notification.dueDate);
+    final dateDescription = timingLabel == dueDateLabel
+        ? dueDateLabel
+        : '$timingLabel · $dueDateLabel';
     return InkWell(
       onTap: () => Navigator.pop(context, notification.debt.id),
       child: Padding(
@@ -214,7 +219,7 @@ class _NotificationRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${_timingLabel(notification)} · ${DateFormatters.formatDate(notification.dueDate)}',
+                    dateDescription,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

@@ -65,29 +65,28 @@ void main() {
     expect(find.byKey(const PageStorageKey('payment-history')), findsNothing);
     expect(find.text('Cash'), findsNothing);
 
-    final debtDate = find.text(DateFormatters.formatDate(debt.transactionDate));
-    final debtTime = find.text(DateFormatters.formatTime(debt.transactionDate));
+    final debtTimestamp = find.text(
+      DateFormatters.smartTimestamp(
+        debt.transactionDate,
+        relativeTo: DateTime.now(),
+        locale: 'en-US',
+        use24HourFormat: false,
+      ),
+    );
     final status = find.text('Partial');
     final statusBadge = find.byType(StatusBadge);
     final debtAmount = find.descendant(
       of: find.byKey(const PageStorageKey('debt-history')),
       matching: find.text(currentDebt.balance.format()),
     );
-    expect(debtDate, findsOneWidget);
-    expect(debtTime, findsOneWidget);
-    expect(tester.widget<Text>(debtDate).style?.fontWeight, FontWeight.w500);
-    expect(tester.widget<Text>(debtTime).style?.fontWeight, FontWeight.w500);
+    expect(debtTimestamp, findsOneWidget);
+    expect(
+      tester.widget<Text>(debtTimestamp).style?.fontWeight,
+      FontWeight.w500,
+    );
     expect(status, findsOneWidget);
     expect(statusBadge, findsOneWidget);
     expect(debtAmount, findsOneWidget);
-    expect(
-      tester.getTopLeft(debtTime).dy,
-      greaterThan(tester.getTopLeft(debtDate).dy),
-    );
-    expect(
-      tester.getTopLeft(debtTime).dx,
-      closeTo(tester.getTopLeft(debtDate).dx, 1),
-    );
     expect(
       tester.getTopLeft(debtAmount).dy,
       greaterThan(tester.getTopLeft(status).dy),
@@ -104,31 +103,26 @@ void main() {
     expect(find.byKey(const PageStorageKey('payment-history')), findsOneWidget);
     expect(find.text('Cash'), findsOneWidget);
 
-    final paymentDate = find.text(
-      DateFormatters.formatDate(payment.paymentDate),
-    );
-    final paymentTime = find.text(
-      DateFormatters.formatTime(payment.paymentDate),
+    final paymentTimestamp = find.text(
+      DateFormatters.smartTimestamp(
+        payment.paymentDate,
+        relativeTo: DateTime.now(),
+        locale: 'en-US',
+        use24HourFormat: false,
+      ),
     );
     final paymentAmount = find.text(payment.amount.format());
     final paymentType = find.text(payment.paymentMethod);
-    expect(paymentDate, findsOneWidget);
-    expect(paymentTime, findsOneWidget);
-    expect(tester.widget<Text>(paymentDate).style?.fontWeight, FontWeight.w500);
-    expect(tester.widget<Text>(paymentTime).style?.fontWeight, FontWeight.w500);
+    expect(paymentTimestamp, findsOneWidget);
+    expect(
+      tester.widget<Text>(paymentTimestamp).style?.fontWeight,
+      FontWeight.w500,
+    );
     expect(paymentAmount, findsOneWidget);
     expect(paymentType, findsOneWidget);
     final paymentTypeStyle = tester.widget<Text>(paymentType).style;
     expect(paymentTypeStyle?.fontSize, 12);
     expect(paymentTypeStyle?.fontWeight, FontWeight.w400);
-    expect(
-      tester.getTopLeft(paymentTime).dy,
-      greaterThan(tester.getTopLeft(paymentDate).dy),
-    );
-    expect(
-      tester.getTopLeft(paymentTime).dx,
-      closeTo(tester.getTopLeft(paymentDate).dx, 1),
-    );
     expect(
       tester.getTopLeft(paymentType).dy,
       greaterThan(tester.getTopLeft(paymentAmount).dy),

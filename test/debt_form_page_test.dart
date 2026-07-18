@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:utang_tracker/core/database/app_database.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
+import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.dart';
 
@@ -19,14 +22,19 @@ void main() {
       ),
     );
 
-    final transactionDate = find.text(
-      DateFormatters.formatDate(DateTime.now()),
-    );
+    final transactionDate = find.text('Today');
     expect(transactionDate, findsOneWidget);
     expect(
       tester.widget<Text>(transactionDate).style?.fontWeight,
       FontWeight.w500,
     );
+    expect(
+      tester.widget<Text>(find.text('Select customer')).style?.fontWeight,
+      FontWeight.w500,
+    );
+
+    final unitValue = find.text(DebtItemUnits.displayName(DebtItemUnits.piece));
+    expect(tester.widget<Text>(unitValue).style?.fontWeight, FontWeight.w500);
 
     final firstSubtotal = find.byKey(
       const ValueKey('debt-form-item-subtotal-amount-0'),
@@ -44,6 +52,15 @@ void main() {
       (widget) => widget is AppTextField && widget.label == 'Price',
     );
     await tester.ensureVisible(priceField);
+    expect(
+      tester
+          .widget<TextField>(
+            find.descendant(of: priceField, matching: find.byType(TextField)),
+          )
+          .style
+          ?.fontWeight,
+      FontWeight.w500,
+    );
     await tester.enterText(
       find.descendant(of: priceField, matching: find.byType(TextField)),
       '75.50',
@@ -140,6 +157,62 @@ void main() {
 
     expect(find.text(collapsedSummary), findsNWidgets(2));
     expect(find.text('Product'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('customer picker check follows the selected customer', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+    final customers = CustomerRepositoryImpl(database);
+    final maria = await customers.create(name: 'Maria Santos');
+    await customers.create(name: 'Juan Cruz');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: DebtFormPage(initialCustomerId: maria.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Maria Santos'));
+    await tester.pumpAndSettle();
+
+    Finder customerTile(String name) =>
+        find.ancestor(of: find.text(name), matching: find.byType(ListTile));
+    Finder checkIn(Finder tile) =>
+        find.descendant(of: tile, matching: find.byIcon(Icons.check));
+
+    final mariaTile = customerTile('Maria Santos');
+    final juanTile = customerTile('Juan Cruz');
+    final mariaCheck = checkIn(mariaTile);
+
+    expect(mariaTile, findsOneWidget);
+    expect(juanTile, findsOneWidget);
+    expect(mariaCheck, findsOneWidget);
+    expect(checkIn(juanTile), findsNothing);
+    expect(tester.widget<Icon>(mariaCheck).color, AppColors.primaryDark);
+
+    await tester.tap(juanTile);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Juan Cruz'));
+    await tester.pumpAndSettle();
+
+    final reopenedMariaTile = customerTile('Maria Santos');
+    final reopenedJuanTile = customerTile('Juan Cruz');
+    final juanCheck = checkIn(reopenedJuanTile);
+
+    expect(checkIn(reopenedMariaTile), findsNothing);
+    expect(juanCheck, findsOneWidget);
+    expect(tester.widget<Icon>(juanCheck).color, AppColors.primaryDark);
     expect(tester.takeException(), isNull);
   });
 }

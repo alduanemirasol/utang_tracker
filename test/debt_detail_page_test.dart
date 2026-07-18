@@ -67,7 +67,12 @@ void main() {
     await tester.pumpAndSettle();
 
     final transactionDate = find.text(
-      DateFormatters.formatDateTime(debt.transactionDate),
+      DateFormatters.smartTimestamp(
+        debt.transactionDate,
+        relativeTo: DateTime.now(),
+        locale: 'en-US',
+        use24HourFormat: false,
+      ),
     );
     expect(transactionDate, findsOneWidget);
     expect(

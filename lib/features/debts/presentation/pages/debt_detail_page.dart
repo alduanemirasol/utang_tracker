@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
@@ -91,14 +91,14 @@ class DebtDetailPage extends ConsumerWidget {
                       _kv(
                         context,
                         'Date',
-                        DateFormatters.formatDateTime(debt.transactionDate),
+                        context.smartTimestamp(debt.transactionDate),
                         valueAlignRight: true,
                       ),
                       if (debt.dueDate != null)
                         _kv(
                           context,
                           'Due date',
-                          DateFormatters.formatDate(debt.dueDate!),
+                          context.smartDate(debt.dueDate!),
                           valueAlignRight: true,
                         ),
                       const Divider(height: AppSpacing.xl),
@@ -167,9 +167,7 @@ class DebtDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormatters.formatDateTime(
-                                      p.paymentDate,
-                                    ),
+                                    context.smartTimestamp(p.paymentDate),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(fontWeight: FontWeight.w500),
                                   ),

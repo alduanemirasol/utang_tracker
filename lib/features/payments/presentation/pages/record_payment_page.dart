@@ -6,7 +6,7 @@ import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
@@ -208,10 +208,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
               ),
               child: Text(
-                DateFormatters.formatDate(_paymentDate),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                context.smartDate(_paymentDate),
+                style: AppTextField.inputStyle(context),
               ),
             ),
           ),
@@ -221,17 +219,9 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           DropdownButtonFormField<String>(
             // ignore: deprecated_member_use
             value: _method,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppTextField.inputStyle(context),
             items: AppConstants.paymentMethods
-                .map(
-                  (m) => DropdownMenuItem(
-                    value: m,
-                    child: Text(
-                      m,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                )
+                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                 .toList(),
             onChanged: (v) {
               if (v != null) setState(() => _method = v);
@@ -305,7 +295,8 @@ class _DebtField extends StatelessWidget {
         ),
         child: Text(
           hasLabel ? label! : 'Select utang',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: AppTextField.inputStyle(
+            context,
             color: hasLabel ? AppColors.textPrimary : AppColors.textMuted,
           ),
           maxLines: 1,
@@ -432,7 +423,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         return ListTile(
           title: Text(debt.customerName ?? 'Customer'),
           subtitle: Text(
-            DateFormatters.formatDateTime(debt.transactionDate),
+            context.smartTimestamp(debt.transactionDate),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,

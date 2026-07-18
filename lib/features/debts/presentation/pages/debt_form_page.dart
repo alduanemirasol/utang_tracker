@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
 import 'package:utang_tracker/core/utils/money.dart';
@@ -86,7 +86,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   Future<void> _pickCustomer() async {
     final selected = await showAppModalBottomSheet<Customer>(
       context: context,
-      builder: (context) => const _CustomerPickerSheet(),
+      builder: (context) =>
+          _CustomerPickerSheet(selectedCustomerId: _customerId),
     );
     if (selected == null || !mounted) return;
     setState(() {
@@ -343,15 +344,13 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           _DateField(
             label: 'Date',
             required: true,
-            value: DateFormatters.formatDate(_transactionDate),
+            value: context.smartDate(_transactionDate),
             onTap: () => _pickDate(due: false),
           ),
           const SizedBox(height: AppSpacing.lg),
           _DateField(
             label: 'Due date',
-            value: _dueDate == null
-                ? 'Optional'
-                : DateFormatters.formatDate(_dueDate!),
+            value: _dueDate == null ? 'Optional' : context.smartDate(_dueDate!),
             onTap: () => _pickDate(due: true),
             onClear: _dueDate == null
                 ? null
@@ -599,7 +598,8 @@ class _CustomerField extends StatelessWidget {
         ),
         child: Text(
           hasName ? name! : 'Select customer',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: AppTextField.inputStyle(
+            context,
             color: hasName ? AppColors.textPrimary : AppColors.textMuted,
           ),
           maxLines: 1,
@@ -633,7 +633,7 @@ class _UnitField extends StatelessWidget {
                 Expanded(
                   child: Text(
                     DebtItemUnits.displayName(unit),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: AppTextField.inputStyle(context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -775,7 +775,9 @@ class _CustomUnitDialogState extends State<_CustomUnitDialog> {
 }
 
 class _CustomerPickerSheet extends ConsumerStatefulWidget {
-  const _CustomerPickerSheet();
+  const _CustomerPickerSheet({required this.selectedCustomerId});
+
+  final String? selectedCustomerId;
 
   @override
   ConsumerState<_CustomerPickerSheet> createState() =>
@@ -892,11 +894,15 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
       ),
       itemBuilder: (context, index) {
         final customer = customers[index];
+        final selected = customer.id == widget.selectedCustomerId;
         return ListTile(
           title: Text(customer.name),
           subtitle: customer.phone == null || customer.phone!.isEmpty
               ? null
               : Text(customer.phone!),
+          trailing: selected
+              ? const Icon(Icons.check, color: AppColors.primaryDark)
+              : null,
           onTap: () => Navigator.of(context).pop(customer),
         );
       },
@@ -938,12 +944,7 @@ class _DateField extends StatelessWidget {
                     )
                   : const Icon(Icons.calendar_today_outlined, size: 18),
             ),
-            child: Text(
-              value,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-            ),
+            child: Text(value, style: AppTextField.inputStyle(context)),
           ),
         ),
       ],

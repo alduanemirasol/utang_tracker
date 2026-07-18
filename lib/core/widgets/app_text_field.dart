@@ -80,6 +80,12 @@ class AppTextField extends StatelessWidget {
     return Text.rich(TextSpan(style: baseStyle, children: children));
   }
 
+  static TextStyle? inputStyle(BuildContext context, {Color? color}) {
+    return Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(color: color, fontWeight: FontWeight.w500);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -92,7 +98,7 @@ class AppTextField extends StatelessWidget {
         ],
         TextField(
           controller: controller,
-          style: style ?? Theme.of(context).textTheme.bodyMedium,
+          style: style ?? inputStyle(context),
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           maxLines: maxLines,

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
+import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
@@ -152,7 +152,9 @@ class PaymentsListPage extends ConsumerWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          '${DateFormatters.formatDate(payment.paymentDate)} - ${payment.paymentMethod}',
+                                          context.smartTimestamp(
+                                            payment.paymentDate,
+                                          ),
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
@@ -166,9 +168,7 @@ class PaymentsListPage extends ConsumerWidget {
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
                                       Text(
-                                        DateFormatters.formatTime(
-                                          payment.paymentDate,
-                                        ),
+                                        payment.paymentMethod,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
@@ -218,7 +218,7 @@ class _PaymentFiltersBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = _dateFilterLabel(filters);
+    final dateLabel = _dateFilterLabel(context, filters);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -302,16 +302,12 @@ class _PaymentFiltersBar extends StatelessWidget {
     }
   }
 
-  String _dateFilterLabel(PaymentFilters filters) {
+  String _dateFilterLabel(BuildContext context, PaymentFilters filters) {
     if (filters.startDate == null || filters.endDate == null) {
       return 'Date';
     }
 
-    if (DateFormatters.isSameLocalDay(filters.startDate!, filters.endDate!)) {
-      return DateFormatters.formatDate(filters.startDate!);
-    }
-
-    return '${DateFormatters.formatDate(filters.startDate!)} - ${DateFormatters.formatDate(filters.endDate!)}';
+    return context.smartDateRange(filters.startDate!, filters.endDate!);
   }
 }
 

@@ -125,5 +125,22 @@ void main() {
         reason: '${entry.key} must derive from the shared Poppins text theme.',
       );
     }
+
+    final inputSupportingStyles = <String, TextStyle?>{
+      'hint': theme.inputDecorationTheme.hintStyle,
+      'label': theme.inputDecorationTheme.labelStyle,
+      'helper': theme.inputDecorationTheme.helperStyle,
+      'error': theme.inputDecorationTheme.errorStyle,
+      'counter': theme.inputDecorationTheme.counterStyle,
+    };
+
+    for (final entry in inputSupportingStyles.entries) {
+      expect(
+        entry.value?.fontWeight,
+        FontWeight.w500,
+        reason:
+            'Input ${entry.key} text must remain readable at medium weight.',
+      );
+    }
   });
 }

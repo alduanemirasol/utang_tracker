@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/widgets/app_text_field.dart';
 
 class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
@@ -58,7 +59,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
-      style: Theme.of(context).textTheme.bodyMedium,
+      style: AppTextField.inputStyle(context),
       onChanged: _onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(

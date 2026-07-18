@@ -4,13 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 void main() {
-  testWidgets('payment time appears below amount and beside date', (
+  testWidgets('smart payment timestamp appears beside payment method', (
     tester,
   ) async {
     final paymentDate = DateTime(2026, 7, 15, 14, 5);
@@ -25,30 +26,35 @@ void main() {
 
     await _pumpPage(tester, [payment]);
 
-    final dateAndMethod = find.text(
-      '${DateFormatters.formatDate(paymentDate)} - Cash',
+    final timestamp = find.text(
+      DateFormatters.smartTimestamp(
+        paymentDate,
+        relativeTo: DateTime.now(),
+        locale: 'en-US',
+        use24HourFormat: false,
+      ),
     );
-    final time = find.text(DateFormatters.formatTime(paymentDate));
+    final method = find.descendant(
+      of: find.byType(AppCard),
+      matching: find.text('Cash'),
+    );
     final amount = find.text(payment.amount.format());
 
-    expect(dateAndMethod, findsOneWidget);
-    expect(time, findsOneWidget);
-    expect(
-      tester.widget<Text>(dateAndMethod).style?.fontWeight,
-      FontWeight.w500,
-    );
-    expect(tester.widget<Text>(time).style?.fontWeight, FontWeight.w500);
+    expect(timestamp, findsOneWidget);
+    expect(method, findsOneWidget);
+    expect(tester.widget<Text>(timestamp).style?.fontWeight, FontWeight.w500);
+    expect(tester.widget<Text>(method).style?.fontWeight, FontWeight.w500);
     expect(amount, findsOneWidget);
     expect(
-      tester.getTopLeft(time).dy,
+      tester.getTopLeft(method).dy,
       greaterThan(tester.getTopLeft(amount).dy),
     );
     expect(
-      tester.getTopLeft(time).dy,
-      closeTo(tester.getTopLeft(dateAndMethod).dy, 2),
+      tester.getTopLeft(method).dy,
+      closeTo(tester.getTopLeft(timestamp).dy, 2),
     );
     expect(
-      tester.getTopRight(time).dx,
+      tester.getTopRight(method).dx,
       closeTo(tester.getTopRight(amount).dx, 1),
     );
   });
