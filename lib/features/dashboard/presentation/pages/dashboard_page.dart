@@ -335,16 +335,17 @@ class _QuickAction extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
-              Icon(icon, color: foregroundColor, size: 23),
-              const SizedBox(width: AppSpacing.md),
+              Icon(icon, color: foregroundColor, size: 22),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   label,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: foregroundColor,
                     fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ),
