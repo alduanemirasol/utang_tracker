@@ -1,62 +1,57 @@
 # Release Checklist
 
-Template for publishing a new release. Replace `x.x.x` with the target version.
+## 1. Edit Release Notes
 
----
+Edit `RELEASE_NOTES.md` at the project root with user-facing "What's new" entries:
 
-## Commands
+```text
+What's new in v1.0.13
+
+- Auto-scroll to first validation error
+- Unsaved changes protection
+- Improved install from unknown sources flow
+```
+
+This file is read by the CI workflow and becomes the GitHub Release body —
+the content users see in the app's update dialog.
+
+## 2. Bump Version
+
+Update the version in `pubspec.yaml`:
+
+```yaml
+version: 1.0.13+14
+```
+
+Commit:
 
 ```powershell
-# ── 1. BUMP VERSION ───────────────────────────────────────────
-# Edit pubspec.yaml and bump version (e.g. 1.0.13+14)
-
 git add pubspec.yaml
 git commit -m "bump version to 1.0.13"
+```
 
-# ── 2. BUILD SPLIT APKS ───────────────────────────────────────
-flutter build apk --release --split-per-abi
+## 3. Commit Everything
 
-# ── 3. RENAME APKS ────────────────────────────────────────────
-$tag = "v1.0.13"
-$src = "build\app\outputs\flutter-apk"
-New-Item -ItemType Directory -Force -Path release
-Copy-Item "$src\app-arm64-v8a-release.apk" "release\utang-tracker-arm64-v8a-$tag.apk"
-Copy-Item "$src\app-armeabi-v7a-release.apk" "release\utang-tracker-armeabi-v7a-$tag.apk"
-Copy-Item "$src\app-x86_64-release.apk" "release\utang-tracker-x86_64-$tag.apk"
+```powershell
+git add .
+git commit -m "release v1.0.13"
+```
 
-# (Optional) universal fallback
-flutter build apk --release
-Copy-Item "$src\app-release.apk" "release\utang-tracker-universal-$tag.apk"
+## 4. Tag and Push
 
-# ── 4. COMMIT REMAINING, TAG & PUSH ──────────────────────────
-git add . && git commit -m "release v1.0.13"
+```powershell
 git tag v1.0.13
 git push origin main --tags
-
-# ── 5. CREATE GITHUB RELEASE ─────────────────────────────────
-# --notes text becomes "What's new" in the update sheet.
-# Each line is one bullet point.
-cd release
-gh release create v1.0.13 `
-  --title "v1.0.13" `
-  --notes "Auto-scroll to first validation error
-Unsaved changes protection
-Improved install from unknown sources flow" `
-  *.apk
-cd ..
 ```
 
----
+The CI pipeline (`.github/workflows/release.yml`) will:
 
-## What goes in `--notes`
+1. Build and sign APKs (split + universal)
+2. Validate `RELEASE_NOTES.md` exists
+3. Create a GitHub Release with body from `RELEASE_NOTES.md`
+4. Upload all APKs as release assets
 
-Only the `--notes` text appears in the app's update sheet under **"What's new"**.
-Keep entries concise and user-facing:
+## Release Notes
 
-```
-Short description of change 1
-Short description of change 2
-Short description of change 3
-```
-
-Everything else (tag name, title, APK filenames) is internal and not shown to users.
+Only the content of `RELEASE_NOTES.md` appears in the app's **What's New** section.
+Keep entries concise and user-facing.
