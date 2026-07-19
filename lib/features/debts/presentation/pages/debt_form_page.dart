@@ -15,6 +15,7 @@ import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
+import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
@@ -67,6 +68,7 @@ class _LineItemControllers {
 }
 
 class _DebtFormPageState extends ConsumerState<DebtFormPage> {
+  bool _isDirty = false;
   final _customerFieldKey = GlobalKey();
   String? _customerId;
   String? _customerName;
@@ -97,6 +99,24 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     setState(() => _customerName = customer.name);
   }
 
+  void _markDirty() {
+    if (!_isDirty) setState(() => _isDirty = true);
+  }
+
+  Future<void> _confirmBack() async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Discard changes?',
+      message:
+          'You have unsaved changes. Are you sure you want to discard them?',
+      confirmLabel: 'Discard',
+      isDestructive: true,
+    );
+    if (confirmed && mounted) {
+      context.pop();
+    }
+  }
+
   Future<void> _pickCustomer() async {
     final selected = await showAppModalBottomSheet<Customer>(
       context: context,
@@ -109,6 +129,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       _customerName = selected.name;
       _customerError = null;
     });
+    _markDirty();
   }
 
   @override
@@ -159,6 +180,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         _transactionDate = picked;
       }
     });
+    _markDirty();
   }
 
   Future<void> _pickUnit(_LineItemControllers item) async {
@@ -168,6 +190,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     );
     if (selected == null || !mounted) return;
     setState(() => item.unit = selected);
+    _markDirty();
   }
 
   void _addItem() {
@@ -177,6 +200,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       }
       _items.add(_LineItemControllers());
     });
+    _markDirty();
   }
 
   List<DebtItemInput>? _buildItems() {
@@ -279,6 +303,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       }
 
       if (!mounted) return;
+      _isDirty = false;
       AppSnackBar.success(
         context,
         widget.isEditing ? 'Utang updated' : 'Utang recorded',
@@ -322,6 +347,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         }),
       );
     if (_items.isEmpty) _items.add(_LineItemControllers());
+    _isDirty = false;
     _loaded = true;
   }
 
@@ -402,10 +428,15 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Widget _buildForm() {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
-      ),
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
+        ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
@@ -432,7 +463,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             onTap: () => _pickDate(due: true),
             onClear: _dueDate == null
                 ? null
-                : () => setState(() => _dueDate = null),
+                : () {
+                      setState(() => _dueDate = null);
+                      _markDirty();
+                    },
           ),
           const SizedBox(height: AppSpacing.xl),
           Row(
@@ -527,6 +561,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                 item.dispose();
                                 _items.removeAt(index);
                               });
+                              _markDirty();
                             },
                             icon: const Icon(Icons.close, size: 20),
                           ),
@@ -540,9 +575,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                         label: 'Product *',
                         hint: 'e.g. Bugas',
                         errorText: item.productError,
-                        onChanged: (_) => setState(() {
-                          item.productError = null;
-                        }),
+                        onChanged: (_) {
+                          _markDirty();
+                          setState(() => item.productError = null);
+                        },
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Row(
@@ -563,9 +599,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                   RegExp(r'[\d.]'),
                                 ),
                               ],
-                              onChanged: (_) => setState(() {
-                                item.quantityError = null;
-                              }),
+                              onChanged: (_) {
+                                _markDirty();
+                                setState(() => item.quantityError = null);
+                              },
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
@@ -590,9 +627,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                         ],
-                        onChanged: (_) => setState(() {
-                          item.priceError = null;
-                        }),
+                        onChanged: (_) {
+                          _markDirty();
+                          setState(() => item.priceError = null);
+                        },
                       ),
                     ],
                     const Divider(height: AppSpacing.xl),
@@ -638,6 +676,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             hint: 'Optional',
             minLines: 4,
             maxLines: 6,
+            onChanged: (_) => _markDirty(),
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -657,6 +696,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
+    ),
     );
   }
 }

@@ -14,6 +14,7 @@ import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
+import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
@@ -32,6 +33,7 @@ class RecordPaymentPage extends ConsumerStatefulWidget {
 }
 
 class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
+  bool _isDirty = false;
   final _debtFieldKey = GlobalKey();
   final _amountFocusNode = FocusNode();
   String? _debtId;
@@ -65,6 +67,24 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     super.dispose();
   }
 
+  void _markDirty() {
+    if (!_isDirty) setState(() => _isDirty = true);
+  }
+
+  Future<void> _confirmBack() async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Discard changes?',
+      message:
+          'You have unsaved changes. Are you sure you want to discard them?',
+      confirmLabel: 'Discard',
+      isDestructive: true,
+    );
+    if (confirmed && mounted) {
+      context.pop();
+    }
+  }
+
   Future<void> _resolveInitialDebt(String id) async {
     setState(() => _resolvingInitial = true);
     try {
@@ -94,6 +114,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       _amountError = null;
       _error = null;
     });
+    _markDirty();
   }
 
   Future<void> _pickDebt() async {
@@ -112,7 +133,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
-    if (picked != null) setState(() => _paymentDate = picked);
+    if (picked != null) {
+      setState(() => _paymentDate = picked);
+      _markDirty();
+    }
   }
 
   Future<void> _save() async {
@@ -171,6 +195,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         debtId: _debtId,
       );
       if (!mounted) return;
+      _isDirty = false;
       AppSnackBar.success(context, 'Bayad recorded');
       context.pop();
     } on AppException catch (e) {
@@ -200,19 +225,24 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
     final selected = _selectedDebt;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Record bayad')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.pagePadding),
-        children: [
-          AppTextField.buildLabel(context, 'Utang *'),
-          const SizedBox(height: AppSpacing.sm),
-          _DebtField(
-            key: _debtFieldKey,
-            label: _debtFieldLabel,
-            onTap: _pickDebt,
-            errorText: _debtError,
-          ),
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Record bayad')),
+        body: ListView(
+          padding: const EdgeInsets.all(AppSpacing.pagePadding),
+          children: [
+            AppTextField.buildLabel(context, 'Utang *'),
+            const SizedBox(height: AppSpacing.sm),
+            _DebtField(
+              key: _debtFieldKey,
+              label: _debtFieldLabel,
+              onTap: _pickDebt,
+              errorText: _debtError,
+            ),
           if (selected != null) ...[
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -236,6 +266,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             ],
 
             onChanged: (_) => setState(() {
+              _markDirty();
               _amountError = null;
             }),
           ),
@@ -266,7 +297,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                 .toList(),
             onChanged: (v) {
-              if (v != null) setState(() => _method = v);
+              if (v != null) {
+                setState(() => _method = v);
+                _markDirty();
+              }
             },
             decoration: const InputDecoration(),
           ),
@@ -277,6 +311,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             hint: 'Optional',
             minLines: 4,
             maxLines: 6,
+            onChanged: (_) => _markDirty(),
           ),
           if (selected != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -311,6 +346,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
         ],
       ),
+    ),
     );
   }
 }
