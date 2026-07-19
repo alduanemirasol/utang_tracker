@@ -32,6 +32,8 @@ class RecordPaymentPage extends ConsumerStatefulWidget {
 }
 
 class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
+  final _debtFieldKey = GlobalKey();
+  final _amountFocusNode = FocusNode();
   String? _debtId;
   Debt? _selectedDebt;
   final _amountController = TextEditingController();
@@ -59,6 +61,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   void dispose() {
     _amountController.dispose();
     _notesController.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
   }
 
@@ -135,7 +138,23 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         _amountError = 'Enter a valid amount.';
       }
     });
-    if (_debtError != null || amount == null) return;
+    if (_debtError != null || amount == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_debtError != null) {
+          final ctx = _debtFieldKey.currentContext;
+          if (ctx != null) {
+            Scrollable.ensureVisible(
+              ctx,
+              alignment: 0.2,
+              duration: const Duration(milliseconds: 300),
+            );
+          }
+        } else {
+          _amountFocusNode.requestFocus();
+        }
+      });
+      return;
+    }
 
     setState(() => _saving = true);
     try {
@@ -189,6 +208,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           AppTextField.buildLabel(context, 'Utang *'),
           const SizedBox(height: AppSpacing.sm),
           _DebtField(
+            key: _debtFieldKey,
             label: _debtFieldLabel,
             onTap: _pickDebt,
             errorText: _debtError,
@@ -206,6 +226,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
           const SizedBox(height: AppSpacing.lg),
           AppTextField(
             controller: _amountController,
+            focusNode: _amountFocusNode,
             label: 'Amount *',
             hint: 'e.g. 100.00',
             errorText: _amountError,
@@ -295,7 +316,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 }
 
 class _DebtField extends StatelessWidget {
-  const _DebtField({required this.label, required this.onTap, this.errorText});
+  const _DebtField({super.key, required this.label, required this.onTap, this.errorText});
 
   final String? label;
   final VoidCallback onTap;

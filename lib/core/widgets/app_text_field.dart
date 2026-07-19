@@ -24,6 +24,7 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.style,
+    this.focusNode,
   });
 
   final TextEditingController? controller;
@@ -44,6 +45,7 @@ class AppTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final TextStyle? style;
+  final FocusNode? focusNode;
 
   /// Renders [label] with any `*` characters in [AppColors.danger].
   static Widget buildLabel(
@@ -98,6 +100,7 @@ class AppTextField extends StatelessWidget {
         ],
         TextField(
           controller: controller,
+          focusNode: focusNode,
           style: style ?? inputStyle(context),
           keyboardType: keyboardType,
           textInputAction: textInputAction,

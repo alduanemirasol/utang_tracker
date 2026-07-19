@@ -26,6 +26,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+  final _nameFocusNode = FocusNode();
   String? _nameError;
   bool _saving = false;
   bool _loaded = false;
@@ -36,6 +37,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     _nameController.dispose();
     _phoneController.dispose();
     _notesController.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() => _nameError = 'Name is required');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _nameFocusNode.requestFocus();
+      });
       return;
     }
     setState(() {
@@ -143,6 +148,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         children: [
           AppTextField(
             controller: _nameController,
+            focusNode: _nameFocusNode,
             label: 'Name *',
             hint: 'Customer name',
             errorText: _nameError,

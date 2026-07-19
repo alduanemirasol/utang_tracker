@@ -39,11 +39,17 @@ class _LineItemControllers {
   _LineItemControllers()
     : product = TextEditingController(),
       quantity = TextEditingController(text: '1'),
-      price = TextEditingController();
+      price = TextEditingController(),
+      productFocusNode = FocusNode(),
+      quantityFocusNode = FocusNode(),
+      priceFocusNode = FocusNode();
 
   final TextEditingController product;
   final TextEditingController quantity;
   final TextEditingController price;
+  final FocusNode productFocusNode;
+  final FocusNode quantityFocusNode;
+  final FocusNode priceFocusNode;
   String unit = DebtItemUnits.piece;
   bool isExpanded = true;
   String? productError;
@@ -54,10 +60,14 @@ class _LineItemControllers {
     product.dispose();
     quantity.dispose();
     price.dispose();
+    productFocusNode.dispose();
+    quantityFocusNode.dispose();
+    priceFocusNode.dispose();
   }
 }
 
 class _DebtFormPageState extends ConsumerState<DebtFormPage> {
+  final _customerFieldKey = GlobalKey();
   String? _customerId;
   String? _customerName;
   DateTime _transactionDate = DateTime.now();
@@ -235,7 +245,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       _customerError = _customerId == null ? 'Select a customer.' : null;
       items = _buildItems();
     });
-    if (_customerError != null || items == null) return;
+    if (_customerError != null || items == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToFirstError();
+      });
+      return;
+    }
 
     setState(() => _saving = true);
     try {
@@ -310,6 +325,35 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     _loaded = true;
   }
 
+  void _scrollToFirstError() {
+    if (_customerError != null) {
+      final ctx = _customerFieldKey.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.2,
+          duration: const Duration(milliseconds: 300),
+        );
+      }
+      return;
+    }
+
+    for (final item in _items) {
+      if (item.productError != null) {
+        item.productFocusNode.requestFocus();
+        return;
+      }
+      if (item.quantityError != null) {
+        item.quantityFocusNode.requestFocus();
+        return;
+      }
+      if (item.priceError != null) {
+        item.priceFocusNode.requestFocus();
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.isEditing && !_loaded) {
@@ -368,6 +412,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           AppTextField.buildLabel(context, 'Customer *'),
           const SizedBox(height: AppSpacing.sm),
           _CustomerField(
+            key: _customerFieldKey,
             name: _customerName,
             enabled: !widget.isEditing,
             onTap: _pickCustomer,
@@ -491,6 +536,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                       const Divider(height: AppSpacing.lg),
                       AppTextField(
                         controller: item.product,
+                        focusNode: item.productFocusNode,
                         label: 'Product *',
                         hint: 'e.g. Bugas',
                         errorText: item.productError,
@@ -504,6 +550,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                           Expanded(
                             child: AppTextField(
                               controller: item.quantity,
+                              focusNode: item.quantityFocusNode,
                               label: 'Quantity *',
                               hint: 'e.g. 2',
                               errorText: item.quantityError,
@@ -533,6 +580,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                       const SizedBox(height: AppSpacing.md),
                       AppTextField(
                         controller: item.price,
+                        focusNode: item.priceFocusNode,
                         label: 'Price *',
                         hint: 'e.g. 50.00',
                         errorText: item.priceError,
@@ -615,6 +663,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
 class _CustomerField extends StatelessWidget {
   const _CustomerField({
+    super.key,
     required this.name,
     required this.enabled,
     required this.onTap,
