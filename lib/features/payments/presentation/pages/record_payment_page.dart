@@ -425,9 +425,7 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Text(
-            searching
-                ? 'No open debts match your search.'
-                : 'No open debts to pay.',
+            searching ? 'Walay utang match your search.' : 'Wala pay utang',
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
