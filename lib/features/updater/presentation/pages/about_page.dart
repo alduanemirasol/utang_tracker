@@ -87,9 +87,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           _SectionLabel('Credits'),
           const SizedBox(height: AppSpacing.sm),
           _InfoCard(
-            children: [
-              _InfoRow(label: 'Developer', value: 'Al Duane Cuevas Mirasol'),
-            ],
+            children: [_InfoRow(label: 'Developer', value: 'Al Duane Mirasol')],
           ),
           const SizedBox(height: AppSpacing.xxl),
         ],
@@ -120,9 +118,9 @@ class _AppHeader extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           info != null ? 'v${info!.version}' : '—',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
@@ -183,17 +181,17 @@ class _InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),

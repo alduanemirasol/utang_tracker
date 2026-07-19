@@ -144,6 +144,27 @@ The app will detect the new version on the next startup (or when the user taps
 
 ---
 
+## Automated Publishing via CI/CD Pipeline
+
+The project includes a GitHub Actions pipeline under `.github/workflows/release.yml` that builds and publishes signed release APKs automatically when you push a tag.
+
+### How to use the pipeline:
+
+1. **Configure GitHub Secrets** in your repository settings (**Settings → Secrets and variables → Actions**):
+   - `SIGNING_KEY_BASE64`: The Base64 string of your release `.keystore` / `.jks` file.
+     - Convert to Base64 locally: `certutil -encode your-keystore.jks tmp.txt` (Windows) or `base64 -i your-keystore.jks > tmp.txt` (macOS/Linux). Copy the raw text.
+   - `KEY_STORE_PASSWORD`: The password for the keystore.
+   - `KEY_PASSWORD`: The password for the key.
+   - `KEY_ALIAS`: The alias of your key.
+2. **Push a new tag**:
+   ```bash
+   git tag v1.2.0
+   git push origin v1.2.0
+   ```
+3. The pipeline will trigger, verify code quality (analyze and test), compile both split and universal APKs, rename them correctly, and create a GitHub Release with the compiled assets.
+
+---
+
 ## Testing the updater locally
 
 ### Simulate an update being available
