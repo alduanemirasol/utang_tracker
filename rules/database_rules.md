@@ -8,6 +8,7 @@ The application uses Drift with SQLite. The current schema version is `5`.
 - Money is stored as integer centavos (`INTEGER`), where 100 centavos equals one peso. Floating-point values are not used for money.
 - Quantities are stored as SQLite `REAL` values so fractional quantities are supported.
 - Drift `DateTime` values are stored as SQLite `INTEGER` values. Application repositories normalize persisted dates and timestamps to UTC.
+- Debt transaction and payment timestamps combine the user-selected local calendar day with the local clock time at save before UTC normalization. Due dates remain date-only selections and do not receive the save time.
 - A row is active when `deleted_at IS NULL`.
 - Unless noted otherwise, validation and derived-value rules are enforced by the repositories rather than by SQLite `CHECK` or `UNIQUE` constraints.
 
@@ -118,6 +119,7 @@ Fresh databases create these indexes:
 - `debt_items.price` is the final custom line amount. Quantity does not multiply price.
 - `total_amount = sum(active debt item prices)`.
 - A new debt starts with `paid_amount = 0`, `balance = total_amount`, and `status = UNPAID`.
+- Saving a debt preserves the selected transaction day and stamps it with the current local time.
 - A debt is editable only while `paid_amount = 0`.
 - Editing a debt is atomic: existing active items are soft-deleted, replacement items are inserted, and the debt totals and dates are updated in the same transaction.
 
@@ -125,6 +127,7 @@ Fresh databases create these indexes:
 
 - A payment amount must be greater than zero and cannot exceed the debt's current balance.
 - Payments can be recorded only against an active debt that is not already `PAID`.
+- Recording a payment preserves the selected payment day and stamps it with the current local time.
 - Recording a payment is atomic: the payment is inserted and the debt's `paid_amount`, `balance`, `status`, and `updated_at` are updated in the same transaction.
 - `balance = total_amount - paid_amount`.
 - Status is derived from the paid amount:

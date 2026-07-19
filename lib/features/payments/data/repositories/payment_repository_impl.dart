@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/utils/date_time_utils.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
@@ -10,10 +11,13 @@ import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
-  PaymentRepositoryImpl(this._db, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+  PaymentRepositoryImpl(this._db, {Uuid? uuid, DateTime Function()? now})
+    : _uuid = uuid ?? const Uuid(),
+      _now = now ?? DateTime.now;
 
   final AppDatabase _db;
   final Uuid _uuid;
+  final DateTime Function() _now;
 
   Expression<bool> get _activePayment => _db.payments.deletedAt.isNull();
   Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
@@ -150,7 +154,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     final paymentId = _uuid.v4();
-    final now = DateTime.now().toUtc();
+    final savedAt = _now();
+    final now = savedAt.toUtc();
+    final savedPaymentDate = DateTimeUtils.combineLocalDateAndTime(
+      paymentDate,
+      savedAt,
+    ).toUtc();
 
     await _db.transaction(() async {
       final debt =
@@ -180,7 +189,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
               id: paymentId,
               debtId: debtId,
               amount: amount.centavos,
-              paymentDate: paymentDate.toUtc(),
+              paymentDate: savedPaymentDate,
               paymentMethod: paymentMethod.trim(),
               notes: Value(_emptyToNull(notes)),
               createdAt: now,

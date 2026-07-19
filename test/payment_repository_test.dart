@@ -90,6 +90,81 @@ void main() {
     );
   });
 
+  test('debt saves use the selected day and current save time', () async {
+    var savedAt = DateTime(2026, 7, 19, 14, 25, 36);
+    debts = DebtRepositoryImpl(db, now: () => savedAt);
+    final customer = await customers.create(name: 'Timestamp debt');
+    final dueDate = DateTime(2026, 5, 10);
+
+    final created = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 5, 3),
+      dueDate: dueDate,
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(50),
+        ),
+      ],
+    );
+
+    expect(created.transactionDate, DateTime(2026, 5, 3, 14, 25, 36));
+    expect(created.createdAt, savedAt);
+    expect(created.updatedAt, savedAt);
+    expect(created.dueDate, dueDate);
+
+    savedAt = DateTime(2026, 7, 20, 9, 8, 7);
+    final updated = await debts.update(
+      id: created.id,
+      transactionDate: DateTime(2026, 6, 4),
+      dueDate: dueDate,
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(60),
+        ),
+      ],
+    );
+
+    expect(updated.transactionDate, DateTime(2026, 6, 4, 9, 8, 7));
+    expect(updated.createdAt, DateTime(2026, 7, 19, 14, 25, 36));
+    expect(updated.updatedAt, savedAt);
+    expect(updated.dueDate, dueDate);
+  });
+
+  test('payment saves use the selected day and current save time', () async {
+    var savedAt = DateTime(2026, 7, 19, 10, 11, 12);
+    debts = DebtRepositoryImpl(db, now: () => savedAt);
+    payments = PaymentRepositoryImpl(db, now: () => savedAt);
+    final customer = await customers.create(name: 'Timestamp payment');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 5, 3),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(50),
+        ),
+      ],
+    );
+
+    savedAt = DateTime(2026, 7, 20, 16, 17, 18);
+    final payment = await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(20),
+      paymentDate: DateTime(2026, 6, 8),
+      paymentMethod: 'Cash',
+    );
+
+    expect(payment.paymentDate, DateTime(2026, 6, 8, 16, 17, 18));
+    expect(payment.createdAt, savedAt);
+    final updatedDebt = await debts.getById(debt.id);
+    expect(updatedDebt!.debt.updatedAt, savedAt);
+  });
+
   test('rejects overpayment', () async {
     final customer = await customers.create(name: 'Juan');
     final debt = await debts.create(
