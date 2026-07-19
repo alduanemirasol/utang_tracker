@@ -83,6 +83,14 @@ class _AboutPageState extends ConsumerState<AboutPage> {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xl),
+          _SectionLabel('Credits'),
+          const SizedBox(height: AppSpacing.sm),
+          _InfoCard(
+            children: [
+              _InfoRow(label: 'Developer', value: 'Al Duane Cuevas Mirasol'),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
