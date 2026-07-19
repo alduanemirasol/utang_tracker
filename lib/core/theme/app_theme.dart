@@ -231,6 +231,7 @@ class AppTheme {
         backgroundColor: AppColors.primaryDark,
         foregroundColor: AppColors.textOnPrimary,
         elevation: 1,
+        iconSize: 20,
         extendedTextStyle: textTheme.labelLarge,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),

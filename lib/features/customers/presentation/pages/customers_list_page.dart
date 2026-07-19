@@ -22,7 +22,7 @@ class CustomersListPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/customers/new'),
         tooltip: 'Add customer',
-        icon: const Icon(Icons.add, size: 20),
+        icon: const Icon(Icons.add),
         label: const Text('Add customer'),
       ),
       body: Column(

@@ -89,7 +89,8 @@ class CustomerDetailPage extends ConsumerWidget {
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () =>
                   context.push('/debts/new?customerId=$customerId'),
-              icon: const Icon(Icons.add, size: 20),
+              tooltip: 'New utang',
+              icon: const Icon(Icons.add),
               label: const Text('New utang'),
             ),
             body: RefreshIndicator(
