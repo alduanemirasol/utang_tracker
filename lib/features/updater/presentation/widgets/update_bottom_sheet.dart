@@ -54,6 +54,13 @@ class _UpdateSheet extends ConsumerWidget {
           onInstall: notifier.install,
           onCancel: () => Navigator.pop(context),
         ),
+        UpdatePermissionRequired(:final release) =>
+          _PermissionRequiredBody(
+            release: release,
+            onOpenSettings: notifier.openInstallSettings,
+            onInstall: notifier.install,
+            onDismiss: () => Navigator.pop(context),
+          ),
         UpdateInstalling() =>
           const LoadingIndicator(message: 'Opening installer…'),
         UpdateError(:final message, :final isNetworkError, :final isPermissionError) =>
@@ -62,10 +69,7 @@ class _UpdateSheet extends ConsumerWidget {
             isNetworkError: isNetworkError,
             isPermissionError: isPermissionError,
             onRetry: () => notifier.checkForUpdates(),
-            onOpenSettings: () {
-              notifier.openInstallSettings();
-              Navigator.pop(context);
-            },
+            onOpenSettings: notifier.openInstallSettings,
             onDismiss: () => Navigator.pop(context),
           ),
         _ => const LoadingIndicator(message: 'Checking for updates…'),
@@ -406,6 +410,81 @@ class _ErrorBody extends StatelessWidget {
               onPressed: onRetry,
             ),
           ],
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: 'Dismiss',
+            variant: AppButtonVariant.secondary,
+            onPressed: onDismiss,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PermissionRequiredBody extends StatelessWidget {
+  const _PermissionRequiredBody({
+    required this.release,
+    required this.onOpenSettings,
+    required this.onInstall,
+    required this.onDismiss,
+  });
+
+  final AppRelease release;
+  final VoidCallback onOpenSettings;
+  final VoidCallback onInstall;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.pagePadding),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          Container(
+            width: 72,
+            height: 72,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Icon(
+              Icons.security_rounded,
+              size: 36,
+              color: AppColors.primaryDark,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Enable installation from unknown sources',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'v${release.version} has been downloaded. To install it, '
+            'allow the app to install from unknown sources in your device settings.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          AppButton(
+            label: 'Open Settings',
+            icon: Icons.settings_rounded,
+            onPressed: onOpenSettings,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: 'Install now',
+            icon: Icons.install_mobile_rounded,
+            onPressed: onInstall,
+          ),
           const SizedBox(height: AppSpacing.sm),
           AppButton(
             label: 'Dismiss',

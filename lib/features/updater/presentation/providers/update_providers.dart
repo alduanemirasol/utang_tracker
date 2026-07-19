@@ -66,6 +66,16 @@ class UpdateInstalling extends UpdateState {
   const UpdateInstalling();
 }
 
+class UpdatePermissionRequired extends UpdateState {
+  const UpdatePermissionRequired({
+    required this.release,
+    required this.apkPath,
+  });
+
+  final AppRelease release;
+  final String apkPath;
+}
+
 class UpdateError extends UpdateState {
   const UpdateError({
     required this.message,
@@ -177,20 +187,27 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   Future<void> install() async {
     final current = state;
-    if (current is! UpdateDownloaded) return;
+    final apkPath = switch (current) {
+      UpdateDownloaded(:final apkPath) => apkPath,
+      UpdatePermissionRequired(:final apkPath) => apkPath,
+      _ => null,
+    };
+    if (apkPath == null) return;
 
     try {
       final canInstall = await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
       if (!canInstall) {
-        state = const UpdateError(
-          message: 'Allow installs from unknown sources to continue.',
-          isPermissionError: true,
+        state = UpdatePermissionRequired(
+          release: current is UpdateDownloaded
+              ? current.release
+              : (current as UpdatePermissionRequired).release,
+          apkPath: apkPath,
         );
         return;
       }
 
       state = const UpdateInstalling();
-      await _channel.invokeMethod<void>('installApk', {'path': current.apkPath});
+      await _channel.invokeMethod<void>('installApk', {'path': apkPath});
       state = const UpdateIdle();
     } on PlatformException catch (e) {
       state = UpdateError(message: e.message ?? 'Installation failed.');
@@ -211,6 +228,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
       UpdateAvailable(:final release) => release.version,
       UpdateDownloading(:final release) => release.version,
       UpdateDownloaded(:final release) => release.version,
+      UpdatePermissionRequired(:final release) => release.version,
       _ => null,
     };
     if (version != null) await _repo.saveDismissedVersion(version);
