@@ -35,6 +35,11 @@ class DashboardPage extends ConsumerWidget {
               context.push('/debts/$debtId');
             },
           ),
+          IconButton(
+            tooltip: 'About',
+            icon: const Icon(Icons.info_outline_rounded),
+            onPressed: () => context.push('/about'),
+          ),
           const SizedBox(width: AppSpacing.sm),
         ],
       ),

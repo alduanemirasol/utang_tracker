@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+        Grants the package installer URI access to APK files downloaded to
+        external app-specific storage (getExternalStorageDirectory()).
+        This path maps to /sdcard/Android/data/{applicationId}/files/
+    -->
+    <external-path name="external_files" path="." />
+</paths>

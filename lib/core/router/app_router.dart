@@ -10,6 +10,7 @@ import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.d
 import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
+import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
 
 /// Root navigator for full-screen form and detail routes.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -121,6 +122,11 @@ GoRouter createAppRouter() {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/about',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AboutPage(),
       ),
     ],
   );
