@@ -68,27 +68,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
         children: [
           _AppHeader(info: _info),
           const SizedBox(height: AppSpacing.xxl),
-          _SectionLabel('App info'),
-          const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            children: [
-              _InfoRow(
-                label: 'Version',
-                value: _info != null
-                    ? 'v${_info!.version} (${_info!.buildNumber})'
-                    : '—',
-              ),
-              const Divider(height: 1),
-              _InfoRow(label: 'App name', value: AppConstants.appName),
-              const Divider(height: 1),
-              _InfoRow(
-                label: 'Repository',
-                value:
-                    '${AppConstants.githubOwner}/${AppConstants.githubRepo}',
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
           _SectionLabel('Updates'),
           const SizedBox(height: AppSpacing.sm),
           _InfoCard(
@@ -121,23 +100,22 @@ class _AppHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(height: AppSpacing.lg),
-        const AppLogo(size: 72),
+        const AppLogo(size: 72, borderRadius: 18),
         const SizedBox(height: AppSpacing.lg),
         Text(
           AppConstants.appName,
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        if (info != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'v${info!.version}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          info != null ? 'v${info!.version}' : '—',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
           ),
-        ],
+        ),
       ],
     );
   }
@@ -203,13 +181,10 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
