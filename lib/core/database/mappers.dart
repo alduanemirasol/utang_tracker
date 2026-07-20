@@ -3,7 +3,7 @@ import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
-import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
 Customer mapCustomer(CustomerRow row) {

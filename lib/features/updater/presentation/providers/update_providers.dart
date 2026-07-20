@@ -1,15 +1,20 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
+import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
+import 'package:utang_tracker/features/updater/domain/usecases/download_update.dart';
 
-final updateRepositoryProvider = Provider<UpdateRepository>(
-  (_) => UpdateRepositoryImpl(),
-);
+final checkForUpdatesProvider = Provider((ref) {
+  return CheckForUpdates(ref.watch(updateRepositoryProvider));
+});
+
+final downloadUpdateProvider = Provider((ref) {
+  return DownloadUpdate(ref.watch(updateRepositoryProvider));
+});
 
 final updateNotifierProvider =
     NotifierProvider<UpdateNotifier, UpdateState>(UpdateNotifier.new);
@@ -93,43 +98,27 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   UpdateRepository get _repo => ref.read(updateRepositoryProvider);
 
-  /// Silent mode avoids flashing "up to date" on startup.
   Future<void> checkForUpdates({bool silent = false}) async {
     if (_busy) return;
     _busy = true;
     state = const UpdateChecking();
 
     try {
-      await _repo.saveLastCheckTime(DateTime.now());
+      final result = await ref.read(checkForUpdatesProvider)(silent: silent);
 
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
-
-      final release = await _repo.fetchLatestRelease();
-
-      if (release == null || !isNewerVersion(currentVersion, release.version)) {
-        state = silent ? const UpdateIdle() : const UpdateNotAvailable();
-        return;
-      }
-
-      final dismissed = await _repo.loadDismissedVersion();
-      if (silent && dismissed == release.version) {
-        state = const UpdateIdle();
-        return;
-      }
-
-      final asset = selectApkAsset(release.assets, AppConstants.supportedAbis);
-      if (asset == null) {
-        state = silent
-            ? const UpdateIdle()
-            : const UpdateError(message: 'No compatible APK found in this release.');
+      if (!result.updateAvailable) {
+        if (result.error != null) {
+          state = UpdateError(message: result.error!);
+        } else {
+          state = silent ? const UpdateIdle() : const UpdateNotAvailable();
+        }
         return;
       }
 
       state = UpdateAvailable(
-        release: release,
-        asset: asset,
-        currentVersion: currentVersion,
+        release: result.release!,
+        asset: result.asset!,
+        currentVersion: result.currentVersion!,
       );
     } on AppException catch (e) {
       final isNetwork = e.message.contains('internet') ||
@@ -154,10 +143,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
     state = UpdateDownloading(release: current.release, progress: 0);
 
     try {
-      await _repo.cleanupOldApks();
-      final path = await _repo.downloadApk(current.asset, (p) {
-        state = UpdateDownloading(release: current.release, progress: p);
-      });
+      final path = await ref.read(downloadUpdateProvider)(
+        current.asset,
+        (p) {
+          state = UpdateDownloading(release: current.release, progress: p);
+        },
+      );
       state = UpdateDownloaded(release: current.release, apkPath: path);
     } on AppException catch (e) {
       final isNetwork = e.message.contains('internet') ||

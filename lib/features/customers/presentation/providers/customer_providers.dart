@@ -1,12 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
-import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/customer_usecases.dart';
-import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
-import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
-import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
-import 'package:utang_tracker/features/payments/domain/usecases/payment_usecases.dart';
+import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 
 final getCustomersProvider = Provider((ref) {
   return GetCustomers(ref.watch(customerRepositoryProvider));
@@ -69,41 +65,15 @@ class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
   }
 }
 
-class CustomerDetailData {
-  const CustomerDetailData({
-    required this.customer,
-    required this.debts,
-    required this.payments,
-    required this.outstandingBalance,
-  });
-
-  final Customer customer;
-  final List<Debt> debts;
-  final List<Payment> payments;
-  final Money outstandingBalance;
-}
+final getCustomerDetailProvider = Provider((ref) {
+  return GetCustomerDetail(
+    customers: ref.watch(customerRepositoryProvider),
+    debts: ref.watch(debtRepositoryProvider),
+    payments: ref.watch(paymentRepositoryProvider),
+  );
+});
 
 final customerDetailProvider =
     FutureProvider.family<CustomerDetailData?, String>((ref, id) async {
-      final customer = await ref.watch(getCustomerByIdProvider)(id);
-      if (customer == null) return null;
-
-      final debts = await GetDebtsByCustomer(ref.watch(debtRepositoryProvider))(
-        id,
-      );
-      final payments = await GetPaymentsByCustomer(
-        ref.watch(paymentRepositoryProvider),
-      )(id);
-
-      var outstanding = Money.zero();
-      for (final d in debts) {
-        outstanding = outstanding + d.balance;
-      }
-
-      return CustomerDetailData(
-        customer: customer,
-        debts: debts,
-        payments: payments,
-        outstandingBalance: outstanding,
-      );
-    });
+  return ref.watch(getCustomerDetailProvider)(id);
+});

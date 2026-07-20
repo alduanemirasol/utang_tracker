@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 
 class DashboardSummary extends Equatable {

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
@@ -162,33 +163,21 @@ class UpdateRepositoryImpl implements UpdateRepository {
       throw const AppException('Downloaded file is not a valid APK (bad magic bytes).');
     }
   }
-}
 
-/// Best ABI match from [assets]; falls back to universal APK.
-ReleaseAsset? selectApkAsset(
-  List<ReleaseAsset> assets,
-  List<String> abis, {
-  String prefix = AppConstants.apkAssetPrefix,
-  String universalAbi = AppConstants.universalAbiName,
-}) {
-  for (final abi in abis) {
-    final match = assets.where((a) => a.name.startsWith('$prefix-$abi-')).firstOrNull;
-    if (match != null) return match;
+  @override
+  Future<String> getCurrentVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    return info.version;
   }
-  return assets
-      .where((a) => a.name.startsWith('$prefix-$universalAbi-'))
-      .firstOrNull;
-}
 
-/// True when [latestVersion] > [currentVersion]; pads missing segments.
-bool isNewerVersion(String currentVersion, String latestVersion) {
-  return Version.parse(_pad(latestVersion)) > Version.parse(_pad(currentVersion));
-}
-
-String _pad(String v) {
-  final parts = v.split('.');
-  while (parts.length < 3) {
-    parts.add('0');
+  @override
+  Future<String> loadReleaseNotes() async {
+    try {
+      return await rootBundle.loadString('assets/release_notes/current.json');
+    } catch (_) {
+      return '{}';
+    }
   }
-  return parts.join('.');
 }
+
+

@@ -144,15 +144,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
     required String paymentMethod,
     String? notes,
   }) async {
-    if (!amount.isPositive) {
-      throw const ValidationException(
-        'Payment amount must be greater than zero.',
-      );
-    }
-    if (paymentMethod.trim().isEmpty) {
-      throw const ValidationException('Payment method is required.');
-    }
-
     final paymentId = _uuid.v4();
     final savedAt = _now();
     final now = savedAt.toUtc();

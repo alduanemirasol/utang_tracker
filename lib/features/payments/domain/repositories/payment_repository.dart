@@ -1,4 +1,4 @@
-import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
 abstract class PaymentRepository {

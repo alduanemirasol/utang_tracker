@@ -1,5 +1,5 @@
 import 'package:utang_tracker/core/utils/money.dart';
-import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
+import 'package:utang_tracker/core/domain/debt_status.dart';
 
 /// Pure business math aligned with `rules/database_rules.md`.
 class DebtMath {

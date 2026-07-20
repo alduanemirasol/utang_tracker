@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/widgets/app_logo.dart';
@@ -20,7 +19,7 @@ class AboutPage extends ConsumerStatefulWidget {
 }
 
 class _AboutPageState extends ConsumerState<AboutPage> {
-  PackageInfo? _info;
+  String? _version;
   DateTime? _lastChecked;
   Map<String, dynamic>? _releaseNotes;
 
@@ -31,16 +30,14 @@ class _AboutPageState extends ConsumerState<AboutPage> {
   }
 
   Future<void> _load() async {
-    final info = await PackageInfo.fromPlatform();
     final repo = ref.read(updateRepositoryProvider);
+    final version = await repo.getCurrentVersion();
     final lastChecked = await repo.loadLastCheckTime();
-    final jsonStr = await rootBundle
-        .loadString('assets/release_notes/current.json')
-        .catchError((_) => '{}');
+    final jsonStr = await repo.loadReleaseNotes().catchError((_) => '{}');
     final data = jsonDecode(jsonStr);
     if (mounted) {
       setState(() {
-        _info = info;
+        _version = version;
         _lastChecked = lastChecked;
         _releaseNotes = data is Map ? Map<String, dynamic>.from(data) : null;
       });
@@ -76,7 +73,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           vertical: AppSpacing.lg,
         ),
         children: [
-          _AppHeader(info: _info),
+          _AppHeader(version: _version),
           const SizedBox(height: AppSpacing.xxl),
           _SectionLabel('Updates'),
           const SizedBox(height: AppSpacing.sm),
@@ -153,9 +150,9 @@ class _AboutPageState extends ConsumerState<AboutPage> {
 }
 
 class _AppHeader extends StatelessWidget {
-  const _AppHeader({required this.info});
+  const _AppHeader({required this.version});
 
-  final PackageInfo? info;
+  final String? version;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +168,7 @@ class _AppHeader extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          info != null ? 'v${info!.version}' : '—',
+          version != null ? 'v$version' : '—',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),

@@ -20,4 +20,10 @@ abstract interface class UpdateRepository {
 
   /// Deletes obsolete APK files from the download directory.
   Future<void> cleanupOldApks();
+
+  /// Returns the currently installed app version string.
+  Future<String> getCurrentVersion();
+
+  /// Loads release notes JSON from bundled assets.
+  Future<String> loadReleaseNotes();
 }

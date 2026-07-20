@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
-import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_data.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
@@ -81,10 +82,22 @@ void main() {
 }
 
 class _FakeDashboardRepository implements DashboardRepository {
-  const _FakeDashboardRepository(this.summary);
+  const _FakeDashboardRepository(this.summary, {this.data});
 
   final DashboardSummary summary;
+  final DashboardData? data;
 
   @override
   Future<DashboardSummary> getSummary() async => summary;
+
+  @override
+  Future<DashboardData> getDashboardData() async =>
+      data ?? DashboardData(
+        outstandingBalance: Money.zero(),
+        collectedToday: Money.zero(),
+        activeDebtsCount: 0,
+        totalCustomers: 0,
+        recentDebts: const [],
+        recentPayments: const [],
+      );
 }

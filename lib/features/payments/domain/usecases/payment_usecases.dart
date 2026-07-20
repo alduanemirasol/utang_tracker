@@ -1,4 +1,5 @@
-import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
@@ -31,6 +32,12 @@ class RecordPayment {
     required String paymentMethod,
     String? notes,
   }) {
+    if (!amount.isPositive) {
+      throw const ValidationException('Payment amount must be greater than zero.');
+    }
+    if (paymentMethod.trim().isEmpty) {
+      throw const ValidationException('Payment method is required.');
+    }
     return _repository.recordPayment(
       debtId: debtId,
       amount: amount,

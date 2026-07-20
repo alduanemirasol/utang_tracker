@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/router/app_router.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';

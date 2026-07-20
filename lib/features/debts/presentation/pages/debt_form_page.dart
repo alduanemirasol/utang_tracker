@@ -7,7 +7,7 @@ import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
-import 'package:utang_tracker/core/utils/invalidate_helpers.dart';
+import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
@@ -18,8 +18,9 @@ import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
-import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
+import 'package:utang_tracker/features/customers/domain/usecases/customer_usecases.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
@@ -93,7 +94,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _resolveCustomerName(String id) async {
-    final customer = await ref.read(getCustomerByIdProvider)(id);
+    final customer = await GetCustomerById(ref.read(customerRepositoryProvider))(id);
     if (!mounted || customer == null) return;
     if (_customerId != id) return;
     setState(() => _customerName = customer.name);
@@ -937,9 +938,10 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
     });
     try {
       final trimmed = query.trim();
+      final repo = ref.read(customerRepositoryProvider);
       final results = trimmed.isEmpty
-          ? await ref.read(getCustomersProvider)()
-          : await ref.read(searchCustomersProvider)(trimmed);
+          ? await GetCustomers(repo)()
+          : await SearchCustomers(repo)(trimmed);
       if (!mounted) return;
       setState(() {
         _customers = results;

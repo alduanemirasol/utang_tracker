@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:utang_tracker/core/utils/money.dart';
+import 'package:utang_tracker/core/domain/money.dart';
 
 class Payment extends Equatable {
   const Payment({

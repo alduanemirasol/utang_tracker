@@ -6,7 +6,7 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
 import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
-import 'package:utang_tracker/features/payments/domain/usecases/payment_usecases.dart';
+import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 final getDebtsProvider = Provider((ref) {
   return GetDebts(ref.watch(debtRepositoryProvider));
@@ -55,7 +55,7 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
     final status = ref.watch(debtStatusFilterProvider);
     final sort = ref.watch(debtSortOrderProvider);
     final debts = await ref.watch(getDebtsProvider)(status: status);
-    return _applySort(debts, sort);
+    return applySort(debts, sort);
   }
 
   Future<void> refresh() async {
@@ -64,23 +64,12 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
       final status = ref.read(debtStatusFilterProvider);
       final sort = ref.read(debtSortOrderProvider);
       final debts = await ref.read(getDebtsProvider)(status: status);
-      return _applySort(debts, sort);
+      return applySort(debts, sort);
     });
   }
 
-  List<Debt> _applySort(List<Debt> debts, DebtSortOrder sort) {
-    final sorted = List<Debt>.from(debts);
-    switch (sort) {
-      case DebtSortOrder.newest:
-        sorted.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
-      case DebtSortOrder.highestBalance:
-        sorted.sort((a, b) => b.balance.centavos.compareTo(a.balance.centavos));
-      case DebtSortOrder.lowestBalance:
-        sorted.sort((a, b) => a.balance.centavos.compareTo(b.balance.centavos));
-    }
-    return sorted;
-  }
 }
+
 
 class DebtDetailViewData {
   const DebtDetailViewData({required this.detail, required this.payments});
@@ -95,8 +84,6 @@ final debtDetailProvider = FutureProvider.family<DebtDetailViewData?, String>((
 ) async {
   final detail = await ref.watch(getDebtDetailProvider)(id);
   if (detail == null) return null;
-  final payments = await GetPaymentsByDebt(
-    ref.watch(paymentRepositoryProvider),
-  )(id);
+  final payments = await ref.watch(paymentRepositoryProvider).getByDebt(id);
   return DebtDetailViewData(detail: detail, payments: payments);
 });
