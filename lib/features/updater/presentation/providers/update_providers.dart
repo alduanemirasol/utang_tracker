@@ -7,16 +7,12 @@ import 'package:utang_tracker/features/updater/data/repositories/update_reposito
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
-// ── DI ────────────────────────────────────────────────────────────────────────
-
 final updateRepositoryProvider = Provider<UpdateRepository>(
   (_) => UpdateRepositoryImpl(),
 );
 
 final updateNotifierProvider =
     NotifierProvider<UpdateNotifier, UpdateState>(UpdateNotifier.new);
-
-// ── State ──────────────────────────────────────────────────────────────────────
 
 sealed class UpdateState {
   const UpdateState();
@@ -51,7 +47,6 @@ class UpdateDownloading extends UpdateState {
 
   final AppRelease release;
 
-  /// Fractional download progress (0.0–1.0).
   final double progress;
 }
 
@@ -88,8 +83,6 @@ class UpdateError extends UpdateState {
   final bool isPermissionError;
 }
 
-// ── Notifier ───────────────────────────────────────────────────────────────────
-
 class UpdateNotifier extends Notifier<UpdateState> {
   static const _channel = MethodChannel(AppConstants.updaterChannel);
 
@@ -100,12 +93,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   UpdateRepository get _repo => ref.read(updateRepositoryProvider);
 
-  /// Check for updates.
-  ///
-  /// When [silent] is `true`, the notifier returns to [UpdateIdle] if no
-  /// update is found (so the UI does not flash "up to date" on startup).
-  /// When an update is found in silent mode, the state becomes [UpdateAvailable]
-  /// so callers can decide whether to show the bottom sheet.
+  /// Silent mode avoids flashing "up to date" on startup.
   Future<void> checkForUpdates({bool silent = false}) async {
     if (_busy) return;
     _busy = true;

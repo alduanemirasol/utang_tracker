@@ -5,7 +5,7 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 class DebtMath {
   DebtMath._();
 
-  /// total_amount = sum of custom item prices
+  /// Sum of custom item prices (quantity does not multiply).
   static Money computeTotal(Iterable<Money> prices) {
     var total = Money.zero();
     for (final price in prices) {
@@ -14,7 +14,6 @@ class DebtMath {
     return total;
   }
 
-  /// balance = total_amount − paid_amount
   static Money computeBalance({
     required Money totalAmount,
     required Money paidAmount,

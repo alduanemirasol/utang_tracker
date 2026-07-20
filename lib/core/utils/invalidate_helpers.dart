@@ -5,7 +5,6 @@ import 'package:utang_tracker/features/debts/presentation/providers/debt_provide
 import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
-/// Refresh list/summary providers after mutations.
 void invalidateBusinessData(
   WidgetRef ref, {
   String? customerId,

@@ -9,7 +9,6 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
-  /// In-memory DB for tests.
   AppDatabase.forTesting() : super(NativeDatabase.memory());
 
   static QueryExecutor _openConnection() {
@@ -65,8 +64,7 @@ FROM debt_items;
         await m.addColumn(debtItems, debtItems.unit);
       }
       if (from < 5) {
-        // Price becomes the final custom line amount. Preserve historical
-        // totals by migrating the previously computed subtotal into price.
+        // Price repurposed as final line amount; migrate old subtotal into price.
         await customStatement('''
 CREATE TABLE debt_items_v5 (
   id TEXT NOT NULL PRIMARY KEY,

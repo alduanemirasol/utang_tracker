@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 
-/// Typed snackbars so success / error states share consistent colors.
+/// Consistent colors per success/error/info state.
 enum AppSnackBarKind { success, error, info }
 
 class AppSnackBar {

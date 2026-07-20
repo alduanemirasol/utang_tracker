@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A cool paper-and-ink palette inspired by a sari-sari store ledger.
+/// Ledger-inspired cool paper-and-ink palette.
 class AppColors {
   AppColors._();
 

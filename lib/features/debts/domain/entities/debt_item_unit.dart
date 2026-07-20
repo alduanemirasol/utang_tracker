@@ -10,10 +10,7 @@ class DebtItemUnitOption {
   final String pluralLabel;
 }
 
-/// Common selling units for sari-sari store debt items.
-///
-/// Units are stored as free text so a shop can also use a custom unit without
-/// requiring a database migration.
+/// Units stored as free text so shops can use custom units without a migration.
 class DebtItemUnits {
   DebtItemUnits._();
 

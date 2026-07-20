@@ -47,7 +47,6 @@ class AppTextField extends StatelessWidget {
   final TextStyle? style;
   final FocusNode? focusNode;
 
-  /// Renders [label] with any `*` characters in [AppColors.danger].
   static Widget buildLabel(
     BuildContext context,
     String label, {

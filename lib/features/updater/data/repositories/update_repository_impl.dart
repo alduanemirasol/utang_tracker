@@ -141,8 +141,6 @@ class UpdateRepositoryImpl implements UpdateRepository {
     }
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
   Future<Directory> _updateDir() async {
     final base = await getExternalStorageDirectory();
     final dir = Directory('${base!.path}/utang_tracker_updates');
@@ -166,9 +164,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
   }
 }
 
-/// Returns the best [ReleaseAsset] for [abis] from [assets], falling back to
-/// the universal APK when no ABI-specific match is found. Returns `null` when
-/// no suitable asset exists.
+/// Best ABI match from [assets]; falls back to universal APK.
 ReleaseAsset? selectApkAsset(
   List<ReleaseAsset> assets,
   List<String> abis, {
@@ -184,9 +180,7 @@ ReleaseAsset? selectApkAsset(
       .firstOrNull;
 }
 
-/// Returns `true` when [latestVersion] is strictly newer than [currentVersion].
-/// Both must be semver strings such as `"1.2.0"`. Missing segments are padded
-/// with `.0` before parsing so `"1.0"` is treated as `"1.0.0"`.
+/// True when [latestVersion] > [currentVersion]; pads missing segments.
 bool isNewerVersion(String currentVersion, String latestVersion) {
   return Version.parse(_pad(latestVersion)) > Version.parse(_pad(currentVersion));
 }

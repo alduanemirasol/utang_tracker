@@ -148,8 +148,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     return row != null;
   }
 
-  /// Active customers must have unique names (case-insensitive).
-  /// Soft-deleted customers are ignored so a name can be reused after delete.
+  /// Unique name enforcement (case-insensitive, ignores soft-deleted).
   Future<void> _ensureUniqueName(String name, {String? excludeId}) async {
     final existing =
         await (_db.select(_db.customers)

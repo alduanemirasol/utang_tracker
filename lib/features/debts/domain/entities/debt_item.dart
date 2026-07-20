@@ -23,7 +23,6 @@ class DebtItem extends Equatable {
   List<Object?> get props => [id, debtId, productName, quantity, unit, price];
 }
 
-/// Input for creating/editing a line item (id assigned by repository).
 class DebtItemInput extends Equatable {
   const DebtItemInput({
     required this.productName,

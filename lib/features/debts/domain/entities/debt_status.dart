@@ -1,4 +1,3 @@
-/// Allowed debt status values per database rules.
 enum DebtStatus {
   unpaid('UNPAID'),
   partial('PARTIAL'),

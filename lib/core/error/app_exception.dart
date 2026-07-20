@@ -1,4 +1,3 @@
-/// Domain/application failures surfaced to the UI as readable messages.
 class AppException implements Exception {
   const AppException(this.message);
 

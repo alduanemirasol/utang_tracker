@@ -78,8 +78,6 @@ class _UpdateSheet extends ConsumerWidget {
   }
 }
 
-// ── Sub-bodies ─────────────────────────────────────────────────────────────────
-
 class _UpToDate extends StatelessWidget {
   const _UpToDate({required this.onDone});
 
@@ -496,8 +494,6 @@ class _PermissionRequiredBody extends StatelessWidget {
     );
   }
 }
-
-// ── Shared sub-widgets ─────────────────────────────────────────────────────────
 
 class _VersionRow extends StatelessWidget {
   const _VersionRow({

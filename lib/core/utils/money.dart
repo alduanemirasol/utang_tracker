@@ -7,7 +7,6 @@ class Money {
 
   factory Money.fromCentavos(int centavos) => Money._(centavos);
 
-  /// Parses a user-entered peso amount (e.g. "12.50", "12").
   factory Money.fromPesoString(String value) {
     final cleaned = value.trim().replaceAll(',', '');
     if (cleaned.isEmpty) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 
-/// App brand logo from [AppConstants.logoAsset].
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key, this.size = 32, this.borderRadius = 8});
 

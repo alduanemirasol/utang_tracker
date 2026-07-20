@@ -218,7 +218,6 @@ void main() {
     expect(listed.where((c) => c.id == customer.id), isEmpty);
     expect(await customers.getById(customer.id), isNull);
 
-    // Row still exists in the database with deleted_at set.
     final row = await (db.select(
       db.customers,
     )..where((t) => t.id.equals(customer.id))).getSingleOrNull();

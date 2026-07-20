@@ -5,8 +5,6 @@ import 'package:utang_tracker/features/updater/data/repositories/update_reposito
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 
 void main() {
-  // ── Semver comparison ──────────────────────────────────────────────────────
-
   group('isNewerVersion', () {
     test('patch bump is newer', () {
       expect(isNewerVersion('1.0.0', '1.0.1'), isTrue);
@@ -38,8 +36,6 @@ void main() {
       expect(isNewerVersion('1.0', '1.0.1'), isTrue);
     });
   });
-
-  // ── Release parsing ────────────────────────────────────────────────────────
 
   group('GithubReleaseDto.fromJson', () {
     Map<String, dynamic> baseJson({
@@ -99,8 +95,6 @@ void main() {
     });
   });
 
-  // ── Draft / prerelease filtering ──────────────────────────────────────────
-
   group('draft and prerelease filtering', () {
     ReleaseAsset dummyAsset() => const ReleaseAsset(
           name: 'utang-tracker-universal-v1.0.0.apk',
@@ -138,8 +132,6 @@ void main() {
       expect(release.isPrerelease, isFalse);
     });
   });
-
-  // ── ABI asset selection ────────────────────────────────────────────────────
 
   group('selectApkAsset', () {
     ReleaseAsset asset(String name) => ReleaseAsset(
@@ -193,8 +185,6 @@ void main() {
       expect(selected, isNull);
     });
   });
-
-  // ── No-update and update-available states ─────────────────────────────────
 
   group('update availability logic', () {
     test('no update when versions are equal', () {

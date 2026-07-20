@@ -11,7 +11,6 @@ enum RecentActivityType {
   };
 }
 
-/// Unified home-screen log entry for a recent debt or payment.
 class RecentActivityItem extends Equatable {
   const RecentActivityItem({
     required this.type,

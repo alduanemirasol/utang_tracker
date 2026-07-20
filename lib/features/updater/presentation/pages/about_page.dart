@@ -101,8 +101,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
   }
 }
 
-// ── Sub-widgets ────────────────────────────────────────────────────────────────
-
 class _AppHeader extends StatelessWidget {
   const _AppHeader({required this.info});
 
