@@ -6,7 +6,6 @@ import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
 import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
-import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 
 final getDebtsProvider = Provider((ref) {
   return GetDebts(ref.watch(debtRepositoryProvider));

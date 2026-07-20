@@ -3,6 +3,7 @@ import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/features/updater/data/models/github_release_dto.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
+import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
 
 void main() {
   group('isNewerVersion', () {

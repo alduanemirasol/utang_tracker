@@ -82,10 +82,9 @@ void main() {
 }
 
 class _FakeDashboardRepository implements DashboardRepository {
-  const _FakeDashboardRepository(this.summary, {this.data});
+  const _FakeDashboardRepository(this.summary);
 
   final DashboardSummary summary;
-  final DashboardData? data;
 
   @override
   Future<DashboardSummary> getSummary() async => summary;
