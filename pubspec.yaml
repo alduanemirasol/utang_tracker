@@ -94,6 +94,7 @@ flutter:
 
   assets:
     - assets/images/new-logo.png
+    - assets/release_notes/
 
   fonts:
     - family: Poppins

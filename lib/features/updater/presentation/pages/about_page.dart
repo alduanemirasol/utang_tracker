@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
@@ -19,6 +22,7 @@ class AboutPage extends ConsumerStatefulWidget {
 class _AboutPageState extends ConsumerState<AboutPage> {
   PackageInfo? _info;
   DateTime? _lastChecked;
+  Map<String, dynamic>? _releaseNotes;
 
   @override
   void initState() {
@@ -30,10 +34,15 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     final info = await PackageInfo.fromPlatform();
     final repo = ref.read(updateRepositoryProvider);
     final lastChecked = await repo.loadLastCheckTime();
+    final jsonStr = await rootBundle
+        .loadString('assets/release_notes/current.json')
+        .catchError((_) => '{}');
+    final data = jsonDecode(jsonStr);
     if (mounted) {
       setState(() {
         _info = info;
         _lastChecked = lastChecked;
+        _releaseNotes = data is Map ? Map<String, dynamic>.from(data) : null;
       });
     }
   }
@@ -82,6 +91,48 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                 isChecking: isChecking,
                 onTap: isChecking ? null : _checkForUpdates,
               ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          _SectionLabel("What's new"),
+          const SizedBox(height: AppSpacing.sm),
+          _InfoCard(
+            children: [
+              if (_releaseNotes != null)
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final note
+                          in (_releaseNotes!['notes'] as List).cast<String>())
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '•  ',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            Expanded(
+                              child: Text(
+                                note,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: AppColors.textSecondary,
+                                      height: 1.6,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
