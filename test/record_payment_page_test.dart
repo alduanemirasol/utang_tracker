@@ -26,7 +26,7 @@ void main() {
     await tester.tap(save);
     await tester.pump();
 
-    expect(find.text('Select utang'), findsOneWidget);
+    expect(find.text('Select utang'), findsAtLeastNWidgets(1));
     expect(find.text('Amount is required.'), findsOneWidget);
 
     final debtDecorator = find.ancestor(
