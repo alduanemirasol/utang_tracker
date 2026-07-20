@@ -88,12 +88,12 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           _SectionLabel('Credits'),
           const SizedBox(height: AppSpacing.sm),
           _InfoCard(
-            children: [_InfoRow(label: 'Developer', value: 'Al Duane Mirasol')],
+            children: [
+              _InfoRow(label: 'Developer', value: 'Al Duane Mirasol'),
+              const Divider(height: 1),
+              const _SocialLinkRow(),
+            ],
           ),
-          const SizedBox(height: AppSpacing.xl),
-          _SectionLabel('Social'),
-          const SizedBox(height: AppSpacing.sm),
-          _InfoCard(children: [const _SocialLinkRow()]),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
