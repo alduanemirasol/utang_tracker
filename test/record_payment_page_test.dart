@@ -32,7 +32,7 @@ void main() {
     final debtDecorator = find.ancestor(
       of: find.text('Select utang'),
       matching: find.byType(InputDecorator),
-    );
+    ).first;
     expect(
       tester.widget<InputDecorator>(debtDecorator).decoration.errorText,
       'Select utang',
