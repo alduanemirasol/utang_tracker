@@ -7,9 +7,9 @@ import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_data.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
-import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:utang_tracker/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
 void main() {
   testWidgets('activity date and time appear with label below amount', (
@@ -19,22 +19,23 @@ void main() {
     addTearDown(database.close);
 
     final activityDate = DateTime(2026, 7, 15, 14, 5);
-    final summary = DashboardSummary(
+    final payment = Payment(
+      id: 'activity-id',
+      debtId: 'debt-id',
+      amount: Money.fromPesos(125),
+      paymentDate: activityDate,
+      paymentMethod: 'GCash',
+      createdAt: activityDate,
+      customerName: 'Maria Santos',
+    );
+
+    final data = DashboardData(
       outstandingBalance: Money.zero(),
       collectedToday: Money.zero(),
       activeDebtsCount: 1,
       totalCustomers: 1,
-      recentActivity: [
-        RecentActivityItem(
-          type: RecentActivityType.payment,
-          id: 'activity-id',
-          debtId: 'debt-id',
-          customerName: 'Maria Santos',
-          amount: Money.fromPesos(125),
-          date: activityDate,
-          paymentMethod: 'GCash',
-        ),
-      ],
+      recentDebts: const [],
+      recentPayments: [payment],
     );
 
     await tester.pumpWidget(
@@ -42,7 +43,7 @@ void main() {
         overrides: [
           databaseProvider.overrideWithValue(database),
           dashboardRepositoryProvider.overrideWithValue(
-            _FakeDashboardRepository(summary),
+            _FakeDashboardRepository(data),
           ),
         ],
         child: const MaterialApp(home: DashboardPage()),
@@ -82,21 +83,19 @@ void main() {
 }
 
 class _FakeDashboardRepository implements DashboardRepository {
-  const _FakeDashboardRepository(this.summary);
+  const _FakeDashboardRepository(this.data);
 
-  final DashboardSummary summary;
-
-  @override
-  Future<DashboardSummary> getSummary() async => summary;
+  final DashboardData data;
 
   @override
-  Future<DashboardData> getDashboardData() async =>
-      DashboardData(
-        outstandingBalance: Money.zero(),
-        collectedToday: Money.zero(),
-        activeDebtsCount: 0,
-        totalCustomers: 0,
-        recentDebts: const [],
-        recentPayments: const [],
+  Future<DashboardSummary> getSummary() async => DashboardSummary(
+        outstandingBalance: data.outstandingBalance,
+        collectedToday: data.collectedToday,
+        activeDebtsCount: data.activeDebtsCount,
+        totalCustomers: data.totalCustomers,
+        recentActivity: const [],
       );
+
+  @override
+  Future<DashboardData> getDashboardData() async => data;
 }
