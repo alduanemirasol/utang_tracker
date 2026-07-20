@@ -1,6 +1,9 @@
 {
-  "version": "1.0.14",
+  "version": "1.0.15",
   "notes": [
-    "Bug fixes"
+    "Refactored codebase to follow Clean Architecture patterns",
+    "Extracted business logic into domain use cases",
+    "Fixed analysis errors and resolved all Dart warnings",
+    "Improved separation of concerns across features"
   ]
 }
