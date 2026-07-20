@@ -2,7 +2,7 @@ class AppConstants {
   AppConstants._();
 
   static const String appName = 'Utang Tracker';
-  static const String logoAsset = 'assets/images/utang_tracker_logo_v2.png';
+  static const String logoAsset = 'assets/images/new-logo.png';
   static const String currencySymbol = '₱';
 
   static const List<String> paymentMethods = [
