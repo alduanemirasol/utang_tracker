@@ -26,7 +26,7 @@ void main() {
     await tester.tap(save);
     await tester.pump();
 
-    expect(find.text('Select utang para bayaran'), findsOneWidget);
+    expect(find.text('Select utang'), findsOneWidget);
     expect(find.text('Amount is required.'), findsOneWidget);
 
     final debtDecorator = find.ancestor(
@@ -35,7 +35,7 @@ void main() {
     );
     expect(
       tester.widget<InputDecorator>(debtDecorator).decoration.errorText,
-      'Select utang para bayaran',
+      'Select utang',
     );
 
     final amountField = find.byWidgetPredicate(

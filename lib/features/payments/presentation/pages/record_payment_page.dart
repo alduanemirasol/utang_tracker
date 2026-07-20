@@ -143,7 +143,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     Money? amount;
     setState(() {
       _error = null;
-      _debtError = _debtId == null ? 'Select utang para bayaran' : null;
+      _debtError = _debtId == null ? 'Select utang' : null;
 
       final amountText = _amountController.text.trim();
       if (amountText.isEmpty) {
@@ -243,116 +243,127 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               onTap: _pickDebt,
               errorText: _debtError,
             ),
-          if (selected != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Remaining balance: ${selected.balance.format()}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.lg),
-          AppTextField(
-            controller: _amountController,
-            focusNode: _amountFocusNode,
-            label: 'Amount *',
-            hint: 'e.g. 100.00',
-            errorText: _amountError,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-            ],
-
-            onChanged: (_) => setState(() {
-              _markDirty();
-              _amountError = null;
-            }),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          AppTextField.buildLabel(context, 'Payment date *'),
-          const SizedBox(height: AppSpacing.sm),
-          InkWell(
-            onTap: _pickDate,
-            borderRadius: BorderRadius.circular(10),
-            child: InputDecorator(
-              decoration: const InputDecoration(
-                suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
-              ),
-              child: Text(
-                context.smartDate(_paymentDate),
-                style: AppTextField.inputStyle(context),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          AppTextField.buildLabel(context, 'Payment method *'),
-          const SizedBox(height: AppSpacing.sm),
-          DropdownButtonFormField<String>(
-            // ignore: deprecated_member_use
-            value: _method,
-            style: AppTextField.inputStyle(context),
-            items: AppConstants.paymentMethods
-                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                .toList(),
-            onChanged: (v) {
-              if (v != null) {
-                setState(() => _method = v);
-                _markDirty();
-              }
-            },
-            decoration: const InputDecoration(),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          AppTextField(
-            controller: _notesController,
-            label: 'Notes',
-            hint: 'Optional',
-            minLines: 4,
-            maxLines: 6,
-            onChanged: (_) => _markDirty(),
-          ),
-          if (selected != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                const Text('Balance after payment approx.'),
-                const Spacer(),
-                Builder(
-                  builder: (context) {
-                    try {
-                      final amt = Money.fromPesoString(_amountController.text);
-                      final after = selected.balance - amt;
-                      return MoneyText(after.isNegative ? Money.zero() : after);
-                    } catch (_) {
-                      return MoneyText(selected.balance);
-                    }
-                  },
+            if (selected != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Remaining balance: ${selected.balance.format()}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            AppTextField(
+              controller: _amountController,
+              focusNode: _amountFocusNode,
+              label: 'Amount *',
+              hint: 'e.g. 100.00',
+              errorText: _amountError,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
               ],
+
+              onChanged: (_) => setState(() {
+                _markDirty();
+                _amountError = null;
+              }),
             ),
-          ],
-          if (_error != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              _error!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+            const SizedBox(height: AppSpacing.lg),
+            AppTextField.buildLabel(context, 'Payment date *'),
+            const SizedBox(height: AppSpacing.sm),
+            InkWell(
+              onTap: _pickDate,
+              borderRadius: BorderRadius.circular(10),
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                ),
+                child: Text(
+                  context.smartDate(_paymentDate),
+                  style: AppTextField.inputStyle(context),
+                ),
+              ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            AppTextField.buildLabel(context, 'Payment method *'),
+            const SizedBox(height: AppSpacing.sm),
+            DropdownButtonFormField<String>(
+              // ignore: deprecated_member_use
+              value: _method,
+              style: AppTextField.inputStyle(context),
+              items: AppConstants.paymentMethods
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) {
+                  setState(() => _method = v);
+                  _markDirty();
+                }
+              },
+              decoration: const InputDecoration(),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppTextField(
+              controller: _notesController,
+              label: 'Notes',
+              hint: 'Optional',
+              minLines: 4,
+              maxLines: 6,
+              onChanged: (_) => _markDirty(),
+            ),
+            if (selected != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  const Text('Balance after payment approx.'),
+                  const Spacer(),
+                  Builder(
+                    builder: (context) {
+                      try {
+                        final amt = Money.fromPesoString(
+                          _amountController.text,
+                        );
+                        final after = selected.balance - amt;
+                        return MoneyText(
+                          after.isNegative ? Money.zero() : after,
+                        );
+                      } catch (_) {
+                        return MoneyText(selected.balance);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _error!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
           ],
-          const SizedBox(height: AppSpacing.xl),
-          AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
-        ],
+        ),
       ),
-    ),
     );
   }
 }
 
 class _DebtField extends StatelessWidget {
-  const _DebtField({super.key, required this.label, required this.onTap, this.errorText});
+  const _DebtField({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.errorText,
+  });
 
   final String? label;
   final VoidCallback onTap;
