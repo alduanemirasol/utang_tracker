@@ -79,12 +79,22 @@ jobs:
           # Copy and rename universal APK
           cp build/app/outputs/flutter-apk/app-release.apk release-assets/utang-tracker-universal-$TAG_NAME.apk
 
-      - name: Validate RELEASE_NOTES.md exists
+      - name: Generate RELEASE_NOTES.md from current.json
         run: |
-          if [ ! -f RELEASE_NOTES.md ]; then
-            echo "::error::RELEASE_NOTES.md not found. Create it with release notes before tagging."
+          if [ ! -f assets/release_notes/current.json ]; then
+            echo "::error::assets/release_notes/current.json not found."
             exit 1
           fi
+          TAG_NAME="${{ github.ref_name }}"
+          TAG_VERSION="${TAG_NAME#v}"
+          JSON_VERSION=$(jq -r '.version' assets/release_notes/current.json)
+          if [ "$TAG_VERSION" != "$JSON_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match version in assets/release_notes/current.json ($JSON_VERSION)"
+            exit 1
+          fi
+          echo "What's new in $TAG_NAME" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          jq -r '.notes[] | "- \(.)"' assets/release_notes/current.json >> RELEASE_NOTES.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
