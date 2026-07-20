@@ -91,7 +91,7 @@ class _FakeDashboardRepository implements DashboardRepository {
 
   @override
   Future<DashboardData> getDashboardData() async =>
-      data ?? DashboardData(
+      DashboardData(
         outstandingBalance: Money.zero(),
         collectedToday: Money.zero(),
         activeDebtsCount: 0,
