@@ -1,4 +1,4 @@
-name: Build and Release APKs
+name: Release Android APKs
 
 on:
   push:
@@ -6,29 +6,36 @@ on:
       - 'v*'
 
 jobs:
-  build-and-release:
-    name: Build & Release Android APKs
+  release:
+    name: Build release
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
 
+    env:
+      APP_NAME: utang-tracker
+      RELEASE_DIR: release-assets
+      RELEASE_NOTES_JSON: assets/release_notes/current.json
+      TAG_NAME: ${{ github.ref_name }}
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
           cache: true
 
-      - name: Configure signing keys
+      - name: Configure Android signing
         env:
           SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -36,28 +43,26 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           if [ -z "$SIGNING_KEY_BASE64" ]; then
-            echo "Warning: SIGNING_KEY_BASE64 is empty. Release build will fail unless signing is disabled."
+            echo "::error::SIGNING_KEY_BASE64 is empty."
             exit 1
           fi
-          
-          # Decode the keystore file to android/app/release.keystore
-          echo "$SIGNING_KEY_BASE64" | base64 --decode > android/app/release.keystore
-          
-          # Create android/key.properties
-          cat <<EOF > android/key.properties
-          storePassword=$KEY_STORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=app/release.keystore
-          EOF
+
+          printf '%s' "$SIGNING_KEY_BASE64" | base64 --decode > android/app/release.keystore
+
+          {
+            printf 'storePassword=%s\n' "$KEY_STORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'storeFile=app/release.keystore\n'
+          } > android/key.properties
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify analysis and formatting
+      - name: Analyze code
         run: flutter analyze
 
-      - name: Run unit tests
+      - name: Run tests
         run: flutter test
 
       - name: Build ABI-split APKs
@@ -66,40 +71,44 @@ jobs:
       - name: Build universal APK
         run: flutter build apk --release
 
-      - name: Prepare assets for release
+      - name: Prepare release assets
         run: |
-          mkdir release-assets
-          TAG_NAME="${{ github.ref_name }}"
-          
-          # Copy and rename ABI-split APKs
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release-assets/utang-tracker-arm64-v8a-$TAG_NAME.apk
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release-assets/utang-tracker-armeabi-v7a-$TAG_NAME.apk
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk release-assets/utang-tracker-x86_64-$TAG_NAME.apk
-          
-          # Copy and rename universal APK
-          cp build/app/outputs/flutter-apk/app-release.apk release-assets/utang-tracker-universal-$TAG_NAME.apk
+          mkdir -p "$RELEASE_DIR"
 
-      - name: Generate RELEASE_NOTES.md from current.json
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            "$RELEASE_DIR/$APP_NAME-arm64-v8a-$TAG_NAME.apk"
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+            "$RELEASE_DIR/$APP_NAME-armeabi-v7a-$TAG_NAME.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
+            "$RELEASE_DIR/$APP_NAME-x86_64-$TAG_NAME.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "$RELEASE_DIR/$APP_NAME-universal-$TAG_NAME.apk"
+
+      - name: Generate release notes
         run: |
-          if [ ! -f assets/release_notes/current.json ]; then
-            echo "::error::assets/release_notes/current.json not found."
+          if [ ! -f "$RELEASE_NOTES_JSON" ]; then
+            echo "::error::$RELEASE_NOTES_JSON not found."
             exit 1
           fi
-          TAG_NAME="${{ github.ref_name }}"
-          TAG_VERSION="${TAG_NAME#v}"
-          JSON_VERSION=$(jq -r '.version' assets/release_notes/current.json)
-          if [ "$TAG_VERSION" != "$JSON_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match version in assets/release_notes/current.json ($JSON_VERSION)"
+
+          tag_version="${TAG_NAME#v}"
+          json_version="$(jq -r '.version' "$RELEASE_NOTES_JSON")"
+
+          if [ "$tag_version" != "$json_version" ]; then
+            echo "::error::Tag version ($tag_version) does not match release notes version ($json_version)."
             exit 1
           fi
-          echo "What's new in $TAG_NAME" > RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
-          jq -r '.notes[] | "- \(.)"' assets/release_notes/current.json >> RELEASE_NOTES.md
 
-      - name: Create GitHub Release
+          {
+            echo "What's new in $TAG_NAME"
+            echo
+            jq -r '.notes[] | "- \(.)"' "$RELEASE_NOTES_JSON"
+          } > RELEASE_NOTES.md
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: release-assets/*.apk
+          files: ${{ env.RELEASE_DIR }}/*.apk
           body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
