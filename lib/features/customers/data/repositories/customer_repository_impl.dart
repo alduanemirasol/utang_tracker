@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
+import 'package:utang_tracker/features/debts/domain/entities/debt_status.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   CustomerRepositoryImpl(this._db, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
@@ -110,7 +111,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
     if (await hasDebts(id)) {
       throw const ConflictException(
-        'Cannot delete a customer who still has debts.',
+        'Cannot delete a customer who still has unpaid debts.',
       );
     }
 
@@ -141,7 +142,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final row =
         await (_db.select(_db.debts)
               ..where(
-                (t) => t.customerId.equals(customerId) & t.deletedAt.isNull(),
+                (t) =>
+                    t.customerId.equals(customerId) &
+                    t.deletedAt.isNull() &
+                    t.status.equals(DebtStatus.paid.value).not(),
               )
               ..limit(1))
             .getSingleOrNull();

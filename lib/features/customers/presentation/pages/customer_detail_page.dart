@@ -78,6 +78,7 @@ class CustomerDetailPage extends ConsumerWidget {
                       await ref.read(deleteCustomerProvider)(customerId);
                       invalidateBusinessData(ref);
                       if (!context.mounted) return;
+                      AppSnackBar.success(context, 'Customer deleted');
                       context.pop();
                     } on AppException catch (e) {
                       if (!context.mounted) return;

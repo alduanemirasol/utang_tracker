@@ -110,7 +110,7 @@ Fresh databases create these indexes:
 ### Customers
 
 - Customer names are required and unique among active customers, using a case-insensitive repository check. Soft-deleted names may be reused.
-- A customer cannot be deleted while any active debt exists for that customer, regardless of debt status.
+- A customer cannot be deleted while any active, unpaid debt (UNPAID or PARTIAL) exists for that customer.
 - Customer deletion is a soft delete that sets `deleted_at` and `updated_at`.
 
 ### Debts and debt items

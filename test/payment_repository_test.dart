@@ -224,4 +224,32 @@ void main() {
     expect(row, isNotNull);
     expect(row!.deletedAt, isNotNull);
   });
+
+  test('can delete customer with only paid debts', () async {
+    final customer = await customers.create(name: 'Rosa');
+
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime.now(),
+      items: [
+        DebtItemInput(
+          productName: 'Item',
+          quantity: 1,
+          price: Money.fromPesos(10),
+        ),
+      ],
+    );
+
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(10),
+      paymentDate: DateTime.now(),
+      paymentMethod: 'Cash',
+    );
+
+    await customers.delete(customer.id);
+
+    final listed = await customers.getAll();
+    expect(listed.where((c) => c.id == customer.id), isEmpty);
+  });
 }
