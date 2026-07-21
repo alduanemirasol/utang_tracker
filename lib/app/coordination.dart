@@ -13,6 +13,7 @@ void invalidateBusinessData(
   ref.invalidate(customersListProvider);
   ref.invalidate(debtsListProvider);
   ref.invalidate(paymentsListProvider);
+  ref.invalidate(paymentFilterOptionsProvider);
   ref.invalidate(dashboardSummaryProvider);
   ref.invalidate(debtNotificationsProvider);
   if (customerId != null) {
