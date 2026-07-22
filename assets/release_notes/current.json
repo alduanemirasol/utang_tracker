@@ -1,9 +1,7 @@
 {
-  "version": "1.0.16",
+  "version": "1.0.17",
   "notes": [
-    "Refactored codebase to follow Clean Architecture patterns",
-    "Extracted business logic into domain use cases",
-    "Fixed analysis errors and resolved all Dart warnings",
-    "Improved separation of concerns across features"
+    "Fixed GCash filter chip not appearing immediately after recording a payment",
+    "Allow soft-deleting customers with only fully paid debts"
   ]
 }
