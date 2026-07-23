@@ -1,6 +1,6 @@
 {
-  "version": "1.0.18",
+  "version": "1.0.19",
   "notes": [
-    "Cleaned up About screen by removing credits section and last checked row"
+    "Added confirmation checkbox on record payment screen"
   ]
 }
