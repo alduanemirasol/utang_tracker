@@ -35,7 +35,4 @@ class AppConstants {
 
   /// MethodChannel name shared between Dart and MainActivity.kt.
   static const String updaterChannel = 'com.example.utang_tracker/updater';
-
-  static const String facebookUrl =
-      'https://www.facebook.com/alduanecuevasmirasol';
 }

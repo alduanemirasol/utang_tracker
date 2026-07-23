@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
@@ -132,16 +131,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                 ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xl),
-          _SectionLabel('Credits'),
-          const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            children: [
-              _InfoRow(label: 'Developer', value: 'Al Duane Mirasol'),
-              const Divider(height: 1),
-              const _SocialLinkRow(),
-            ],
-          ),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
@@ -245,43 +234,6 @@ class _InfoRow extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SocialLinkRow extends StatelessWidget {
-  const _SocialLinkRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => launchUrl(Uri.parse(AppConstants.facebookUrl)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.facebook, size: 22, color: AppColors.primaryDark),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                'Facebook',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            const Icon(
-              Icons.open_in_new_rounded,
-              size: 18,
-              color: AppColors.textMuted,
-            ),
-          ],
-        ),
       ),
     );
   }
