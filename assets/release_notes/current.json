@@ -1,7 +1,6 @@
 {
-  "version": "1.0.17",
+  "version": "1.0.18",
   "notes": [
-    "Fixed GCash filter chip not appearing immediately after recording a payment",
-    "Allow soft-deleting customers with only fully paid debts"
+    "Cleaned up About screen by removing credits section and last checked row"
   ]
 }
