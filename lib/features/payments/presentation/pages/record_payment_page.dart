@@ -43,6 +43,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   String _method = AppConstants.paymentMethods.first;
   final _notesController = TextEditingController();
   bool _saving = false;
+  bool _confirmed = false;
   String? _debtError;
   String? _amountError;
   String? _error;
@@ -319,7 +320,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const Text('Balance after payment approx.'),
+                  const Text('Balance after payment'),
                   const Spacer(),
                   Builder(
                     builder: (context) {
@@ -348,8 +349,23 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
               ),
             ],
+            Row(
+              children: [
+                Checkbox(
+                  value: _confirmed,
+                  onChanged: (v) => setState(() => _confirmed = v ?? false),
+                ),
+                const Expanded(
+                  child: Text('I confirm the payment details are correct'),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.xl),
-            AppButton(label: 'Save', onPressed: _save, isLoading: _saving),
+            AppButton(
+              label: 'Save',
+              onPressed: _confirmed ? _save : null,
+              isLoading: _saving,
+            ),
           ],
         ),
       ),
