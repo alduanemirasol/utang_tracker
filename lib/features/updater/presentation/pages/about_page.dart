@@ -19,7 +19,6 @@ class AboutPage extends ConsumerStatefulWidget {
 
 class _AboutPageState extends ConsumerState<AboutPage> {
   String? _version;
-  DateTime? _lastChecked;
   Map<String, dynamic>? _releaseNotes;
 
   @override
@@ -31,13 +30,11 @@ class _AboutPageState extends ConsumerState<AboutPage> {
   Future<void> _load() async {
     final repo = ref.read(updateRepositoryProvider);
     final version = await repo.getCurrentVersion();
-    final lastChecked = await repo.loadLastCheckTime();
     final jsonStr = await repo.loadReleaseNotes().catchError((_) => '{}');
     final data = jsonDecode(jsonStr);
     if (mounted) {
       setState(() {
         _version = version;
-        _lastChecked = lastChecked;
         _releaseNotes = data is Map ? Map<String, dynamic>.from(data) : null;
       });
     }
@@ -47,16 +44,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     await ref.read(updateNotifierProvider.notifier).checkForUpdates();
     if (!mounted) return;
     await showUpdateBottomSheet(context);
-  }
-
-  String _formatLastChecked(DateTime? dt) {
-    if (dt == null) return 'Never';
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
   }
 
   @override
@@ -78,11 +65,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           const SizedBox(height: AppSpacing.sm),
           _InfoCard(
             children: [
-              _InfoRow(
-                label: 'Last checked',
-                value: _formatLastChecked(_lastChecked),
-              ),
-              const Divider(height: 1),
               _CheckForUpdatesRow(
                 isChecking: isChecking,
                 onTap: isChecking ? null : _checkForUpdates,
@@ -199,42 +181,6 @@ class _InfoCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(children: children),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
     );
   }
 }
