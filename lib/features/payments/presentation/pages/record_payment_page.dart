@@ -358,8 +358,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 Expanded(
                   child: Text(
                     'I confirm the payment details are correct',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 13,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0,
                     ),
