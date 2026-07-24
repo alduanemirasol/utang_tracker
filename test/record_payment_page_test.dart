@@ -21,6 +21,11 @@ void main() {
       ),
     );
 
+    final confirmCheckbox = find.byType(Checkbox);
+    expect(confirmCheckbox, findsOneWidget);
+    await tester.tap(confirmCheckbox);
+    await tester.pump();
+
     final save = find.text('Save');
     await tester.ensureVisible(save);
     await tester.tap(save);
