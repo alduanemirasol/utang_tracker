@@ -355,8 +355,15 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                   value: _confirmed,
                   onChanged: (v) => setState(() => _confirmed = v ?? false),
                 ),
-                const Expanded(
-                  child: Text('I confirm the payment details are correct'),
+                Expanded(
+                  child: Text(
+                    'I confirm the payment details are correct',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0,
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -200,6 +200,7 @@ class _LedgerBalanceCard extends StatelessWidget {
                 'Total Receivables',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textOnPrimarySoft,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -222,7 +223,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                         Text(
                           'Active Utang',
                           style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.textOnPrimarySoft),
+                              ?.copyWith(
+                                color: AppColors.textOnPrimarySoft,
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
@@ -248,7 +252,10 @@ class _LedgerBalanceCard extends StatelessWidget {
                         Text(
                           'Collected Today',
                           style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.textOnPrimarySoft),
+                              ?.copyWith(
+                                color: AppColors.textOnPrimarySoft,
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         FittedBox(
