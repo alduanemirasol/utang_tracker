@@ -71,7 +71,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
         onProgress(1.0);
         return file.path;
       } on AppException {
-        // Invalid cached files are deleted by _validateApk and downloaded again.
+        await Future<void>.value();
       }
     }
 

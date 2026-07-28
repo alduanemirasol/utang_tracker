@@ -152,7 +152,6 @@ class CustomerRepositoryImpl implements CustomerRepository {
     return row != null;
   }
 
-  /// Unique name enforcement (case-insensitive, ignores soft-deleted).
   Future<void> _ensureUniqueName(String name, {String? excludeId}) async {
     final existing =
         await (_db.select(_db.customers)

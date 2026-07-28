@@ -15,14 +15,10 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
-
-// file_picker hardcodes compileSdk 34; flutter_plugin_android_lifecycle AAR
-// requires consumers to compile against API 36+. Override after each module configures.
 subprojects {
     afterEvaluate {
         val android = extensions.findByName("android") ?: return@afterEvaluate
         try {
-            // AGP 8+ property: compileSdk = 36
             val setCompileSdk =
                 android.javaClass.methods.firstOrNull { method ->
                     method.name == "setCompileSdk" &&
@@ -34,8 +30,6 @@ subprojects {
                 setCompileSdk.invoke(android, 36)
                 return@afterEvaluate
             }
-
-            // Older AGP: compileSdkVersion(36)
             val setCompileSdkVersion =
                 android.javaClass.methods.firstOrNull { method ->
                     method.name == "setCompileSdkVersion" && method.parameterCount == 1
@@ -44,8 +38,6 @@ subprojects {
                 setCompileSdkVersion.invoke(android, 36)
                 return@afterEvaluate
             }
-
-            // Groovy-style method: compileSdkVersion(36)
             val compileSdkVersion =
                 android.javaClass.methods.firstOrNull { method ->
                     method.name == "compileSdkVersion" &&
@@ -54,7 +46,6 @@ subprojects {
                 }
             compileSdkVersion?.invoke(android, 36)
         } catch (_: Throwable) {
-            // Ignore modules with unexpected Android extension types.
         }
     }
 }

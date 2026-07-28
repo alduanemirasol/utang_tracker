@@ -18,10 +18,8 @@ class AppConstants {
   static const String githubRepo = 'utang_tracker';
   static const String githubApiBaseUrl = 'https://api.github.com';
 
-  /// APK naming pattern: {prefix}-{abi}-v{version}.apk
   static const String apkAssetPrefix = 'utang-tracker';
 
-  /// Most preferred ABI first.
   static const List<String> supportedAbis = [
     'arm64-v8a',
     'armeabi-v7a',
@@ -30,9 +28,7 @@ class AppConstants {
 
   static const String universalAbiName = 'universal';
 
-  /// Minimum interval between automatic update checks.
   static const Duration updateCheckThrottle = Duration(hours: 24);
 
-  /// MethodChannel name shared between Dart and MainActivity.kt.
   static const String updaterChannel = 'com.example.utang_tracker/updater';
 }

@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -23,7 +22,6 @@ val hasReleaseSigning = releaseSigningProperties.all { keystoreProperty(it) != n
 
 android {
     namespace = "com.example.utang_tracker"
-    // file_picker / flutter_plugin_android_lifecycle require API 36+.
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -33,10 +31,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.utang_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

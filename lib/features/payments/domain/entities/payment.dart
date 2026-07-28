@@ -22,7 +22,6 @@ class Payment extends Equatable {
   final String? notes;
   final DateTime createdAt;
 
-  /// Populated by list joins; null otherwise.
   final String? customerName;
   final String? customerId;
 

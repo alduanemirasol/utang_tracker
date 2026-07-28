@@ -46,7 +46,6 @@ void main() {
       ],
     );
 
-    // Quantity is descriptive; custom item prices are summed directly.
     expect(debt.totalAmount.centavos, 6000);
     expect(debt.paidAmount.isZero, isTrue);
     expect(debt.balance.centavos, 6000);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 
-/// Consistent colors per success/error/info state.
 enum AppSnackBarKind { success, error, info }
 
 class AppSnackBar {

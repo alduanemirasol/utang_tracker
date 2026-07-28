@@ -32,7 +32,6 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(payments, payments.deletedAt);
       }
       if (from < 3) {
-        // Drop debt_items.unit (SQLite: recreate table).
         await customStatement('''
 CREATE TABLE debt_items_new (
   id TEXT NOT NULL PRIMARY KEY,
@@ -60,11 +59,9 @@ FROM debt_items;
         );
       }
       if (from < 4) {
-        // Existing items become pieces; new records always provide a unit.
         await m.addColumn(debtItems, debtItems.unit);
       }
       if (from < 5) {
-        // Price repurposed as final line amount; migrate old subtotal into price.
         await customStatement('''
 CREATE TABLE debt_items_v5 (
   id TEXT NOT NULL PRIMARY KEY,

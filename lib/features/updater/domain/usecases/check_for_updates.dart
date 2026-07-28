@@ -56,7 +56,6 @@ class CheckResult {
   final String? error;
 }
 
-/// Best ABI match from [assets]; falls back to universal APK.
 ReleaseAsset? selectApkAsset(
   List<ReleaseAsset> assets,
   List<String> abis, {
@@ -82,7 +81,6 @@ ReleaseAsset? selectApkAsset(
       .firstOrNull;
 }
 
-/// True when [latestVersion] > [currentVersion]; pads missing segments.
 bool isNewerVersion(String currentVersion, String latestVersion) {
   return Version.parse(_pad(latestVersion)) >
       Version.parse(_pad(currentVersion));

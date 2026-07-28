@@ -30,7 +30,6 @@ class Debt extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /// Populated by list joins; null otherwise.
   final String? customerName;
 
   bool get isEditable => paidAmount.isZero;

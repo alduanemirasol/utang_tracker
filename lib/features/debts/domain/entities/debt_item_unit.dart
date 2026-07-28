@@ -10,7 +10,6 @@ class DebtItemUnitOption {
   final String pluralLabel;
 }
 
-/// Units stored as free text so shops can use custom units without a migration.
 class DebtItemUnits {
   DebtItemUnits._();
 

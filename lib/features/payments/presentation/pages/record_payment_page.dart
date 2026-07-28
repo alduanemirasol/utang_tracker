@@ -296,8 +296,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             AppTextField.buildLabel(context, 'Payment method *'),
             const SizedBox(height: AppSpacing.sm),
             DropdownButtonFormField<String>(
-              // ignore: deprecated_member_use
-              value: _method,
+              initialValue: _method,
               style: AppTextField.inputStyle(context),
               items: AppConstants.paymentMethods
                   .map((m) => DropdownMenuItem(value: m, child: Text(m)))

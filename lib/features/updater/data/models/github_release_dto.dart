@@ -1,6 +1,5 @@
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 
-/// Maps a raw GitHub Releases API JSON object to [AppRelease].
 class GithubReleaseDto {
   static AppRelease fromJson(Map<String, dynamic> json) {
     final tagName = json['tag_name'] as String? ?? '';

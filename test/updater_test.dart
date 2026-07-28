@@ -34,7 +34,6 @@ void main() {
     });
 
     test('double-digit minor comparison is correct', () {
-      // "1.10.0" > "1.9.9" — a naive string sort would fail this
       expect(isNewerVersion('1.9.9', '1.10.0'), isTrue);
       expect(isNewerVersion('1.10.0', '1.9.9'), isFalse);
     });

@@ -1,7 +1,5 @@
 import 'package:intl/intl.dart';
 
-/// Money stored as integer centavos (1 peso = 100 centavos).
-/// Maps to DECIMAL(10,2) semantics without floating-point error.
 class Money {
   const Money._(this.centavos);
 

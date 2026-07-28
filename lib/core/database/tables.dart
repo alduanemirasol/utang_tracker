@@ -1,9 +1,5 @@
 import 'package:drift/drift.dart';
 
-/// Tables mirror `rules/database_rules.md`.
-/// DECIMAL(10,2) → integer centavos; UUID → TEXT; DATETIME → DateTime.
-/// Soft delete: `deleted_at` null = active; non-null = deleted (kept for history).
-
 @DataClassName('CustomerRow')
 class Customers extends Table {
   TextColumn get id => text()();
@@ -44,11 +40,9 @@ class DebtItems extends Table {
   TextColumn get debtId => text().references(Debts, #id)();
   TextColumn get productName => text()();
 
-  /// Quantity supports fractions (e.g. 0.5); stored as REAL.
   RealColumn get quantity => real()();
   TextColumn get unit => text().withDefault(const Constant('piece'))();
 
-  /// Final custom line amount in centavos; quantity does not multiply it.
   IntColumn get price => integer()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 

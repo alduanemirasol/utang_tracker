@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Ledger-inspired cool paper-and-ink palette.
 class AppColors {
   AppColors._();
 

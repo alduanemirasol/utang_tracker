@@ -220,7 +220,6 @@ class DebtRepositoryImpl implements DebtRepository {
     ).toUtc();
 
     await _db.transaction(() async {
-      // Soft-delete previous line items so history is retained.
       await (_db.update(_db.debtItems)
             ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
           .write(DebtItemsCompanion(deletedAt: Value(now)));

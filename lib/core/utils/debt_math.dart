@@ -1,11 +1,9 @@
 import 'package:utang_tracker/core/utils/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 
-/// Pure business math aligned with `rules/database_rules.md`.
 class DebtMath {
   DebtMath._();
 
-  /// Sum of custom item prices (quantity does not multiply).
   static Money computeTotal(Iterable<Money> prices) {
     var total = Money.zero();
     for (final price in prices) {
@@ -21,7 +19,6 @@ class DebtMath {
     return totalAmount - paidAmount;
   }
 
-  /// Status derivation (documented assumption when paid vs total).
   static DebtStatus deriveStatus({
     required Money totalAmount,
     required Money paidAmount,

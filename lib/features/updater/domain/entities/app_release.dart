@@ -26,10 +26,8 @@ class AppRelease extends Equatable {
     required this.assets,
   });
 
-  /// Raw tag from GitHub, e.g. `v1.2.0`.
   final String tagName;
 
-  /// Semver string with leading `v` stripped, e.g. `1.2.0`.
   final String version;
 
   final String releaseNotes;
