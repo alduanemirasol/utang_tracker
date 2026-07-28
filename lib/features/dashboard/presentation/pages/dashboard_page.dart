@@ -14,15 +14,12 @@ import 'package:utang_tracker/features/dashboard/presentation/providers/dashboar
 import 'package:utang_tracker/features/notifications/domain/entities/debt_notification.dart';
 import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:utang_tracker/features/notifications/presentation/widgets/debt_notifications_sheet.dart';
-
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(dashboardSummaryProvider);
     final notifications = ref.watch(debtNotificationsProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home"),
@@ -34,16 +31,6 @@ class DashboardPage extends ConsumerWidget {
               if (debtId == null || !context.mounted) return;
               context.push('/debts/$debtId');
             },
-          ),
-          IconButton(
-            tooltip: 'Backup & Restore',
-            icon: const Icon(Icons.backup_outlined),
-            onPressed: () => context.push('/backup-restore'),
-          ),
-          IconButton(
-            tooltip: 'About',
-            icon: const Icon(Icons.info_outline_rounded),
-            onPressed: () => context.push('/about'),
           ),
           const SizedBox(width: AppSpacing.sm),
         ],
@@ -120,20 +107,16 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 }
-
 class _NotificationAction extends StatelessWidget {
   const _NotificationAction({required this.notifications, required this.onTap});
-
   final AsyncValue<DebtNotificationFeed> notifications;
   final VoidCallback onTap;
-
   @override
   Widget build(BuildContext context) {
     final urgentCount = notifications.value?.urgentCount ?? 0;
     final label = urgentCount > 0
         ? 'Due reminders, $urgentCount urgent'
         : 'Due reminders';
-
     return Semantics(
       button: true,
       label: label,
@@ -178,18 +161,15 @@ class _NotificationAction extends StatelessWidget {
     );
   }
 }
-
 class _LedgerBalanceCard extends StatelessWidget {
   const _LedgerBalanceCard({
     required this.balance,
     required this.activeDebts,
     required this.collectedToday,
   });
-
   final Money balance;
   final int activeDebts;
   final Money collectedToday;
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -284,10 +264,8 @@ class _LedgerBalanceCard extends StatelessWidget {
     );
   }
 }
-
 class _DashedRule extends StatelessWidget {
   const _DashedRule();
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -310,7 +288,6 @@ class _DashedRule extends StatelessWidget {
     );
   }
 }
-
 class _QuickAction extends StatelessWidget {
   const _QuickAction({
     required this.icon,
@@ -319,13 +296,11 @@ class _QuickAction extends StatelessWidget {
     required this.foregroundColor,
     required this.onTap,
   });
-
   final IconData icon;
   final String label;
   final Color color;
   final Color foregroundColor;
   final VoidCallback onTap;
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -365,18 +340,15 @@ class _QuickAction extends StatelessWidget {
     );
   }
 }
-
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
     required this.actionLabel,
     required this.onAction,
   });
-
   final String title;
   final String? actionLabel;
   final VoidCallback onAction;
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -401,12 +373,9 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
 class _ActivityLedger extends StatelessWidget {
   const _ActivityLedger({required this.items});
-
   final List<RecentActivityItem> items;
-
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -433,19 +402,15 @@ class _ActivityLedger extends StatelessWidget {
     );
   }
 }
-
 class _ActivityRow extends StatelessWidget {
   const _ActivityRow({required this.item, required this.onTap});
-
   final RecentActivityItem item;
   final VoidCallback onTap;
-
   @override
   Widget build(BuildContext context) {
     final isPayment = item.type == RecentActivityType.payment;
     final color = isPayment ? AppColors.paid : AppColors.unpaid;
     final background = isPayment ? AppColors.paidBg : AppColors.unpaidBg;
-
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -524,10 +489,8 @@ class _ActivityRow extends StatelessWidget {
     );
   }
 }
-
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
-
   @override
   Widget build(BuildContext context) {
     return AppCard(

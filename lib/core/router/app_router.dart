@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/router/app_shell.dart';
 import 'package:utang_tracker/features/backup/presentation/pages/backup_restore_page.dart';
+import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_detail_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customers_list_page.dart';
@@ -12,9 +13,7 @@ import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
-
 final rootNavigatorKey = GlobalKey<NavigatorState>();
-
 GoRouter createAppRouter() {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -25,6 +24,14 @@ GoRouter createAppRouter() {
           return AppShell(navigationShell: navigationShell);
         },
         branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsPage(),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(

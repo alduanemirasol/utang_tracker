@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
-
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
-
   final StatefulNavigationShell navigationShell;
-
   void _onTap(int index) {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,6 +35,11 @@ class AppShell extends StatelessWidget {
                 icon: Icon(Icons.group_outlined),
                 selectedIcon: Icon(Icons.group_rounded),
                 label: 'Customers',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings_rounded),
+                label: 'Settings',
               ),
               NavigationDestination(
                 icon: Icon(Icons.receipt_long_outlined),
