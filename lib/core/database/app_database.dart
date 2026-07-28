@@ -1,22 +1,31 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:utang_tracker/core/database/database_location.dart';
 import 'package:utang_tracker/core/database/tables.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Customers, Debts, DebtItems, Payments])
 class AppDatabase extends _$AppDatabase {
+  static const applicationId = 0x5554414e; // "UTAN"
+  static const currentSchemaVersion = 5;
+
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   AppDatabase.forTesting() : super(NativeDatabase.memory());
 
   static QueryExecutor _openConnection() {
-    return driftDatabase(name: 'utang_tracker');
+    return driftDatabase(
+      name: DatabaseLocation.databaseName,
+      native: DriftNativeOptions(
+        databasePath: () async => (await DatabaseLocation.liveFile()).path,
+      ),
+    );
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => currentSchemaVersion;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +98,10 @@ FROM debt_items;
         );
       }
       await _createIndexes();
+    },
+    beforeOpen: (_) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA application_id = $applicationId');
     },
   );
 

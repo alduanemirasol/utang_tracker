@@ -36,6 +36,11 @@ class DashboardPage extends ConsumerWidget {
             },
           ),
           IconButton(
+            tooltip: 'Backup & Restore',
+            icon: const Icon(Icons.backup_outlined),
+            onPressed: () => context.push('/backup-restore'),
+          ),
+          IconButton(
             tooltip: 'About',
             icon: const Icon(Icons.info_outline_rounded),
             onPressed: () => context.push('/about'),
