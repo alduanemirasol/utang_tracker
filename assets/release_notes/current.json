@@ -1,6 +1,10 @@
 {
-  "version": "1.0.24",
+  "version": "1.0.25",
   "notes": [
+    "Backup & Restore: export verified SQLite backups and safely restore them with automatic rollback",
+    "New Settings screen accessible from the bottom nav bar",
+    "Backup and About pages moved to Settings for a cleaner Home screen",
+    "Snackbar colors now use semantic green for success and red for errors with white text",
     "Fixed update downloads choosing the wrong APK for some phones",
     "Fixed update retry behavior after failed checks",
     "Improved validation of downloaded update files",
