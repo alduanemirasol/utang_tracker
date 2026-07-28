@@ -1,7 +1,6 @@
 {
-  "version": "1.0.22",
+  "version": "1.0.23",
   "notes": [
-    "Bolder dashboard labels",
-    "Smaller confirmation text on payment screen"
+    "Tap confirmation label to check checkbox on payment screen"
   ]
 }
