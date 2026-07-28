@@ -94,8 +94,11 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
   void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? AppColors.danger : AppColors.primaryDark,
+        backgroundColor: isError ? AppColors.danger : AppColors.success,
+        content: Text(
+          message,
+          style: const TextStyle(color: AppColors.textOnPrimary),
+        ),
       ),
     );
   }
