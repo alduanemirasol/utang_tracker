@@ -13,6 +13,7 @@ import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
+
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 GoRouter createAppRouter() {
   return GoRouter(
@@ -24,14 +25,6 @@ GoRouter createAppRouter() {
           return AppShell(navigationShell: navigationShell);
         },
         branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/settings',
-                builder: (context, state) => const SettingsPage(),
-              ),
-            ],
-          ),
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -125,6 +118,14 @@ GoRouter createAppRouter() {
                     },
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsPage(),
               ),
             ],
           ),
