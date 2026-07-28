@@ -1,6 +1,11 @@
 {
-  "version": "1.0.23",
+  "version": "1.0.24",
   "notes": [
-    "Tap confirmation label to check checkbox on payment screen"
+    "Fixed update downloads choosing the wrong APK for some phones",
+    "Fixed update retry behavior after failed checks",
+    "Improved validation of downloaded update files",
+    "Kept paid debt and payment history visible after deleting a customer",
+    "Fixed save-screen crashes when leaving during debt or payment saves",
+    "Improved database upgrade reliability"
   ]
 }
