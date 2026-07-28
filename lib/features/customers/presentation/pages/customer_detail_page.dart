@@ -69,7 +69,7 @@ class CustomerDetailPage extends ConsumerWidget {
                       context: context,
                       title: 'Delete customer?',
                       message:
-                          'The customer will be hidden from lists. Related history stays in the database. Customers with debts cannot be deleted.',
+                          'The customer will be hidden from customer lists. Paid debt and payment history will remain visible. Customers with unpaid debts cannot be deleted.',
                       confirmLabel: 'Delete',
                       isDestructive: true,
                     );

@@ -1,7 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/updater/data/models/github_release_dto.dart';
+import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
+import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
 
 void main() {
@@ -44,15 +51,14 @@ void main() {
       bool prerelease = false,
       String body = 'Bug fixes and improvements.',
       List<dynamic> assets = const [],
-    }) =>
-        {
-          'tag_name': tag,
-          'draft': draft,
-          'prerelease': prerelease,
-          'body': body,
-          'published_at': '2024-06-01T10:00:00Z',
-          'assets': assets,
-        };
+    }) => {
+      'tag_name': tag,
+      'draft': draft,
+      'prerelease': prerelease,
+      'body': body,
+      'published_at': '2024-06-01T10:00:00Z',
+      'assets': assets,
+    };
 
     test('parses basic fields correctly', () {
       final release = GithubReleaseDto.fromJson(baseJson());
@@ -75,13 +81,15 @@ void main() {
     });
 
     test('parses assets correctly', () {
-      final json = baseJson(assets: [
-        {
-          'name': 'utang-tracker-arm64-v8a-v1.2.0.apk',
-          'browser_download_url': 'https://example.com/arm64.apk',
-          'size': 12345678,
-        },
-      ]);
+      final json = baseJson(
+        assets: [
+          {
+            'name': 'utang-tracker-arm64-v8a-v1.2.0.apk',
+            'browser_download_url': 'https://example.com/arm64.apk',
+            'size': 12345678,
+          },
+        ],
+      );
       final release = GithubReleaseDto.fromJson(json);
       expect(release.assets, hasLength(1));
       expect(release.assets.first.name, 'utang-tracker-arm64-v8a-v1.2.0.apk');
@@ -97,15 +105,12 @@ void main() {
 
   group('draft and prerelease filtering', () {
     ReleaseAsset dummyAsset() => const ReleaseAsset(
-          name: 'utang-tracker-universal-v1.0.0.apk',
-          browserDownloadUrl: 'https://example.com/universal.apk',
-          sizeBytes: 1000,
-        );
+      name: 'utang-tracker-universal-v1.0.0.apk',
+      browserDownloadUrl: 'https://example.com/universal.apk',
+      sizeBytes: 1000,
+    );
 
-    AppRelease makeRelease({
-      bool isDraft = false,
-      bool isPrerelease = false,
-    }) =>
+    AppRelease makeRelease({bool isDraft = false, bool isPrerelease = false}) =>
         AppRelease(
           tagName: 'v1.0.0',
           version: '1.0.0',
@@ -135,10 +140,10 @@ void main() {
 
   group('selectApkAsset', () {
     ReleaseAsset asset(String name) => ReleaseAsset(
-          name: name,
-          browserDownloadUrl: 'https://example.com/$name',
-          sizeBytes: 1000,
-        );
+      name: name,
+      browserDownloadUrl: 'https://example.com/$name',
+      sizeBytes: 1000,
+    );
 
     test('selects arm64-v8a when available (highest priority)', () {
       final assets = [
@@ -170,19 +175,41 @@ void main() {
     });
 
     test('universal APK fallback when no ABI-specific asset exists', () {
-      final assets = [
-        asset('utang-tracker-universal-v1.0.0.apk'),
-      ];
+      final assets = [asset('utang-tracker-universal-v1.0.0.apk')];
       final selected = selectApkAsset(assets, AppConstants.supportedAbis);
       expect(selected?.name, 'utang-tracker-universal-v1.0.0.apk');
     });
 
     test('returns null when no matching asset found', () {
-      final assets = [
-        asset('some-other-app-arm64.apk'),
-      ];
+      final assets = [asset('some-other-app-arm64.apk')];
       final selected = selectApkAsset(assets, AppConstants.supportedAbis);
       expect(selected, isNull);
+    });
+
+    test('ignores checksum files that share the APK prefix', () {
+      final assets = [
+        asset('utang-tracker-arm64-v8a-v1.0.0.apk.sha256'),
+        asset('utang-tracker-arm64-v8a-v1.0.0.apk'),
+      ];
+
+      final selected = selectApkAsset(assets, ['arm64-v8a']);
+
+      expect(selected?.name, 'utang-tracker-arm64-v8a-v1.0.0.apk');
+    });
+
+    test('uses only the ABIs reported by the current device', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        supportedAbis: const ['x86_64'],
+        release: _releaseWithAssets([
+          asset('utang-tracker-arm64-v8a-v1.1.0.apk'),
+          asset('utang-tracker-x86_64-v1.1.0.apk'),
+        ]),
+      );
+
+      final result = await CheckForUpdates(repo)();
+
+      expect(result.asset?.name, 'utang-tracker-x86_64-v1.1.0.apk');
     });
   });
 
@@ -203,4 +230,120 @@ void main() {
       expect(isNewerVersion('1.99.99', '2.0.0'), isTrue);
     });
   });
+
+  test(
+    'failed release fetch does not throttle the next update check',
+    () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        fetchError: const AppException('No internet connection.'),
+      );
+
+      await expectLater(CheckForUpdates(repo)(), throwsA(isA<AppException>()));
+
+      expect(repo.savedCheckTime, isNull);
+    },
+  );
+
+  test('successful release fetch stores the last check time', () async {
+    final repo = _FakeUpdateRepository(currentVersion: '1.0.0');
+
+    await CheckForUpdates(repo)();
+
+    expect(repo.savedCheckTime, isNotNull);
+  });
+
+  test(
+    'invalid same-length cached APK is validated and downloaded again',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'utang-updater-test-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      const asset = ReleaseAsset(
+        name: 'utang-tracker-universal-v1.1.0.apk',
+        browserDownloadUrl: 'https://example.com/update.apk',
+        sizeBytes: 8,
+      );
+      final cached = File('${directory.path}/${asset.name}');
+      await cached.writeAsBytes(List<int>.filled(asset.sizeBytes, 0));
+      var requests = 0;
+      final validApk = <int>[0x50, 0x4b, 0x03, 0x04, 1, 2, 3, 4];
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((request) async {
+          requests++;
+          return http.Response.bytes(validApk, 200);
+        }),
+        updateDirectory: () async => directory,
+      );
+
+      final path = await repository.downloadApk(asset, (_) {});
+
+      expect(requests, 1);
+      expect(await File(path).readAsBytes(), validApk);
+    },
+  );
+}
+
+AppRelease _releaseWithAssets(List<ReleaseAsset> assets) => AppRelease(
+  tagName: 'v1.1.0',
+  version: '1.1.0',
+  releaseNotes: '',
+  publishedAt: DateTime(2026),
+  isDraft: false,
+  isPrerelease: false,
+  assets: assets,
+);
+
+class _FakeUpdateRepository implements UpdateRepository {
+  _FakeUpdateRepository({
+    required this.currentVersion,
+    this.supportedAbis = const ['arm64-v8a'],
+    this.release,
+    this.fetchError,
+  });
+
+  final String currentVersion;
+  final List<String> supportedAbis;
+  final AppRelease? release;
+  final AppException? fetchError;
+  DateTime? savedCheckTime;
+
+  @override
+  Future<AppRelease?> fetchLatestRelease() async {
+    if (fetchError case final error?) throw error;
+    return release;
+  }
+
+  @override
+  Future<String> getCurrentVersion() async => currentVersion;
+
+  @override
+  Future<List<String>> getSupportedAbis() async => supportedAbis;
+
+  @override
+  Future<void> saveLastCheckTime(DateTime time) async {
+    savedCheckTime = time;
+  }
+
+  @override
+  Future<DateTime?> loadLastCheckTime() async => savedCheckTime;
+
+  @override
+  Future<String?> loadDismissedVersion() async => null;
+
+  @override
+  Future<void> saveDismissedVersion(String version) async {}
+
+  @override
+  Future<void> cleanupOldApks() async {}
+
+  @override
+  Future<String> downloadApk(
+    ReleaseAsset asset,
+    void Function(double progress) onProgress,
+  ) async => throw UnimplementedError();
+
+  @override
+  Future<String> loadReleaseNotes() async => '{}';
 }

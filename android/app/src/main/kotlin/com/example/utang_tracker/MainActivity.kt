@@ -22,6 +22,10 @@ class MainActivity : FlutterActivity() {
             channel,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "getSupportedAbis" -> {
+                    result.success(Build.SUPPORTED_ABIS.toList())
+                }
+
                 "canInstallUnknownApps" -> {
                     val can = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         packageManager.canRequestPackageInstalls()

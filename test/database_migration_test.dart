@@ -7,6 +7,7 @@ void main() {
   test('schema 3 debt items migrate to piece units and final prices', () async {
     final executor = NativeDatabase.memory(
       setup: (database) {
+        _createIndexedTables(database);
         database.execute('''
 CREATE TABLE debt_items (
   id TEXT NOT NULL PRIMARY KEY,
@@ -39,6 +40,7 @@ INSERT INTO debt_items (
   test('schema 4 custom units and subtotals migrate without changes', () async {
     final executor = NativeDatabase.memory(
       setup: (database) {
+        _createIndexedTables(database);
         database.execute('''
 CREATE TABLE debt_items (
   id TEXT NOT NULL PRIMARY KEY,
@@ -66,5 +68,40 @@ INSERT INTO debt_items (
 
     expect(item.unit, DebtItemUnits.kilogram);
     expect(item.price, 10000);
+
+    final indexes = await database
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'",
+        )
+        .get();
+    expect(
+      indexes.map((row) => row.read<String>('name')),
+      containsAll([
+        'idx_debts_customer_id',
+        'idx_debts_status',
+        'idx_debts_transaction_date',
+        'idx_debt_items_debt_id',
+        'idx_payments_debt_id',
+        'idx_payments_payment_date',
+      ]),
+    );
   });
+}
+
+void _createIndexedTables(dynamic database) {
+  database.execute('''
+CREATE TABLE debts (
+  id TEXT NOT NULL PRIMARY KEY,
+  customer_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  transaction_date INTEGER NOT NULL
+);
+''');
+  database.execute('''
+CREATE TABLE payments (
+  id TEXT NOT NULL PRIMARY KEY,
+  debt_id TEXT NOT NULL,
+  payment_date INTEGER NOT NULL
+);
+''');
 }

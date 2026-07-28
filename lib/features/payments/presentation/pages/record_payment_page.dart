@@ -73,6 +73,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   }
 
   Future<void> _confirmBack() async {
+    if (_saving) return;
     final confirmed = await showConfirmationDialog(
       context: context,
       title: 'Discard changes?',
@@ -200,8 +201,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       AppSnackBar.success(context, 'Bayad recorded');
       context.pop();
     } on AppException catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.message);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -227,7 +230,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     final selected = _selectedDebt;
 
     return PopScope(
-      canPop: !_isDirty,
+      canPop: !_isDirty && !_saving,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _confirmBack();
       },

@@ -22,7 +22,6 @@ class DebtRepositoryImpl implements DebtRepository {
   final DateTime Function() _now;
 
   Expression<bool> get _activeDebt => _db.debts.deletedAt.isNull();
-  Expression<bool> get _activeCustomer => _db.customers.deletedAt.isNull();
 
   @override
   Future<List<Debt>> getAll({DebtStatus? status}) async {
@@ -31,7 +30,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_activeDebt & _activeCustomer);
+    ])..where(_activeDebt);
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }
@@ -54,11 +53,7 @@ class DebtRepositoryImpl implements DebtRepository {
               _db.customers.id.equalsExp(_db.debts.customerId),
             ),
           ])
-          ..where(
-            _db.debts.customerId.equals(customerId) &
-                _activeDebt &
-                _activeCustomer,
-          )
+          ..where(_db.debts.customerId.equals(customerId) & _activeDebt)
           ..orderBy([OrderingTerm.desc(_db.debts.transactionDate)]);
 
     final rows = await query.get();
@@ -76,7 +71,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_db.debts.id.equals(id) & _activeDebt & _activeCustomer);
+    ])..where(_db.debts.id.equals(id) & _activeDebt);
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -100,7 +95,7 @@ class DebtRepositoryImpl implements DebtRepository {
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_activeDebt & _activeCustomer);
+    ])..where(_activeDebt);
     if (status != null) {
       query.where(_db.debts.status.equals(status.value));
     }

@@ -16,10 +16,12 @@ const _keyLastCheck = 'updater_last_check_ms';
 const _keyDismissedVersion = 'updater_dismissed_version';
 
 class UpdateRepositoryImpl implements UpdateRepository {
-  UpdateRepositoryImpl({http.Client? httpClient})
-      : _client = httpClient ?? http.Client();
+  UpdateRepositoryImpl({http.Client? httpClient, this.updateDirectory})
+    : _client = httpClient ?? http.Client();
 
   final http.Client _client;
+  final Future<Directory> Function()? updateDirectory;
+  static const _channel = MethodChannel(AppConstants.updaterChannel);
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
@@ -64,8 +66,13 @@ class UpdateRepositoryImpl implements UpdateRepository {
     final file = File('${dir.path}/${asset.name}');
 
     if (await file.exists() && await file.length() == asset.sizeBytes) {
-      onProgress(1.0);
-      return file.path;
+      try {
+        await _validateApk(file);
+        onProgress(1.0);
+        return file.path;
+      } on AppException {
+        // Invalid cached files are deleted by _validateApk and downloaded again.
+      }
     }
 
     final uri = Uri.parse(asset.browserDownloadUrl);
@@ -143,8 +150,13 @@ class UpdateRepositoryImpl implements UpdateRepository {
   }
 
   Future<Directory> _updateDir() async {
+    final injected = updateDirectory;
+    if (injected != null) return injected();
     final base = await getExternalStorageDirectory();
-    final dir = Directory('${base!.path}/utang_tracker_updates');
+    if (base == null) {
+      throw const AppException('Update storage is unavailable.');
+    }
+    final dir = Directory('${base.path}/utang_tracker_updates');
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
   }
@@ -160,7 +172,9 @@ class UpdateRepositoryImpl implements UpdateRepository {
         bytes[2] != 0x03 ||
         bytes[3] != 0x04) {
       await file.delete();
-      throw const AppException('Downloaded file is not a valid APK (bad magic bytes).');
+      throw const AppException(
+        'Downloaded file is not a valid APK (bad magic bytes).',
+      );
     }
   }
 
@@ -168,6 +182,18 @@ class UpdateRepositoryImpl implements UpdateRepository {
   Future<String> getCurrentVersion() async {
     final info = await PackageInfo.fromPlatform();
     return info.version;
+  }
+
+  @override
+  Future<List<String>> getSupportedAbis() async {
+    try {
+      return await _channel.invokeListMethod<String>('getSupportedAbis') ??
+          const [];
+    } on PlatformException catch (e) {
+      throw AppException(
+        e.message ?? 'Could not determine device compatibility.',
+      );
+    }
   }
 
   @override
@@ -179,5 +205,3 @@ class UpdateRepositoryImpl implements UpdateRepository {
     }
   }
 }
-
-

@@ -190,6 +190,34 @@ void main() {
     );
   });
 
+  test('paid history remains visible after customer deletion', () async {
+    final customer = await customers.create(name: 'Archived customer');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime.now(),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(10),
+        ),
+      ],
+    );
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(10),
+      paymentDate: DateTime.now(),
+      paymentMethod: 'Cash',
+    );
+
+    await customers.delete(customer.id);
+
+    expect(await customers.getById(customer.id), isNull);
+    expect(await debts.getById(debt.id), isNotNull);
+    expect(await payments.getByDebt(debt.id), hasLength(1));
+    expect(await payments.getAll(), hasLength(1));
+  });
+
   test('cannot delete customer with debts', () async {
     final customer = await customers.create(name: 'Ana');
     await debts.create(

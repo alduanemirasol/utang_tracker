@@ -105,6 +105,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _confirmBack() async {
+    if (_saving) return;
     final confirmed = await showConfirmationDialog(
       context: context,
       title: 'Discard changes?',
@@ -311,8 +312,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       );
       context.pop();
     } on AppException catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.message);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -430,7 +433,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   Widget _buildForm() {
     return PopScope(
-      canPop: !_isDirty,
+      canPop: !_isDirty && !_saving,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _confirmBack();
       },

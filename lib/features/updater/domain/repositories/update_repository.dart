@@ -24,6 +24,9 @@ abstract interface class UpdateRepository {
   /// Returns the currently installed app version string.
   Future<String> getCurrentVersion();
 
+  /// Returns the device ABIs in Android preference order.
+  Future<List<String>> getSupportedAbis();
+
   /// Loads release notes JSON from bundled assets.
   Future<String> loadReleaseNotes();
 }

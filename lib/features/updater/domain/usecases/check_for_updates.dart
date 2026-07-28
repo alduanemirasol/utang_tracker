@@ -9,10 +9,9 @@ class CheckForUpdates {
   final UpdateRepository _repo;
 
   Future<CheckResult> call({bool silent = false}) async {
-    await _repo.saveLastCheckTime(DateTime.now());
-
     final currentVersion = await _repo.getCurrentVersion();
     final release = await _repo.fetchLatestRelease();
+    await _repo.saveLastCheckTime(DateTime.now());
 
     if (release == null || !isNewerVersion(currentVersion, release.version)) {
       return const CheckResult(updateAvailable: false);
@@ -23,7 +22,8 @@ class CheckForUpdates {
       return const CheckResult(updateAvailable: false);
     }
 
-    final asset = selectApkAsset(release.assets, AppConstants.supportedAbis);
+    final deviceAbis = await _repo.getSupportedAbis();
+    final asset = selectApkAsset(release.assets, deviceAbis);
     if (asset == null) {
       return CheckResult(
         updateAvailable: false,
@@ -64,17 +64,28 @@ ReleaseAsset? selectApkAsset(
   String universalAbi = AppConstants.universalAbiName,
 }) {
   for (final abi in abis) {
-    final match = assets.where((a) => a.name.startsWith('$prefix-$abi-')).firstOrNull;
+    final match = assets
+        .where(
+          (a) =>
+              a.name.startsWith('$prefix-$abi-') &&
+              a.name.toLowerCase().endsWith('.apk'),
+        )
+        .firstOrNull;
     if (match != null) return match;
   }
   return assets
-      .where((a) => a.name.startsWith('$prefix-$universalAbi-'))
+      .where(
+        (a) =>
+            a.name.startsWith('$prefix-$universalAbi-') &&
+            a.name.toLowerCase().endsWith('.apk'),
+      )
       .firstOrNull;
 }
 
 /// True when [latestVersion] > [currentVersion]; pads missing segments.
 bool isNewerVersion(String currentVersion, String latestVersion) {
-  return Version.parse(_pad(latestVersion)) > Version.parse(_pad(currentVersion));
+  return Version.parse(_pad(latestVersion)) >
+      Version.parse(_pad(currentVersion));
 }
 
 String _pad(String v) {

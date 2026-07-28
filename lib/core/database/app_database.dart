@@ -91,6 +91,7 @@ FROM debt_items;
           'CREATE INDEX IF NOT EXISTS idx_debt_items_debt_id ON debt_items (debt_id)',
         );
       }
+      await _createIndexes();
     },
   );
 
