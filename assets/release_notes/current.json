@@ -1,15 +1,9 @@
 {
-  "version": "1.0.25",
+  "version": "1.0.26",
   "notes": [
-    "Backup & Restore: export verified SQLite backups and safely restore them with automatic rollback",
-    "New Settings screen accessible from the bottom nav bar",
-    "Backup and About pages moved to Settings for a cleaner Home screen",
-    "Snackbar colors now use semantic green for success and red for errors with white text",
-    "Fixed update downloads choosing the wrong APK for some phones",
-    "Fixed update retry behavior after failed checks",
-    "Improved validation of downloaded update files",
-    "Kept paid debt and payment history visible after deleting a customer",
-    "Fixed save-screen crashes when leaving during debt or payment saves",
-    "Improved database upgrade reliability"
+    "Simplified the Backup & Restore page so backup actions are easier to scan",
+    "Clarified restore messaging: restoring replaces current data and creates a rollback backup first",
+    "Improved the Settings menu subtitle for Backup & Restore",
+    "Aligned the Settings menu spacing for a cleaner layout under the app bar"
   ]
 }
