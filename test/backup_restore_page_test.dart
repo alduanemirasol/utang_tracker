@@ -15,9 +15,14 @@ void main() {
     expect(find.text('Backup & Restore'), findsOneWidget);
     expect(find.text('Save backup'), findsOneWidget);
     expect(find.text('Choose backup to restore'), findsOneWidget);
-    expect(find.textContaining('Restore replaces data'), findsOneWidget);
-    expect(find.textContaining('does not merge or duplicate'), findsOneWidget);
-    expect(find.textContaining('rollback backup'), findsWidgets);
+    expect(
+      find.text(
+        'Restore replaces current data. A rollback backup is created first.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('complete local copies'), findsNothing);
+    expect(find.textContaining('does not merge or duplicate'), findsNothing);
   });
 
   testWidgets('success snackbar uses green background and white text', (

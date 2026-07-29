@@ -110,19 +110,6 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         children: [
-          Text(
-            'Protect your ledger',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Backups are complete local copies of your Utang Tracker database. They include active and deleted records exactly as stored.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,8 +117,6 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                 const _ActionHeader(
                   icon: Icons.cloud_download_outlined,
                   title: 'Create a backup',
-                  description:
-                      'Save a verified SQLite backup to a location you choose.',
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
@@ -151,8 +136,6 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                 const _ActionHeader(
                   icon: Icons.restore_rounded,
                   title: 'Restore a backup',
-                  description:
-                      'Validate and replace this device’s current ledger. Older supported backups are migrated automatically.',
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Container(
@@ -171,7 +154,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
-                          'Restore replaces data. It does not merge or duplicate records. A private rollback backup is created first.',
+                          'Restore replaces current data. A rollback backup is created first.',
                         ),
                       ),
                     ],
@@ -195,15 +178,10 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
 }
 
 class _ActionHeader extends StatelessWidget {
-  const _ActionHeader({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
+  const _ActionHeader({required this.icon, required this.title});
 
   final IconData icon;
   final String title;
-  final String description;
 
   @override
   Widget build(BuildContext context) {
@@ -217,14 +195,6 @@ class _ActionHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.45,
-                ),
-              ),
             ],
           ),
         ),
