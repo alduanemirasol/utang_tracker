@@ -20,7 +20,7 @@ class SettingsPage extends StatelessWidget {
           _MenuItem(
             icon: Icons.backup_outlined,
             title: 'Backup & Restore',
-            subtitle: 'Export or replace your ledger data',
+            subtitle: 'Export or restore your data',
             onTap: () => context.push('/backup-restore'),
           ),
           const SizedBox(height: AppSpacing.sm),

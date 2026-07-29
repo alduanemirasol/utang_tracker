@@ -14,7 +14,7 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Backup & Restore'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
-    expect(find.text('Export or replace your ledger data'), findsOneWidget);
+    expect(find.text('Export or restore your data'), findsOneWidget);
     expect(find.text('App version and updates'), findsOneWidget);
 
     final listView = tester.widget<ListView>(find.byType(ListView));
