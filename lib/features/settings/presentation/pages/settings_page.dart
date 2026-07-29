@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
   @override
@@ -9,7 +10,12 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding,
+          0,
+          AppSpacing.pagePadding,
+          AppSpacing.xxl,
+        ),
         children: [
           _MenuItem(
             icon: Icons.backup_outlined,
@@ -29,6 +35,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
+
 class _MenuItem extends StatelessWidget {
   const _MenuItem({
     required this.icon,
