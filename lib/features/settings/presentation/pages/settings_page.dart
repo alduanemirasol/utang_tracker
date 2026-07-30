@@ -76,6 +76,7 @@ class _MenuItem extends StatelessWidget {
                       subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

@@ -350,6 +350,7 @@ class _PaymentHistoryList extends StatelessWidget {
                     payment.paymentMethod,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
