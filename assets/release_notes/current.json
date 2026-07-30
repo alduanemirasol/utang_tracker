@@ -1,9 +1,6 @@
 {
-  "version": "1.0.26",
+  "version": "1.0.27",
   "notes": [
-    "Simplified the Backup & Restore page so backup actions are easier to scan",
-    "Clarified restore messaging: restoring replaces current data and creates a rollback backup first",
-    "Improved the Settings menu subtitle for Backup & Restore",
-    "Aligned the Settings menu spacing for a cleaner layout under the app bar"
+    "Increased payment method labels to medium weight for better readability"
   ]
 }
