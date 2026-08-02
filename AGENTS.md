@@ -1,0 +1,31 @@
+# AGENTS.md
+
+## Repo facts
+
+- Android-only Flutter app (no ios/web/desktop): sari-sari store utang/bayad ledger. UI strings are hardcoded Taglish/Cebuano — no i18n, intentional.
+- No README. `rules/database_rules.md` is the authoritative data spec (schema v5, business rules, migration history). Keep it in sync with any schema/repo change.
+
+## Commands
+
+- `flutter pub get` (no root pub; Flutter app)
+- After editing drift tables: `dart run build_runner build --delete-conflicting-outputs` — `lib/core/database/app_database.g.dart` is generated AND committed
+- Verify before committing: `flutter analyze` then `flutter test` (matches CI order)
+- Single test: `flutter test test/<file>.dart`
+- Release: bump version in BOTH `pubspec.yaml` and `assets/release_notes/current.json`, then tag `v<version>`. CI fails if tag ≠ pubspec version ≠ notes version.
+
+## Data rules (enforced in repository impls, not SQL)
+
+- Money = integer centavos (`Money` in `lib/core/domain/money.dart`) — never doubles
+- `debt_items.price` is the final custom line amount; quantity does NOT multiply price
+- Soft delete everywhere (`deleted_at IS NULL` = active); no cascades; debt/payment deletion intentionally not exposed
+- Debt status derived: UNPAID → PARTIAL → PAID; debt editable only while `paid_amount == 0`
+- Dates: user-selected local day + save-time clock, stored UTC
+
+## Architecture
+
+- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` / `refreshAfterDatabaseRestore(ref)` from `lib/app/coordination.dart` — NOT Drift reactive streams. Register new list/detail providers there.
+- DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
+- Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
+- Android method channels (updater, SAF backup) live in `android/.../MainActivity.kt`; backup uses deprecated `onActivityResult`
+- `android/key.properties` + keystores are gitignored; CI signs from GH secrets
+- `.ignore` (not `.gitignore`) excludes generated `*.g.dart` from search tools
