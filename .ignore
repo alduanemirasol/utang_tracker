@@ -1,0 +1,18 @@
+# Generated / build output
+.dart_tool/
+build/
+coverage/
+android/.gradle/
+android/.kotlin/
+.gradle/
+.kotlin/
+
+# Generated code (committed, but noise in searches)
+**/*.g.dart
+**/*.freezed.dart
+**/*.mocks.dart
+
+# IDE / misc
+.idea/
+*.iml
+*.log
