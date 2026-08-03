@@ -1,7 +1,7 @@
 {
-  "version": "1.0.31",
+  "version": "1.0.32",
   "notes": [
-    "All debt detail labels now use medium weight for a cleaner hierarchy",
-    "Overall improvements to the debt details screen"
+    "Update installation now continues automatically after allowing unknown-app installs",
+    "Downloaded updates are kept ready, so you no longer need to download them again after granting permission"
   ]
 }
