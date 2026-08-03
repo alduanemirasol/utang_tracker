@@ -340,7 +340,7 @@ class _DebtItemRow extends StatelessWidget {
                   quantityAndUnit,
                   key: ValueKey('debt-item-meta-${item.id}'),
                   style: textTheme.labelMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
