@@ -212,6 +212,7 @@ class DebtDetailPage extends ConsumerWidget {
               k,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -245,6 +246,7 @@ class DebtDetailPage extends ConsumerWidget {
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -352,6 +354,7 @@ class _DebtItemRow extends StatelessWidget {
                   key: ValueKey('debt-item-meta-${item.id}'),
                   style: textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
