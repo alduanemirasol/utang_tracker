@@ -13,7 +13,14 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(db)],
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          updateRepositoryProvider.overrideWith(
+            (_) => throw StateError(
+              'The update repository must not be read during app startup.',
+            ),
+          ),
+        ],
         child: const UtangTrackerApp(),
       ),
     );

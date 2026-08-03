@@ -1,7 +1,7 @@
 {
-  "version": "1.0.32",
+  "version": "1.0.33",
   "notes": [
-    "Update installation now continues automatically after allowing unknown-app installs",
-    "Downloaded updates are kept ready, so you no longer need to download them again after granting permission"
+    "Update checks now happen only when you tap Check for updates on the About page",
+    "App startup no longer performs automatic update checks or shows automatic update prompts"
   ]
 }

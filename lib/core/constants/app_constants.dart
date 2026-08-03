@@ -28,7 +28,5 @@ class AppConstants {
 
   static const String universalAbiName = 'universal';
 
-  static const Duration updateCheckThrottle = Duration(hours: 24);
-
   static const String updaterChannel = 'com.example.utang_tracker/updater';
 }
