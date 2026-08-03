@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
@@ -76,7 +77,7 @@ void main() {
     expect(transactionDate, findsOneWidget);
     expect(
       tester.widget<Text>(transactionDate).style?.fontWeight,
-      FontWeight.w500,
+      FontWeight.w600,
     );
     expect(find.text('Items (3)'), findsOneWidget);
     expect(find.byKey(const Key('debt-note-label')), findsNothing);
@@ -114,10 +115,10 @@ void main() {
     final softdrinksSubtotal = tester.widget<MoneyText>(softdrinksAmount);
     final itemsTotal = tester.widget<MoneyText>(totalAmount);
 
-    expect(softdrinksMeta.style?.color, textTheme.bodySmall!.color);
+    expect(softdrinksMeta.style?.color, AppColors.textSecondary);
     expect(softdrinksName.style?.fontSize, textTheme.bodyMedium!.fontSize);
     expect(softdrinksMeta.style?.fontSize, textTheme.bodySmall!.fontSize);
-    expect(softdrinksMeta.style?.fontWeight, FontWeight.w500);
+    expect(softdrinksMeta.style?.fontWeight, FontWeight.w400);
     expect(softdrinksSubtotal.style?.fontSize, textTheme.bodyLarge!.fontSize);
     expect(itemsTotal.style, isNull);
     expect(find.text(softdrinks.price.format()), findsOneWidget);
