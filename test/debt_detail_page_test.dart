@@ -115,9 +115,9 @@ void main() {
     final softdrinksSubtotal = tester.widget<MoneyText>(softdrinksAmount);
     final itemsTotal = tester.widget<MoneyText>(totalAmount);
 
-    expect(softdrinksMeta.style?.color, AppColors.textSecondary);
+    expect(softdrinksMeta.style?.color, AppColors.textPrimary);
     expect(softdrinksName.style?.fontSize, textTheme.bodyMedium!.fontSize);
-    expect(softdrinksMeta.style?.fontSize, textTheme.bodySmall!.fontSize);
+    expect(softdrinksMeta.style?.fontSize, textTheme.labelMedium!.fontSize);
     expect(softdrinksSubtotal.style?.fontSize, textTheme.bodyLarge!.fontSize);
     expect(itemsTotal.style, isNull);
     expect(find.text(softdrinks.price.format()), findsOneWidget);

@@ -59,5 +59,6 @@ void main() {
     await tester.pump();
     expect(tester.widget<TextField>(amountInput).decoration?.errorText, isNull);
     expect(tester.takeException(), isNull);
+    expect(find.text('Save ₱100.00'), findsOneWidget);
   });
 }

@@ -208,12 +208,7 @@ class DebtDetailPage extends ConsumerWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(
-              k,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-            ),
+            child: Text(k, style: Theme.of(context).textTheme.labelMedium),
           ),
           Expanded(
             child: Text(
@@ -240,12 +235,7 @@ class DebtDetailPage extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: emphasize ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
+            child: Text(label, style: Theme.of(context).textTheme.labelMedium),
           ),
           MoneyText(
             money,
@@ -349,7 +339,7 @@ class _DebtItemRow extends StatelessWidget {
                 Text(
                   quantityAndUnit,
                   key: ValueKey('debt-item-meta-${item.id}'),
-                  style: textTheme.bodySmall?.copyWith(
+                  style: textTheme.labelMedium?.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),

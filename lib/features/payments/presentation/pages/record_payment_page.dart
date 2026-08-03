@@ -218,6 +218,16 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     return '$name - ${debt.balance.format()}';
   }
 
+  String get _saveLabel {
+    if (!_confirmed) return 'Save';
+    try {
+      final amt = Money.fromPesoString(_amountController.text);
+      return amt.isPositive ? 'Save ${amt.format()}' : 'Save';
+    } catch (_) {
+      return 'Save';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_resolvingInitial && _selectedDebt == null) {
@@ -322,7 +332,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const Text('Balance after payment'),
+                  Text(
+                    'Balance after payment',
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
                   const Spacer(),
                   Builder(
                     builder: (context) {
@@ -362,10 +375,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                     onTap: () => setState(() => _confirmed = !_confirmed),
                     child: Text(
                       'I confirm the payment details are correct',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0,
-                      ),
+                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ),
                 ),
@@ -373,7 +383,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'Save',
+              label: _saveLabel,
               onPressed: _confirmed ? _save : null,
               isLoading: _saving,
             ),
