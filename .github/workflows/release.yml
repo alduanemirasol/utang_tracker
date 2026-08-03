@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   APP_NAME: utang-tracker
   RELEASE_DIR: release-assets
@@ -117,6 +121,7 @@ jobs:
             release-assets/*.apk
             RELEASE_NOTES.md
           if-no-files-found: error
+          retention-days: 7
 
   release:
     name: Create GitHub release
@@ -130,9 +135,10 @@ jobs:
           name: android-release
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: release-assets/*.apk
           body_path: RELEASE_NOTES.md
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
