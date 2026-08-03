@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
-import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
@@ -115,9 +114,10 @@ void main() {
     final softdrinksSubtotal = tester.widget<MoneyText>(softdrinksAmount);
     final itemsTotal = tester.widget<MoneyText>(totalAmount);
 
-    expect(softdrinksMeta.style?.color, AppColors.textPrimary);
+    expect(softdrinksMeta.style?.color, textTheme.bodySmall!.color);
     expect(softdrinksName.style?.fontSize, textTheme.bodyMedium!.fontSize);
-    expect(softdrinksMeta.style?.fontSize, textTheme.labelMedium!.fontSize);
+    expect(softdrinksMeta.style?.fontSize, textTheme.bodySmall!.fontSize);
+    expect(softdrinksMeta.style?.fontWeight, FontWeight.w500);
     expect(softdrinksSubtotal.style?.fontSize, textTheme.bodyLarge!.fontSize);
     expect(itemsTotal.style, isNull);
     expect(find.text(softdrinks.price.format()), findsOneWidget);
