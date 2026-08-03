@@ -51,19 +51,19 @@ class AppTheme {
           bodyLarge: const TextStyle(
             fontSize: 16,
             height: 1.45,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
             color: AppColors.textPrimary,
           ),
           bodyMedium: const TextStyle(
             fontSize: 14,
             height: 1.45,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
             color: AppColors.textPrimary,
           ),
           bodySmall: const TextStyle(
             fontSize: 12,
             height: 1.4,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
             color: AppColors.textPrimary,
           ),
           headlineMedium: const TextStyle(

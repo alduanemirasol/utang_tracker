@@ -23,6 +23,14 @@ void main() {
     expect(textTheme.labelLarge?.fontSize, 14);
     expect(textTheme.labelMedium?.fontSize, 13);
     expect(textTheme.labelSmall?.fontSize, 11);
+
+    for (final style in [
+      textTheme.bodyLarge,
+      textTheme.bodyMedium,
+      textTheme.bodySmall,
+    ]) {
+      expect(style?.fontWeight, FontWeight.w500);
+    }
   });
 
   test('every shared text role uses Poppins', () {

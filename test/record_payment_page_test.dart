@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
+import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
 
@@ -21,6 +22,17 @@ void main() {
       ),
     );
 
+    final confirmRow = find.byKey(const Key('confirm-payment-row'));
+    final notesField = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Notes',
+    );
+    await tester.ensureVisible(confirmRow);
+    await tester.pump();
+    expect(
+      tester.getTopLeft(confirmRow).dy - tester.getBottomLeft(notesField).dy,
+      AppSpacing.lg,
+    );
+
     final confirmCheckbox = find.byType(Checkbox);
     expect(confirmCheckbox, findsOneWidget);
     await tester.tap(confirmCheckbox);
@@ -34,10 +46,12 @@ void main() {
     expect(find.text('Select utang'), findsAtLeastNWidgets(1));
     expect(find.text('Amount is required.'), findsOneWidget);
 
-    final debtDecorator = find.ancestor(
-      of: find.text('Select utang'),
-      matching: find.byType(InputDecorator),
-    ).first;
+    final debtDecorator = find
+        .ancestor(
+          of: find.text('Select utang'),
+          matching: find.byType(InputDecorator),
+        )
+        .first;
     expect(
       tester.widget<InputDecorator>(debtDecorator).decoration.errorText,
       'Select utang',

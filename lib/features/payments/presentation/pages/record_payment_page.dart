@@ -272,7 +272,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               controller: _amountController,
               focusNode: _amountFocusNode,
               label: 'Amount *',
-              hint: 'e.g. 100.00',
+              hint: '100.00',
               errorText: _amountError,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
@@ -364,7 +364,9 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                 ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
               ),
             ],
+            const SizedBox(height: AppSpacing.lg),
             Row(
+              key: const Key('confirm-payment-row'),
               children: [
                 Checkbox(
                   value: _confirmed,

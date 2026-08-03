@@ -94,7 +94,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _resolveCustomerName(String id) async {
-    final customer = await GetCustomerById(ref.read(customerRepositoryProvider))(id);
+    final customer = await GetCustomerById(
+      ref.read(customerRepositoryProvider),
+    )(id);
     if (!mounted || customer == null) return;
     if (_customerId != id) return;
     setState(() => _customerName = customer.name);
@@ -441,266 +443,268 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         appBar: AppBar(
           title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
         ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.pagePadding),
-        children: [
-          AppTextField.buildLabel(context, 'Customer *'),
-          const SizedBox(height: AppSpacing.sm),
-          _CustomerField(
-            key: _customerFieldKey,
-            name: _customerName,
-            enabled: !widget.isEditing,
-            onTap: _pickCustomer,
-            errorText: _customerError,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _DateField(
-            label: 'Date',
-            required: true,
-            value: context.smartDate(_transactionDate),
-            onTap: () => _pickDate(due: false),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _DateField(
-            label: 'Due date',
-            value: _dueDate == null ? 'Optional' : context.smartDate(_dueDate!),
-            onTap: () => _pickDate(due: true),
-            onClear: _dueDate == null
-                ? null
-                : () {
+        body: ListView(
+          padding: const EdgeInsets.all(AppSpacing.pagePadding),
+          children: [
+            AppTextField.buildLabel(context, 'Customer *'),
+            const SizedBox(height: AppSpacing.sm),
+            _CustomerField(
+              key: _customerFieldKey,
+              name: _customerName,
+              enabled: !widget.isEditing,
+              onTap: _pickCustomer,
+              errorText: _customerError,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _DateField(
+              label: 'Date',
+              required: true,
+              value: context.smartDate(_transactionDate),
+              onTap: () => _pickDate(due: false),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _DateField(
+              label: 'Due date',
+              value: _dueDate == null
+                  ? 'Optional'
+                  : context.smartDate(_dueDate!),
+              onTap: () => _pickDate(due: true),
+              onClear: _dueDate == null
+                  ? null
+                  : () {
                       setState(() => _dueDate = null);
                       _markDirty();
                     },
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Row(
-            children: [
-              AppTextField.buildLabel(
-                context,
-                'Items *',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _addItem,
-                icon: const Icon(Icons.add),
-                label: const Text('Add item'),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ...List.generate(_items.length, (index) {
-            final item = _items[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: AppCard(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            button: true,
-                            label: item.isExpanded
-                                ? 'Collapse item ${index + 1}'
-                                : 'Expand item ${index + 1}',
-                            child: InkWell(
-                              onTap: () => setState(
-                                () => item.isExpanded = !item.isExpanded,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: AppSpacing.sm,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Item ${index + 1}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                          if (!item.isExpanded)
-                                            Text(
-                                              _collapsedItemSummary(item),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                  ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    Icon(
-                                      item.isExpanded
-                                          ? Icons.keyboard_arrow_up_rounded
-                                          : Icons.keyboard_arrow_down_rounded,
-                                      color: AppColors.textMuted,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (_items.length > 1)
-                          IconButton(
-                            tooltip: 'Remove item',
-                            onPressed: () {
-                              setState(() {
-                                item.dispose();
-                                _items.removeAt(index);
-                              });
-                              _markDirty();
-                            },
-                            icon: const Icon(Icons.close, size: 20),
-                          ),
-                      ],
-                    ),
-                    if (item.isExpanded) ...[
-                      const Divider(height: AppSpacing.lg),
-                      AppTextField(
-                        controller: item.product,
-                        focusNode: item.productFocusNode,
-                        label: 'Product *',
-                        hint: 'e.g. Bugas',
-                        errorText: item.productError,
-                        onChanged: (_) {
-                          _markDirty();
-                          setState(() => item.productError = null);
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppTextField(
-                              controller: item.quantity,
-                              focusNode: item.quantityFocusNode,
-                              label: 'Quantity *',
-                              hint: 'e.g. 2',
-                              errorText: item.quantityError,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[\d.]'),
-                                ),
-                              ],
-                              onChanged: (_) {
-                                _markDirty();
-                                setState(() => item.quantityError = null);
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: _UnitField(
-                              unit: item.unit,
-                              onTap: () => _pickUnit(item),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      AppTextField(
-                        controller: item.price,
-                        focusNode: item.priceFocusNode,
-                        label: 'Price *',
-                        hint: 'e.g. 50.00',
-                        errorText: item.priceError,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                        ],
-                        onChanged: (_) {
-                          _markDirty();
-                          setState(() => item.priceError = null);
-                        },
-                      ),
-                    ],
-                    const Divider(height: AppSpacing.xl),
-                    Row(
-                      key: ValueKey('debt-form-item-subtotal-row-$index'),
-                      children: [
-                        Text(
-                          'Subtotal',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.textSecondary),
-                        ),
-                        const Spacer(),
-                        MoneyText(
-                          _itemSubtotal(item),
-                          key: ValueKey(
-                            'debt-form-item-subtotal-amount-$index',
-                          ),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-          AppCard(
-            child: Row(
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Row(
               children: [
-                Text('Total', style: Theme.of(context).textTheme.titleMedium),
+                AppTextField.buildLabel(
+                  context,
+                  'Items *',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const Spacer(),
-                MoneyText(
-                  _total,
-                  style: Theme.of(context).textTheme.titleLarge,
+                TextButton.icon(
+                  onPressed: _addItem,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add item'),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          AppTextField(
-            controller: _notesController,
-            label: 'Notes',
-            hint: 'Optional',
-            minLines: 4,
-            maxLines: 6,
-            onChanged: (_) => _markDirty(),
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              _error!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+            const SizedBox(height: AppSpacing.sm),
+            ...List.generate(_items.length, (index) {
+              final item = _items[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: AppCard(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Semantics(
+                              button: true,
+                              label: item.isExpanded
+                                  ? 'Collapse item ${index + 1}'
+                                  : 'Expand item ${index + 1}',
+                              child: InkWell(
+                                onTap: () => setState(
+                                  () => item.isExpanded = !item.isExpanded,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.sm,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Item ${index + 1}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                            if (!item.isExpanded)
+                                              Text(
+                                                _collapsedItemSummary(item),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(
+                                        item.isExpanded
+                                            ? Icons.keyboard_arrow_up_rounded
+                                            : Icons.keyboard_arrow_down_rounded,
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_items.length > 1)
+                            IconButton(
+                              tooltip: 'Remove item',
+                              onPressed: () {
+                                setState(() {
+                                  item.dispose();
+                                  _items.removeAt(index);
+                                });
+                                _markDirty();
+                              },
+                              icon: const Icon(Icons.close, size: 20),
+                            ),
+                        ],
+                      ),
+                      if (item.isExpanded) ...[
+                        const Divider(height: AppSpacing.lg),
+                        AppTextField(
+                          controller: item.product,
+                          focusNode: item.productFocusNode,
+                          label: 'Product *',
+                          hint: 'Bugas',
+                          errorText: item.productError,
+                          onChanged: (_) {
+                            _markDirty();
+                            setState(() => item.productError = null);
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppTextField(
+                                controller: item.quantity,
+                                focusNode: item.quantityFocusNode,
+                                label: 'Quantity *',
+                                hint: '2',
+                                errorText: item.quantityError,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[\d.]'),
+                                  ),
+                                ],
+                                onChanged: (_) {
+                                  _markDirty();
+                                  setState(() => item.quantityError = null);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: _UnitField(
+                                unit: item.unit,
+                                onTap: () => _pickUnit(item),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        AppTextField(
+                          controller: item.price,
+                          focusNode: item.priceFocusNode,
+                          label: 'Price *',
+                          hint: '50.00',
+                          errorText: item.priceError,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                          ],
+                          onChanged: (_) {
+                            _markDirty();
+                            setState(() => item.priceError = null);
+                          },
+                        ),
+                      ],
+                      const Divider(height: AppSpacing.xl),
+                      Row(
+                        key: ValueKey('debt-form-item-subtotal-row-$index'),
+                        children: [
+                          Text(
+                            'Subtotal',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          const Spacer(),
+                          MoneyText(
+                            _itemSubtotal(item),
+                            key: ValueKey(
+                              'debt-form-item-subtotal-amount-$index',
+                            ),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            AppCard(
+              child: Row(
+                children: [
+                  Text('Total', style: Theme.of(context).textTheme.titleMedium),
+                  const Spacer(),
+                  MoneyText(
+                    _total,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            AppTextField(
+              controller: _notesController,
+              label: 'Notes',
+              hint: 'Optional',
+              minLines: 4,
+              maxLines: 6,
+              onChanged: (_) => _markDirty(),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _error!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: widget.isEditing ? 'Save changes' : 'Save',
+              onPressed: _save,
+              isLoading: _saving,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
           ],
-          const SizedBox(height: AppSpacing.xl),
-          AppButton(
-            label: widget.isEditing ? 'Save changes' : 'Save',
-            onPressed: _save,
-            isLoading: _saving,
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-        ],
+        ),
       ),
-    ),
     );
   }
 }
@@ -891,7 +895,7 @@ class _CustomUnitDialogState extends State<_CustomUnitDialog> {
       content: AppTextField(
         controller: _controller,
         label: 'Unit name *',
-        hint: 'e.g. sack',
+        hint: 'sack',
         errorText: _error,
         autofocus: true,
         textInputAction: TextInputAction.done,
