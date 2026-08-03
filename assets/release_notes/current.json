@@ -1,7 +1,7 @@
 {
-  "version": "1.0.33",
+  "version": "1.0.34",
   "notes": [
-    "Update checks now happen only when you tap Check for updates on the About page",
-    "App startup no longer performs automatic update checks or shows automatic update prompts"
+    "Body text now uses medium weight throughout the app for improved readability",
+    "Improved form hints and spacing around payment confirmation"
   ]
 }
