@@ -17,6 +17,7 @@ import 'package:utang_tracker/core/widgets/status_badge.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
+import 'package:utang_tracker/features/notifications/presentation/widgets/balance_reminder_sheet.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
 class CustomerDetailPage extends ConsumerWidget {
@@ -109,7 +110,15 @@ class CustomerDetailPage extends ConsumerWidget {
                       AppSpacing.lg,
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: _CustomerSummaryCard(data: data),
+                      child: _CustomerSummaryCard(
+                        data: data,
+                        onSendReminder: data.outstandingBalance.isPositive
+                            ? () => showBalanceReminderSheet(
+                                context: context,
+                                data: data,
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                   SliverPersistentHeader(
@@ -135,9 +144,10 @@ class CustomerDetailPage extends ConsumerWidget {
 }
 
 class _CustomerSummaryCard extends StatelessWidget {
-  const _CustomerSummaryCard({required this.data});
+  const _CustomerSummaryCard({required this.data, this.onSendReminder});
 
   final CustomerDetailData data;
+  final VoidCallback? onSendReminder;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +193,15 @@ class _CustomerSummaryCard extends StatelessWidget {
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
+          if (onSendReminder != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            OutlinedButton.icon(
+              key: const Key('send-balance-reminder'),
+              onPressed: onSendReminder,
+              icon: const Icon(Icons.notifications_active_outlined),
+              label: const Text('Send reminder'),
             ),
           ],
         ],

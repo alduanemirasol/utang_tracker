@@ -55,6 +55,12 @@ class DateFormatters {
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 
+  static String calendarDate(DateTime date, {String locale = 'en_US'}) {
+    return DateFormat.yMMMd(
+      Intl.canonicalizedLocale(locale),
+    ).format(date.toLocal());
+  }
+
   static bool isSameLocalDay(DateTime a, DateTime b) {
     final la = a.toLocal();
     final lb = b.toLocal();
