@@ -1,7 +1,7 @@
 {
-  "version": "1.0.30",
+  "version": "1.0.31",
   "notes": [
-    "Refined typography on debt details: summary labels are muted and the date value matches the amounts",
-    "Item quantity and unit now lighter than the product name"
+    "All debt detail labels now use medium weight for a cleaner hierarchy",
+    "Overall improvements to the debt details screen"
   ]
 }
