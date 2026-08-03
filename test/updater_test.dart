@@ -1,17 +1,24 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/updater/data/models/github_release_dto.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
+import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('isNewerVersion', () {
     test('patch bump is newer', () {
       expect(isNewerVersion('1.0.0', '1.0.1'), isTrue);
@@ -282,6 +289,142 @@ void main() {
       expect(await File(path).readAsBytes(), validApk);
     },
   );
+
+  group('install permission round trip', () {
+    const channel = MethodChannel(AppConstants.updaterChannel);
+    late ProviderContainer container;
+    late _FakeUpdateRepository repository;
+    late List<MethodCall> calls;
+    var canInstall = false;
+
+    setUp(() async {
+      canInstall = false;
+      repository = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+        downloadPath: '/updates/utang-tracker-v1.1.0.apk',
+      );
+      container = ProviderContainer(
+        overrides: [updateRepositoryProvider.overrideWithValue(repository)],
+      );
+      calls = [];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'canInstallUnknownApps') return canInstall;
+            return null;
+          });
+
+      final notifier = container.read(updateNotifierProvider.notifier);
+      await notifier.checkForUpdates();
+      await notifier.download();
+      await notifier.install();
+      expect(
+        container.read(updateNotifierProvider),
+        isA<UpdatePermissionRequired>(),
+      );
+      calls.clear();
+    });
+
+    tearDown(() async {
+      container.dispose();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+    });
+
+    test('granted permission installs the already-downloaded APK', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'openInstallSettings') {
+              canInstall = true;
+              return null;
+            }
+            if (call.method == 'canInstallUnknownApps') return canInstall;
+            return null;
+          });
+
+      await container
+          .read(updateNotifierProvider.notifier)
+          .openInstallSettings();
+
+      final installCall = calls.singleWhere(
+        (call) => call.method == 'installApk',
+      );
+      expect(installCall.arguments, {
+        'path': '/updates/utang-tracker-v1.1.0.apk',
+      });
+      expect(container.read(updateNotifierProvider), isA<UpdateIdle>());
+    });
+
+    test('denied permission retains the downloaded APK state', () async {
+      await container
+          .read(updateNotifierProvider.notifier)
+          .openInstallSettings();
+
+      expect(calls.where((call) => call.method == 'installApk'), isEmpty);
+      final state = container.read(updateNotifierProvider);
+      expect(state, isA<UpdatePermissionRequired>());
+      expect(
+        (state as UpdatePermissionRequired).apkPath,
+        '/updates/utang-tracker-v1.1.0.apk',
+      );
+    });
+
+    test('settings failure becomes an error without installing', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'openInstallSettings') {
+              throw PlatformException(
+                code: 'SETTINGS_FAILED',
+                message: 'No settings',
+              );
+            }
+            return false;
+          });
+
+      await container
+          .read(updateNotifierProvider.notifier)
+          .openInstallSettings();
+
+      expect(calls.where((call) => call.method == 'installApk'), isEmpty);
+      final state = container.read(updateNotifierProvider);
+      expect(state, isA<UpdateError>());
+      expect((state as UpdateError).message, 'No settings');
+    });
+
+    test('repeated taps do not open overlapping settings requests', () async {
+      final settingsReturned = Completer<void>();
+      var settingsCalls = 0;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'openInstallSettings') {
+              settingsCalls++;
+              await settingsReturned.future;
+              return null;
+            }
+            if (call.method == 'canInstallUnknownApps') return false;
+            return null;
+          });
+      final notifier = container.read(updateNotifierProvider.notifier);
+
+      final first = notifier.openInstallSettings();
+      await Future<void>.delayed(Duration.zero);
+      await notifier.openInstallSettings();
+
+      expect(settingsCalls, 1);
+      settingsReturned.complete();
+      await first;
+    });
+  });
 }
 
 AppRelease _releaseWithAssets(List<ReleaseAsset> assets) => AppRelease(
@@ -300,12 +443,14 @@ class _FakeUpdateRepository implements UpdateRepository {
     this.supportedAbis = const ['arm64-v8a'],
     this.release,
     this.fetchError,
+    this.downloadPath,
   });
 
   final String currentVersion;
   final List<String> supportedAbis;
   final AppRelease? release;
   final AppException? fetchError;
+  final String? downloadPath;
   DateTime? savedCheckTime;
 
   @override
@@ -341,7 +486,12 @@ class _FakeUpdateRepository implements UpdateRepository {
   Future<String> downloadApk(
     ReleaseAsset asset,
     void Function(double progress) onProgress,
-  ) async => throw UnimplementedError();
+  ) async {
+    final path = downloadPath;
+    if (path == null) throw UnimplementedError();
+    onProgress(1);
+    return path;
+  }
 
   @override
   Future<String> loadReleaseNotes() async => '{}';

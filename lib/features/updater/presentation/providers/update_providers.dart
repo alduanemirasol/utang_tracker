@@ -92,6 +92,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
   static const _channel = MethodChannel(AppConstants.updaterChannel);
 
   bool _busy = false;
+  bool _openingInstallSettings = false;
 
   @override
   UpdateState build() => const UpdateIdle();
@@ -174,7 +175,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
     if (apkPath == null) return;
 
     try {
-      final canInstall = await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
+      final canInstall =
+          await _channel.invokeMethod<bool>('canInstallUnknownApps') ?? false;
       if (!canInstall) {
         state = UpdatePermissionRequired(
           release: current is UpdateDownloaded
@@ -194,10 +196,15 @@ class UpdateNotifier extends Notifier<UpdateState> {
   }
 
   Future<void> openInstallSettings() async {
+    if (_openingInstallSettings || state is! UpdatePermissionRequired) return;
+    _openingInstallSettings = true;
     try {
       await _channel.invokeMethod<void>('openInstallSettings');
+      await install();
     } on PlatformException catch (e) {
       state = UpdateError(message: e.message ?? 'Could not open settings.');
+    } finally {
+      _openingInstallSettings = false;
     }
   }
 

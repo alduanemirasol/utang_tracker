@@ -16,8 +16,10 @@ class MainActivity : FlutterActivity() {
     private val backupChannel = "com.example.utang_tracker/backup_files"
     private val createBackupRequest = 8401
     private val pickBackupRequest = 8402
+    private val installSettingsRequest = 8403
     private var pendingBackupResult: MethodChannel.Result? = null
     private var pendingBackupSource: File? = null
+    private var pendingInstallSettingsResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -42,13 +44,21 @@ class MainActivity : FlutterActivity() {
 
                 "openInstallSettings" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (pendingInstallSettingsResult != null) {
+                            result.error("BUSY", "Install settings are already open", null)
+                            return@setMethodCallHandler
+                        }
                         val intent = Intent(
                             Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                             Uri.parse("package:$packageName"),
                         )
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
-                        result.success(null)
+                        pendingInstallSettingsResult = result
+                        try {
+                            startActivityForResult(intent, installSettingsRequest)
+                        } catch (error: Exception) {
+                            pendingInstallSettingsResult = null
+                            result.error("SETTINGS_FAILED", error.message, null)
+                        }
                     } else {
                         result.success(null)
                     }
@@ -135,6 +145,12 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Deprecated in Android")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == installSettingsRequest) {
+            val result = pendingInstallSettingsResult ?: return
+            pendingInstallSettingsResult = null
+            result.success(null)
+            return
+        }
         if (requestCode != createBackupRequest && requestCode != pickBackupRequest) return
         val result = pendingBackupResult ?: return
         pendingBackupResult = null

@@ -1,9 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": true,
-  "instructions": [
-    "https://raw.githubusercontent.com/alduanemirasol/flutter-rules/main/all-rules.md"
-  ],
   "permission": {
     "todowrite": "allow",
     "question": "allow",
