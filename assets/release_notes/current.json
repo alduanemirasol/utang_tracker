@@ -1,6 +1,7 @@
 {
-  "version": "1.0.28",
+  "version": "1.0.29",
   "notes": [
-    "Internal maintenance: dependency cleanup and code hygiene"
+    "Record bayad button now shows the amount (e.g. Save ₱100.00) after confirming details",
+    "Standardized label typography on utang details and record bayad"
   ]
 }
