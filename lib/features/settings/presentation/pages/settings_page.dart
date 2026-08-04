@@ -18,6 +18,13 @@ class SettingsPage extends StatelessWidget {
         ),
         children: [
           _MenuItem(
+            icon: Icons.bar_chart_rounded,
+            title: 'Collection Report',
+            subtitle: 'Collected totals ug overdue',
+            onTap: () => context.push('/reports'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MenuItem(
             icon: Icons.backup_outlined,
             title: 'Backup & Restore',
             subtitle: 'Export or restore your data',

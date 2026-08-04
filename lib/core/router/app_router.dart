@@ -12,6 +12,7 @@ import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.d
 import 'package:utang_tracker/features/debts/presentation/pages/debts_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/payments_list_page.dart';
 import 'package:utang_tracker/features/payments/presentation/pages/record_payment_page.dart';
+import 'package:utang_tracker/features/reports/presentation/pages/collection_report_page.dart';
 import 'package:utang_tracker/features/updater/presentation/pages/about_page.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -135,6 +136,11 @@ GoRouter createAppRouter() {
         path: '/backup-restore',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const BackupRestorePage(),
+      ),
+      GoRoute(
+        path: '/reports',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CollectionReportPage(),
       ),
       GoRoute(
         path: '/about',

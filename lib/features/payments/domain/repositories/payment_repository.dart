@@ -10,6 +10,10 @@ abstract class PaymentRepository {
     required DateTime start,
     required DateTime end,
   });
+  Future<List<Payment>> getBetween({
+    required DateTime start,
+    required DateTime end,
+  });
   Future<Payment> recordPayment({
     required String debtId,
     required Money amount,

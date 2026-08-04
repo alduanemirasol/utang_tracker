@@ -135,6 +135,42 @@ class PaymentRepositoryImpl implements PaymentRepository {
   }
 
   @override
+  Future<List<Payment>> getBetween({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final query =
+        _db.select(_db.payments).join([
+            innerJoin(_db.debts, _db.debts.id.equalsExp(_db.payments.debtId)),
+            innerJoin(
+              _db.customers,
+              _db.customers.id.equalsExp(_db.debts.customerId),
+            ),
+          ])
+          ..where(
+            _activePayment &
+                _activeDebt &
+                _db.payments.paymentDate.isBetweenValues(
+                  start.toUtc(),
+                  end.toUtc(),
+                ),
+          )
+          ..orderBy([OrderingTerm.desc(_db.payments.paymentDate)]);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final payment = row.readTable(_db.payments);
+      final debt = row.readTable(_db.debts);
+      final customer = row.readTable(_db.customers);
+      return mapPayment(
+        payment,
+        customerName: customer.name,
+        customerId: debt.customerId,
+      );
+    }).toList();
+  }
+
+  @override
   Future<Payment> recordPayment({
     required String debtId,
     required Money amount,

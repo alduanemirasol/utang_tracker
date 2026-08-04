@@ -87,6 +87,14 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                _QuickAction(
+                  icon: Icons.insights_rounded,
+                  label: 'Collection report',
+                  color: AppColors.surfaceCard,
+                  foregroundColor: AppColors.primaryDark,
+                  onTap: () => context.push('/reports'),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 _SectionHeader(
                   title: 'Recent activity',
                   actionLabel: summary.recentActivity.isEmpty

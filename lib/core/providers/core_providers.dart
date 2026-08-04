@@ -10,6 +10,8 @@ import 'package:utang_tracker/features/debts/data/repositories/debt_repository_i
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
+import 'package:utang_tracker/features/reports/data/repositories/report_repository_impl.dart';
+import 'package:utang_tracker/features/reports/domain/repositories/report_repository.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
@@ -42,6 +44,13 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   return DashboardRepositoryImpl(
     customers: ref.watch(customerRepositoryProvider),
+    debts: ref.watch(debtRepositoryProvider),
+    payments: ref.watch(paymentRepositoryProvider),
+  );
+});
+
+final reportRepositoryProvider = Provider<ReportRepository>((ref) {
+  return ReportRepositoryImpl(
     debts: ref.watch(debtRepositoryProvider),
     payments: ref.watch(paymentRepositoryProvider),
   );
