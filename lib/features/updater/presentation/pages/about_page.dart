@@ -6,6 +6,7 @@ import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
+import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/widgets/app_logo.dart';
 import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';
 import 'package:utang_tracker/features/updater/presentation/widgets/update_bottom_sheet.dart';
@@ -19,7 +20,7 @@ class AboutPage extends ConsumerStatefulWidget {
 
 class _AboutPageState extends ConsumerState<AboutPage> {
   String? _version;
-  Map<String, dynamic>? _releaseNotes;
+  _ReleaseNotesData? _releaseNotes;
 
   @override
   void initState() {
@@ -31,11 +32,10 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     final repo = ref.read(updateRepositoryProvider);
     final version = await repo.getCurrentVersion();
     final jsonStr = await repo.loadReleaseNotes().catchError((_) => '{}');
-    final data = jsonDecode(jsonStr);
     if (mounted) {
       setState(() {
         _version = version;
-        _releaseNotes = data is Map ? Map<String, dynamic>.from(data) : null;
+        _releaseNotes = _ReleaseNotesData.tryParse(jsonStr);
       });
     }
   }
@@ -76,39 +76,45 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           const SizedBox(height: AppSpacing.sm),
           _InfoCard(
             children: [
-              if (_releaseNotes != null)
+              if (_releaseNotes case final releaseNotes?)
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final note
-                          in (_releaseNotes!['notes'] as List).cast<String>())
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '•  ',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                            Expanded(
-                              child: Text(
-                                note,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.textSecondary,
-                                      height: 1.6,
-                                    ),
-                              ),
-                            ),
-                          ],
+                      Text(
+                        DateFormatters.fullDate(
+                          releaseNotes.date,
+                          locale: Localizations.localeOf(context).toString(),
                         ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      for (
+                        var index = 0;
+                        index < releaseNotes.sections.length;
+                        index++
+                      ) ...[
+                        if (index > 0) const SizedBox(height: AppSpacing.md),
+                        Text(
+                          releaseNotes.sections[index].label,
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        for (final note in releaseNotes.sections[index].notes)
+                          _ReleaseNoteBullet(note),
+                      ],
                     ],
+                  ),
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Release notes unavailable.'),
                   ),
                 ),
             ],
@@ -118,6 +124,72 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       ),
     );
   }
+}
+
+class _ReleaseNoteBullet extends StatelessWidget {
+  const _ReleaseNoteBullet(this.note);
+
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: AppColors.textSecondary,
+      height: 1.6,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('•  ', style: style),
+        Expanded(child: Text(note, style: style)),
+      ],
+    );
+  }
+}
+
+class _ReleaseNotesData {
+  const _ReleaseNotesData({required this.date, required this.sections});
+
+  final DateTime date;
+  final List<_ReleaseNotesSection> sections;
+
+  static _ReleaseNotesData? tryParse(String source) {
+    try {
+      final decoded = jsonDecode(source);
+      if (decoded is! Map<String, dynamic>) return null;
+      final dateValue = decoded['date'];
+      final notesValue = decoded['notes'];
+      if (dateValue is! String || notesValue is! Map<String, dynamic>) {
+        return null;
+      }
+      final date = DateTime.tryParse(dateValue);
+      if (date == null || dateValue != DateFormatters.dayKey(date)) {
+        return null;
+      }
+
+      const labels = {'added': 'Added', 'changed': 'Changed', 'fixed': 'Fixed'};
+      final sections = <_ReleaseNotesSection>[];
+      for (final entry in labels.entries) {
+        final value = notesValue[entry.key];
+        if (value is! List || value.any((item) => item is! String)) return null;
+        final notes = value.cast<String>();
+        if (notes.isNotEmpty) {
+          sections.add(_ReleaseNotesSection(label: entry.value, notes: notes));
+        }
+      }
+      if (sections.isEmpty) return null;
+      return _ReleaseNotesData(date: date, sections: sections);
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
+class _ReleaseNotesSection {
+  const _ReleaseNotesSection({required this.label, required this.notes});
+
+  final String label;
+  final List<String> notes;
 }
 
 class _AppHeader extends StatelessWidget {

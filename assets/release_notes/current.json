@@ -1,7 +1,12 @@
 {
-  "version": "1.0.34",
-  "notes": [
-    "Body text now uses medium weight throughout the app for improved readability",
-    "Improved form hints and spacing around payment confirmation"
-  ]
+  "version": "1.0.35",
+  "date": "2026-08-05",
+  "notes": {
+    "added": [],
+    "changed": [
+      "Body text now uses medium weight throughout the app for improved readability",
+      "Improved form hints and spacing around payment confirmation"
+    ],
+    "fixed": []
+  }
 }
