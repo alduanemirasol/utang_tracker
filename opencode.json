@@ -2,17 +2,31 @@
   "$schema": "https://opencode.ai/config.json",
   "snapshot": true,
   "formatter": true,
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      ".dart_tool/**",
+      ".idea/**",
+      ".gradle/**",
+      ".kotlin/**",
+      "*.iml",
+      ".flutter-plugins-dependencies",
+      "android/key.properties",
+      "android/local.properties",
+      "android/app/utang-tracker-release.jks"
+    ]
+  },
   "instructions": ["AGENTS.md", ".opencode/rules/*.md"],
   "permission": {
     "external_directory": "ask",
     "doom_loop": "ask",
-    "bash": "ask",
     "edit": "ask",
     "websearch": "allow",
     "todowrite": "allow",
     "question": "allow",
     "webfetch": "allow",
     "skill": "allow",
+    "bash": "allow",
     "read": "allow",
     "grep": "allow",
     "glob": "allow",
