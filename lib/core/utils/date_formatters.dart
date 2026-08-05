@@ -55,6 +55,11 @@ class DateFormatters {
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 
+  static String fullDate(DateTime date, {required String locale}) {
+    final canonicalLocale = Intl.canonicalizedLocale(locale);
+    return DateFormat.yMMMMd(canonicalLocale).format(date.toLocal());
+  }
+
   static bool isSameLocalDay(DateTime a, DateTime b) {
     final la = a.toLocal();
     final lb = b.toLocal();
