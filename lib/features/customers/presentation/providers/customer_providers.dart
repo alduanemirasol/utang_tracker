@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
+import 'package:utang_tracker/features/customers/domain/entities/customer_sort_order.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/customer_usecases.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 
@@ -38,6 +39,18 @@ class CustomerSearchQuery extends Notifier<String> {
 final customerSearchQueryProvider =
     NotifierProvider<CustomerSearchQuery, String>(CustomerSearchQuery.new);
 
+class CustomerSortFilter extends Notifier<CustomerSortOrder> {
+  @override
+  CustomerSortOrder build() => CustomerSortOrder.nameAsc;
+
+  void setSort(CustomerSortOrder order) => state = order;
+}
+
+final customerSortOrderProvider =
+    NotifierProvider<CustomerSortFilter, CustomerSortOrder>(
+      CustomerSortFilter.new,
+    );
+
 final customersListProvider =
     AsyncNotifierProvider<CustomersListNotifier, List<Customer>>(
       CustomersListNotifier.new,
@@ -47,20 +60,22 @@ class CustomersListNotifier extends AsyncNotifier<List<Customer>> {
   @override
   Future<List<Customer>> build() async {
     final query = ref.watch(customerSearchQueryProvider);
-    if (query.trim().isEmpty) {
-      return ref.watch(getCustomersProvider)();
-    }
-    return ref.watch(searchCustomersProvider)(query);
+    final sort = ref.watch(customerSortOrderProvider);
+    final customers = query.trim().isEmpty
+        ? await ref.watch(getCustomersProvider)()
+        : await ref.watch(searchCustomersProvider)(query);
+    return applyCustomerSort(customers, sort);
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final query = ref.read(customerSearchQueryProvider);
-      if (query.trim().isEmpty) {
-        return ref.read(getCustomersProvider)();
-      }
-      return ref.read(searchCustomersProvider)(query);
+      final sort = ref.read(customerSortOrderProvider);
+      final customers = query.trim().isEmpty
+          ? await ref.read(getCustomersProvider)()
+          : await ref.read(searchCustomersProvider)(query);
+      return applyCustomerSort(customers, sort);
     });
   }
 }

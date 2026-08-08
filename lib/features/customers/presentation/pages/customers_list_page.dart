@@ -8,6 +8,7 @@ import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
+import 'package:utang_tracker/features/customers/domain/entities/customer_sort_order.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 
 class CustomersListPage extends ConsumerWidget {
@@ -16,6 +17,7 @@ class CustomersListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final customersAsync = ref.watch(customersListProvider);
+    final sort = ref.watch(customerSortOrderProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Customers')),
@@ -34,11 +36,54 @@ class CustomersListPage extends ConsumerWidget {
               AppSpacing.pagePadding,
               AppSpacing.md,
             ),
-            child: AppSearchBar(
-              hintText: 'Search by name',
-              onChanged: (value) {
-                ref.read(customerSearchQueryProvider.notifier).setQuery(value);
-              },
+            child: Row(
+              children: [
+                Expanded(
+                  child: AppSearchBar(
+                    hintText: 'Search by name',
+                    onChanged: (value) {
+                      ref.read(customerSearchQueryProvider.notifier).setQuery(value);
+                    },
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                PopupMenuButton<CustomerSortOrder>(
+                  tooltip: 'Sort customers',
+                  initialValue: sort,
+                  onSelected: (order) {
+                    ref.read(customerSortOrderProvider.notifier).setSort(order);
+                  },
+                  itemBuilder: (context) {
+                    return CustomerSortOrder.values.map((order) {
+                      return PopupMenuItem<CustomerSortOrder>(
+                        value: order,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              child: sort == order
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: AppColors.primaryDark,
+                                    )
+                                  : null,
+                            ),
+                            Expanded(child: Text(order.label)),
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.sm),
+                    child: Icon(
+                      Icons.swap_vert_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
