@@ -293,20 +293,22 @@ void main() {
 
     final database = AppDatabase.forTesting();
     addTearDown(database.close);
-    final maria = await CustomerRepositoryImpl(database).create(
-      name: 'Maria Santos',
-    );
+    final maria = await CustomerRepositoryImpl(
+      database,
+    ).create(name: 'Maria Santos');
 
     final router = GoRouter(
       initialLocation: '/form',
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, __) => const Scaffold(body: Text('home-screen')),
-        ),
-        GoRoute(
-          path: '/form',
-          builder: (_, __) => DebtFormPage(initialCustomerId: maria.id),
+          builder: (_, _) => const Scaffold(body: Text('home-screen')),
+          routes: [
+            GoRoute(
+              path: 'form',
+              builder: (_, _) => DebtFormPage(initialCustomerId: maria.id),
+            ),
+          ],
         ),
       ],
     );
@@ -378,9 +380,9 @@ void main() {
 
     final database = AppDatabase.forTesting();
     addTearDown(database.close);
-    final maria = await CustomerRepositoryImpl(database).create(
-      name: 'Maria Santos',
-    );
+    final maria = await CustomerRepositoryImpl(
+      database,
+    ).create(name: 'Maria Santos');
 
     await tester.pumpWidget(
       ProviderScope(

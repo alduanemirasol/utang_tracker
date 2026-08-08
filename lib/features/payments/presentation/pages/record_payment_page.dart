@@ -202,7 +202,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
         debtId: _debtId,
       );
       if (!mounted) return;
-      _isDirty = false;
+      setState(() {
+        _isDirty = false;
+        _saving = false;
+      });
       AppSnackBar.success(context, 'Bayad recorded');
       context.pop();
     } on AppException catch (e) {
@@ -212,7 +215,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (mounted && _saving) setState(() => _saving = false);
     }
   }
 

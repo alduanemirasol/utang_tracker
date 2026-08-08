@@ -312,7 +312,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       }
 
       if (!mounted) return;
-      _isDirty = false;
+      setState(() {
+        _isDirty = false;
+        _saving = false;
+      });
       AppSnackBar.success(
         context,
         widget.isEditing ? 'Utang updated' : 'Utang recorded',
@@ -325,7 +328,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (mounted && _saving) setState(() => _saving = false);
     }
   }
 
@@ -749,7 +752,9 @@ class _UtangSummaryDialog extends StatelessWidget {
   final String? notes;
 
   String _quantityLabel(double quantity) {
-    return quantity % 1 == 0 ? quantity.toInt().toString() : quantity.toString();
+    return quantity % 1 == 0
+        ? quantity.toInt().toString()
+        : quantity.toString();
   }
 
   @override
@@ -796,9 +801,10 @@ class _UtangSummaryDialog extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text('Total', style: bodyStyle?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  )),
+                  child: Text(
+                    'Total',
+                    style: bodyStyle?.copyWith(fontWeight: FontWeight.w700),
+                  ),
                 ),
                 MoneyText(total),
               ],
