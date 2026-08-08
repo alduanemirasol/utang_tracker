@@ -280,6 +280,11 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       return;
     }
 
+    if (!widget.isEditing) {
+      final confirmed = await _confirmNewUtang(items!);
+      if (!confirmed || !mounted) return;
+    }
+
     setState(() => _saving = true);
     try {
       if (widget.isEditing) {
@@ -704,6 +709,146 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<bool> _confirmNewUtang(List<DebtItemInput> items) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return _UtangSummaryDialog(
+          customerName: _customerName ?? 'Customer',
+          transactionDate: _transactionDate,
+          dueDate: _dueDate,
+          items: items,
+          total: _total,
+          notes: _notesController.text.trim(),
+        );
+      },
+    );
+    return confirmed ?? false;
+  }
+}
+
+class _UtangSummaryDialog extends StatelessWidget {
+  const _UtangSummaryDialog({
+    required this.customerName,
+    required this.transactionDate,
+    required this.items,
+    required this.total,
+    this.dueDate,
+    this.notes,
+  });
+
+  final String customerName;
+  final DateTime transactionDate;
+  final DateTime? dueDate;
+  final List<DebtItemInput> items;
+  final Money total;
+  final String? notes;
+
+  String _quantityLabel(double quantity) {
+    return quantity % 1 == 0 ? quantity.toInt().toString() : quantity.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyStyle = Theme.of(context).textTheme.bodyMedium;
+    final hasNotes = notes != null && notes!.isNotEmpty;
+
+    return AlertDialog(
+      title: const Text('Confirm new utang'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _SummaryLine(label: 'Customer', value: customerName),
+            _SummaryLine(
+              label: 'Date',
+              value: context.smartDate(transactionDate),
+            ),
+            if (dueDate != null)
+              _SummaryLine(label: 'Due', value: context.smartDate(dueDate!)),
+            const Divider(height: AppSpacing.xxl),
+            ...items.map((item) {
+              final unit = DebtItemUnits.displayNameForQuantity(
+                item.unit,
+                item.quantity,
+              );
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${_quantityLabel(item.quantity)} $unit ${item.productName}',
+                        style: bodyStyle,
+                      ),
+                    ),
+                    MoneyText(item.price, style: bodyStyle),
+                  ],
+                ),
+              );
+            }),
+            const Divider(height: AppSpacing.xxl),
+            Row(
+              children: [
+                Expanded(
+                  child: Text('Total', style: bodyStyle?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  )),
+                ),
+                MoneyText(total),
+              ],
+            ),
+            if (hasNotes) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                notes!,
+                style: bodyStyle?.copyWith(color: AppColors.textMuted),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Record'),
+        ),
+      ],
+    );
+  }
+}
+
+class _SummaryLine extends StatelessWidget {
+  const _SummaryLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyStyle = Theme.of(context).textTheme.bodyMedium;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: bodyStyle?.copyWith(color: AppColors.textMuted),
+            ),
+          ),
+          Expanded(child: Text(value, style: bodyStyle)),
+        ],
       ),
     );
   }

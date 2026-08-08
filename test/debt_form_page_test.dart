@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
@@ -8,6 +9,7 @@ import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
+import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.dart';
 
@@ -282,6 +284,146 @@ void main() {
     expect(checkIn(reopenedMariaTile), findsNothing);
     expect(juanCheck, findsOneWidget);
     expect(tester.widget<Icon>(juanCheck).color, AppColors.primaryDark);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('confirming the summary records the utang', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+    final maria = await CustomerRepositoryImpl(database).create(
+      name: 'Maria Santos',
+    );
+
+    final router = GoRouter(
+      initialLocation: '/form',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => const Scaffold(body: Text('home-screen')),
+        ),
+        GoRoute(
+          path: '/form',
+          builder: (_, __) => DebtFormPage(initialCustomerId: maria.id),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final productField = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Product *',
+    );
+    await tester.enterText(
+      find.descendant(of: productField, matching: find.byType(TextField)),
+      'Rice',
+    );
+    final priceField = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Price *',
+    );
+    await tester.ensureVisible(priceField);
+    await tester.enterText(
+      find.descendant(of: priceField, matching: find.byType(TextField)),
+      '100.00',
+    );
+    await tester.pump();
+
+    final save = find.text('Save');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    expect(find.text('Confirm new utang'), findsOneWidget);
+    final formatted = Money.fromPesos(100.00).format();
+    expect(
+      find.descendant(of: dialog, matching: find.text('Maria Santos')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: dialog, matching: find.text('1 piece Rice')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: dialog, matching: find.text(formatted)),
+      findsWidgets,
+    );
+
+    await tester.tap(find.text('Record'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('home-screen'), findsOneWidget);
+    expect(find.text('Utang recorded'), findsOneWidget);
+    final debts = DebtRepositoryImpl(database).getByCustomer(maria.id);
+    expect(await debts, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('cancelling the summary keeps the form open', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+    final maria = await CustomerRepositoryImpl(database).create(
+      name: 'Maria Santos',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: DebtFormPage(initialCustomerId: maria.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final productField = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Product *',
+    );
+    await tester.enterText(
+      find.descendant(of: productField, matching: find.byType(TextField)),
+      'Rice',
+    );
+    final priceField = find.byWidgetPredicate(
+      (widget) => widget is AppTextField && widget.label == 'Price *',
+    );
+    await tester.ensureVisible(priceField);
+    await tester.enterText(
+      find.descendant(of: priceField, matching: find.byType(TextField)),
+      '100.00',
+    );
+    await tester.pump();
+
+    final save = find.text('Save');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Confirm new utang'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Save'), findsOneWidget);
+    expect(find.text('Utang recorded'), findsNothing);
+    final debts = DebtRepositoryImpl(database).getByCustomer(maria.id);
+    expect(await debts, isEmpty);
     expect(tester.takeException(), isNull);
   });
 }
