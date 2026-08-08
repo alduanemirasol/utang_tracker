@@ -63,7 +63,7 @@ void main() {
   var customerRepoBuilds = 0;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'reminders_enabled': true});
     db = AppDatabase.forTesting();
     customers = CustomerRepositoryImpl(db);
     debts = DebtRepositoryImpl(db);

@@ -79,24 +79,24 @@ void main() {
     );
   });
 
-  testWidgets('reminders toggle is on by default and reschedules on enable', (
+  testWidgets('reminders toggle is off by default and requests permission on enable', (
     tester,
   ) async {
     await pumpSettings(tester);
 
     final toggle = find.byType(SwitchListTile);
     expect(toggle, findsOneWidget);
-    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
-
-    await tester.tap(toggle);
-    await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
-    expect(fakeScheduler.cancelCount, 1);
 
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
     expect(fakeScheduler.permissionRequestCount, 1);
     expect(fakeScheduler.rescheduleCount, 1);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(fakeScheduler.cancelCount, 1);
   });
 }

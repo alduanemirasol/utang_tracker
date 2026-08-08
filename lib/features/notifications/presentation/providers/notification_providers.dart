@@ -32,7 +32,7 @@ class ReminderEnabled extends AsyncNotifier<bool> {
   @override
   Future<bool> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    return prefs.getBool(_key) ?? true;
+    return prefs.getBool(_key) ?? false;
   }
 
   Future<void> setEnabled(bool value) async {
