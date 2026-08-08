@@ -13,11 +13,13 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required this.customers,
     required this.debts,
     required this.payments,
-  });
+    DateTime Function()? now,
+  }) : _now = now ?? DateTime.now;
 
   final CustomerRepository customers;
   final DebtRepository debts;
   final PaymentRepository payments;
+  final DateTime Function() _now;
 
   @override
   Future<DashboardSummary> getSummary() async {
@@ -33,7 +35,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
   @override
   Future<DashboardData> getDashboardData() async {
-    final now = DateTime.now();
+    final now = _now();
     final start = DateFormatters.startOfLocalDay(now);
     final end = DateFormatters.endOfLocalDay(now);
 

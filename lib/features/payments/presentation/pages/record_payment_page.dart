@@ -91,7 +91,12 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     setState(() => _resolvingInitial = true);
     try {
       final detail = await ref.read(getDebtDetailProvider)(id);
-      if (!mounted || detail == null) return;
+      if (!mounted) return;
+      if (detail == null) {
+        _debtId = null;
+        _selectedDebt = null;
+        return;
+      }
       final debt = detail.debt;
       if (debt.status == DebtStatus.paid) {
         setState(() {

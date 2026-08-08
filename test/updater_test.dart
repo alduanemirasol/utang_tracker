@@ -425,6 +425,213 @@ void main() {
       await first;
     });
   });
+
+  group('CheckForUpdates edge paths', () {
+    test('silent check with dismissed version reports no update', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets([
+          const ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+        dismissedVersion: '1.1.0',
+      );
+
+      final result = await CheckForUpdates(repo)(silent: true);
+
+      expect(result.updateAvailable, isFalse);
+      expect(repo.savedCheckTime, isNotNull);
+    });
+
+    test('no compatible APK yields error result', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        supportedAbis: const ['arm64-v8a'],
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-x86_64-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+      );
+
+      final result = await CheckForUpdates(repo)();
+
+      expect(result.updateAvailable, isFalse);
+      expect(result.error, 'No compatible APK found in this release.');
+    });
+
+    test('ABI lookup failure propagates', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+        abisError: const AppException(
+          'Could not determine device compatibility.',
+        ),
+      );
+
+      await expectLater(CheckForUpdates(repo)(), throwsA(isA<AppException>()));
+    });
+
+    test('rollback scenario reports no update end-to-end', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.2.0',
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+      );
+
+      final result = await CheckForUpdates(repo)();
+      expect(result.updateAvailable, isFalse);
+    });
+  });
+
+  group('UpdateNotifier download error and dismiss', () {
+    ProviderContainer namedContainer(_FakeUpdateRepository repo) {
+      final container = ProviderContainer(
+        overrides: [updateRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('interrupted download becomes a network error', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+        downloadError: const AppException('Download interrupted: boom'),
+      );
+      final container = namedContainer(repo);
+
+      final notifier = container.read(updateNotifierProvider.notifier);
+      await notifier.checkForUpdates();
+      await notifier.download();
+
+      final state = container.read(updateNotifierProvider);
+      expect(state, isA<UpdateError>());
+      expect((state as UpdateError).isNetworkError, isTrue);
+    });
+
+    test('dismiss persists the release version', () async {
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        release: _releaseWithAssets(const [
+          ReleaseAsset(
+            name: 'utang-tracker-arm64-v8a-v1.1.0.apk',
+            browserDownloadUrl: 'https://example.com/update.apk',
+            sizeBytes: 1000,
+          ),
+        ]),
+      );
+      final container = namedContainer(repo);
+
+      final notifier = container.read(updateNotifierProvider.notifier);
+      await notifier.checkForUpdates();
+      await notifier.dismiss();
+
+      expect(repo.savedDismissedVersions, ['1.1.0']);
+      expect(container.read(updateNotifierProvider), isA<UpdateIdle>());
+    });
+
+    test('concurrent checks are guarded by the busy flag', () async {
+      final gate = Completer<void>();
+      final repo = _FakeUpdateRepository(
+        currentVersion: '1.0.0',
+        fetchGate: gate,
+      );
+      final container = namedContainer(repo);
+      final notifier = container.read(updateNotifierProvider.notifier);
+
+      final first = notifier.checkForUpdates();
+      await Future<void>.delayed(Duration.zero);
+      await notifier.checkForUpdates();
+      gate.complete();
+      await first;
+
+      expect(repo.fetchCalls, 1);
+    });
+  });
+
+  group('UpdateRepositoryImpl HTTP errors', () {
+    test('404 returns no release', () async {
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((_) async => http.Response('', 404)),
+      );
+
+      expect(await repository.fetchLatestRelease(), isNull);
+    });
+
+    test('non-200 status throws an AppException', () async {
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((_) async {
+          return http.Response('error', 500);
+        }),
+      );
+
+      await expectLater(
+        repository.fetchLatestRelease(),
+        throwsA(isA<AppException>()),
+      );
+    });
+
+    test('socket failure maps to a no-internet message', () async {
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((_) async {
+          throw SocketException('Connection refused');
+        }),
+      );
+
+      await expectLater(
+        repository.fetchLatestRelease(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.message,
+            'message',
+            'No internet connection.',
+          ),
+        ),
+      );
+    });
+
+    test('client failure maps to a network error', () async {
+      final repository = UpdateRepositoryImpl(
+        httpClient: MockClient((_) async {
+          throw http.ClientException('Connection closed');
+        }),
+      );
+
+      await expectLater(
+        repository.fetchLatestRelease(),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.message,
+            'message',
+            contains('Network error'),
+          ),
+        ),
+      );
+    });
+  });
 }
 
 AppRelease _releaseWithAssets(List<ReleaseAsset> assets) => AppRelease(
@@ -444,6 +651,10 @@ class _FakeUpdateRepository implements UpdateRepository {
     this.release,
     this.fetchError,
     this.downloadPath,
+    this.dismissedVersion,
+    this.abisError,
+    this.downloadError,
+    this.fetchGate,
   });
 
   final String currentVersion;
@@ -451,10 +662,18 @@ class _FakeUpdateRepository implements UpdateRepository {
   final AppRelease? release;
   final AppException? fetchError;
   final String? downloadPath;
+  final String? dismissedVersion;
+  final AppException? abisError;
+  final AppException? downloadError;
+  final Completer<void>? fetchGate;
   DateTime? savedCheckTime;
+  final List<String> savedDismissedVersions = [];
+  int fetchCalls = 0;
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
+    fetchCalls++;
+    if (fetchGate != null) await fetchGate!.future;
     if (fetchError case final error?) throw error;
     return release;
   }
@@ -463,7 +682,10 @@ class _FakeUpdateRepository implements UpdateRepository {
   Future<String> getCurrentVersion() async => currentVersion;
 
   @override
-  Future<List<String>> getSupportedAbis() async => supportedAbis;
+  Future<List<String>> getSupportedAbis() async {
+    if (abisError case final error?) throw error;
+    return supportedAbis;
+  }
 
   @override
   Future<void> saveLastCheckTime(DateTime time) async {
@@ -474,10 +696,12 @@ class _FakeUpdateRepository implements UpdateRepository {
   Future<DateTime?> loadLastCheckTime() async => savedCheckTime;
 
   @override
-  Future<String?> loadDismissedVersion() async => null;
+  Future<String?> loadDismissedVersion() async => dismissedVersion;
 
   @override
-  Future<void> saveDismissedVersion(String version) async {}
+  Future<void> saveDismissedVersion(String version) async {
+    savedDismissedVersions.add(version);
+  }
 
   @override
   Future<void> cleanupOldApks() async {}
@@ -487,6 +711,7 @@ class _FakeUpdateRepository implements UpdateRepository {
     ReleaseAsset asset,
     void Function(double progress) onProgress,
   ) async {
+    if (downloadError case final error?) throw error;
     final path = downloadPath;
     if (path == null) throw UnimplementedError();
     onProgress(1);

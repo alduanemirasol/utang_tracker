@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/domain/money.dart';
@@ -319,5 +320,156 @@ void main() {
 
     final listed = await customers.getAll();
     expect(listed.where((c) => c.id == customer.id), isEmpty);
+  });
+
+  test('collectedBetween includes both boundary instants', () async {
+    var savedAt = DateTime(2026, 7, 19, 0, 0, 0);
+    debts = DebtRepositoryImpl(db, now: () => savedAt);
+    payments = PaymentRepositoryImpl(db, now: () => savedAt);
+    final customer = await customers.create(name: 'Boundary');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 7, 1),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(2000),
+        ),
+      ],
+    );
+
+    savedAt = DateTime(2026, 7, 19, 0, 0, 0);
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(10),
+      paymentDate: DateTime(2026, 7, 19),
+      paymentMethod: 'Cash',
+    );
+    savedAt = DateTime(2026, 7, 19, 23, 59, 59, 999);
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(20),
+      paymentDate: DateTime(2026, 7, 19),
+      paymentMethod: 'Cash',
+    );
+    savedAt = DateTime(2026, 7, 20, 0, 0, 0);
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(999),
+      paymentDate: DateTime(2026, 7, 20),
+      paymentMethod: 'Cash',
+    );
+
+    final collected = await payments.collectedBetween(
+      start: DateTime(2026, 7, 19),
+      end: DateTime(2026, 7, 19, 23, 59, 59, 999),
+    );
+    expect(collected.centavos, 3000);
+  });
+
+  test('getRecent orders by createdAt desc and respects limit', () async {
+    var savedAt = DateTime(2026, 7, 19, 8, 0, 0);
+    debts = DebtRepositoryImpl(db, now: () => savedAt);
+    payments = PaymentRepositoryImpl(db, now: () => savedAt);
+    final customer = await customers.create(name: 'Recent');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 7, 1),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(100),
+        ),
+      ],
+    );
+
+    for (final hour in [8, 9, 10]) {
+      savedAt = DateTime(2026, 7, 19, hour, 0, 0);
+      await payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.fromPesos(1),
+        paymentDate: DateTime(2026, 7, 19),
+        paymentMethod: 'Cash',
+      );
+    }
+
+    final recent = await payments.getRecent(limit: 2);
+    expect(recent, hasLength(2));
+    expect(recent.first.createdAt, DateTime(2026, 7, 19, 10, 0, 0));
+    expect(recent.last.createdAt, DateTime(2026, 7, 19, 9, 0, 0));
+  });
+
+  test(
+    'recordPayment rejects missing debt and trims method and notes',
+    () async {
+      final customer = await customers.create(name: 'Trimming');
+      final debt = await debts.create(
+        customerId: customer.id,
+        transactionDate: DateTime(2026, 7, 1),
+        items: [
+          DebtItemInput(
+            productName: 'Rice',
+            quantity: 1,
+            price: Money.fromPesos(50),
+          ),
+        ],
+      );
+
+      expect(
+        () => payments.recordPayment(
+          debtId: 'missing',
+          amount: Money.fromPesos(10),
+          paymentDate: DateTime.now(),
+          paymentMethod: 'Cash',
+        ),
+        throwsA(isA<NotFoundException>()),
+      );
+
+      final payment = await payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.fromPesos(10),
+        paymentDate: DateTime(2026, 7, 19),
+        paymentMethod: '  GCash  ',
+        notes: '   ',
+      );
+
+      expect(payment.paymentMethod, 'GCash');
+      expect(payment.notes, isNull);
+      final stored = await payments.getByDebt(debt.id);
+      expect(stored.single.paymentMethod, 'GCash');
+      expect(stored.single.notes, isNull);
+    },
+  );
+
+  test('getByCustomer excludes payments of soft-deleted debts', () async {
+    final customer = await customers.create(name: 'Archived debt');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime(2026, 7, 1),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(50),
+        ),
+      ],
+    );
+    await payments.recordPayment(
+      debtId: debt.id,
+      amount: Money.fromPesos(10),
+      paymentDate: DateTime(2026, 7, 19),
+      paymentMethod: 'Cash',
+    );
+
+    expect(await payments.getByCustomer(customer.id), hasLength(1));
+
+    await (db.update(db.debts)..where((t) => t.id.equals(debt.id))).write(
+      DebtsCompanion(deletedAt: Value(DateTime(2026, 7, 20))),
+    );
+
+    expect(await payments.getByCustomer(customer.id), isEmpty);
+    expect(await payments.getAll(), isEmpty);
   });
 }

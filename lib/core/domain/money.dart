@@ -11,7 +11,7 @@ class Money {
       throw FormatException('Empty amount');
     }
     final pesos = double.tryParse(cleaned);
-    if (pesos == null) {
+    if (pesos == null || !pesos.isFinite) {
       throw FormatException('Invalid amount: $value');
     }
     return Money.fromPesos(pesos);
