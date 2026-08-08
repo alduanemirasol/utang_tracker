@@ -1039,13 +1039,16 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
         final customer = customers[index];
         final selected = customer.id == widget.selectedCustomerId;
         return ListTile(
+          leading: SizedBox(
+            width: 24,
+            child: selected
+                ? const Icon(Icons.check, color: AppColors.primaryDark)
+                : null,
+          ),
           title: Text(customer.name),
           subtitle: customer.phone == null || customer.phone!.isEmpty
               ? null
               : Text(customer.phone!),
-          trailing: selected
-              ? const Icon(Icons.check, color: AppColors.primaryDark)
-              : null,
           onTap: () => Navigator.of(context).pop(customer),
         );
       },
