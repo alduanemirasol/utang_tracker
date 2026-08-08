@@ -26,7 +26,7 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
   Future<void> initialize() async {
     if (_initialized) return;
     await _plugin.initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
     );
@@ -57,11 +57,11 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
       _reminderHour,
     );
     await _plugin.zonedSchedule(
-      _notificationId(reminder.debtId),
+      id: _notificationId(reminder.debtId),
       title: reminder.title,
       body: reminder.body,
       scheduledDate: firstFire,
-      const NotificationDetails(
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
           _channelName,
@@ -72,8 +72,6 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 

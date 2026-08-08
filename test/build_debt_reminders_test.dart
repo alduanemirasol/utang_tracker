@@ -15,12 +15,12 @@ Debt _debt({
   return Debt(
     id: id,
     customerId: 'cust',
-    totalAmount: Money.fromPesos(balancePesos),
+    totalAmount: Money.fromCentavos(balancePesos * 100),
     paidAmount: status == DebtStatus.unpaid
         ? Money.zero()
-        : Money.fromPesos(balancePesos),
+        : Money.fromCentavos(balancePesos * 100),
     balance: status == DebtStatus.unpaid
-        ? Money.fromPesos(balancePesos)
+        ? Money.fromCentavos(balancePesos * 100)
         : Money.zero(),
     status: status,
     transactionDate: DateTime(2026, 1, 1),
