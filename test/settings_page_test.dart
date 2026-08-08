@@ -12,9 +12,15 @@ import 'package:utang_tracker/features/settings/presentation/pages/settings_page
 class _FakeReminderScheduler implements ReminderScheduler {
   int rescheduleCount = 0;
   int cancelCount = 0;
+  int permissionRequestCount = 0;
 
   @override
   Future<void> initialize() async {}
+
+  @override
+  Future<void> requestNotificationsPermission() async {
+    permissionRequestCount++;
+  }
 
   @override
   Future<void> rescheduleAll(List<DebtReminder> reminders) async {
@@ -90,6 +96,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+    expect(fakeScheduler.permissionRequestCount, 1);
     expect(fakeScheduler.rescheduleCount, 1);
   });
 }

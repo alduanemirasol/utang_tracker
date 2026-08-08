@@ -20,9 +20,15 @@ import 'package:utang_tracker/features/payments/presentation/providers/payment_p
 class _FakeReminderScheduler implements ReminderScheduler {
   int rescheduleCount = 0;
   int cancelCount = 0;
+  int permissionRequestCount = 0;
 
   @override
   Future<void> initialize() async {}
+
+  @override
+  Future<void> requestNotificationsPermission() async {
+    permissionRequestCount++;
+  }
 
   @override
   Future<void> rescheduleAll(List<DebtReminder> reminders) async {

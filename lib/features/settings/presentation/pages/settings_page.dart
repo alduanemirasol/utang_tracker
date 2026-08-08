@@ -83,6 +83,8 @@ class _ReminderToggle extends ConsumerWidget {
   Future<void> _onChanged(WidgetRef ref, bool value) async {
     await ref.read(reminderEnabledProvider.notifier).setEnabled(value);
     if (value) {
+      final scheduler = ref.read(reminderSchedulerProvider);
+      await scheduler.requestNotificationsPermission();
       syncDebtReminders(ref);
     } else {
       await ref.read(reminderSchedulerProvider).cancelAll();

@@ -3,6 +3,8 @@ import 'package:utang_tracker/features/notifications/domain/entities/debt_remind
 abstract class ReminderScheduler {
   Future<void> initialize();
 
+  Future<void> requestNotificationsPermission();
+
   Future<void> rescheduleAll(List<DebtReminder> reminders);
 
   Future<void> cancelAll();

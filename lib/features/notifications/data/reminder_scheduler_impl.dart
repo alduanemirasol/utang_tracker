@@ -29,12 +29,17 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
     );
+    _initialized = true;
+  }
+
+  @override
+  Future<void> requestNotificationsPermission() async {
+    await initialize();
     await _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
-    _initialized = true;
   }
 
   @override
