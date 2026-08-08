@@ -148,10 +148,11 @@ class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
         return false;
       }
 
+      final localPaymentDate = payment.paymentDate.toLocal();
       final paymentDay = DateTime(
-        payment.paymentDate.year,
-        payment.paymentDate.month,
-        payment.paymentDate.day,
+        localPaymentDate.year,
+        localPaymentDate.month,
+        localPaymentDate.day,
       );
 
       if (filters.startDate != null) {
