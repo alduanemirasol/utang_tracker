@@ -348,12 +348,21 @@ void main() {
 
     final dialog = find.byType(AlertDialog);
     expect(dialog, findsOneWidget);
+    expect(tester.getSize(dialog).width, greaterThanOrEqualTo(350));
     expect(find.text('Confirm new utang'), findsOneWidget);
     final formatted = Money.fromPesos(100.00).format();
     expect(
       find.descendant(of: dialog, matching: find.text('Maria Santos')),
       findsOneWidget,
     );
+    final customerValue = tester.widget<Text>(
+      find.descendant(of: dialog, matching: find.text('Maria Santos')),
+    );
+    expect(customerValue.textAlign, TextAlign.end);
+    final dateValue = tester.widget<Text>(
+      find.descendant(of: dialog, matching: find.text('Today')),
+    );
+    expect(dateValue.textAlign, TextAlign.end);
     expect(
       find.descendant(of: dialog, matching: find.text('1 piece Rice')),
       findsOneWidget,

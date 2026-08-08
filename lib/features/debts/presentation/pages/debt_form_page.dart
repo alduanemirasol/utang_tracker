@@ -763,60 +763,67 @@ class _UtangSummaryDialog extends StatelessWidget {
     final hasNotes = notes != null && notes!.isNotEmpty;
 
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.pagePadding,
+        vertical: AppSpacing.xl,
+      ),
       title: const Text('Confirm new utang'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _SummaryLine(label: 'Customer', value: customerName),
-            _SummaryLine(
-              label: 'Date',
-              value: context.smartDate(transactionDate),
-            ),
-            if (dueDate != null)
-              _SummaryLine(label: 'Due', value: context.smartDate(dueDate!)),
-            const Divider(height: AppSpacing.xxl),
-            ...items.map((item) {
-              final unit = DebtItemUnits.displayNameForQuantity(
-                item.unit,
-                item.quantity,
-              );
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${_quantityLabel(item.quantity)} $unit ${item.productName}',
-                        style: bodyStyle,
-                      ),
-                    ),
-                    MoneyText(item.price, style: bodyStyle),
-                  ],
-                ),
-              );
-            }),
-            const Divider(height: AppSpacing.xxl),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Total',
-                    style: bodyStyle?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                MoneyText(total),
-              ],
-            ),
-            if (hasNotes) ...[
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                notes!,
-                style: bodyStyle?.copyWith(color: AppColors.textMuted),
+      content: SizedBox(
+        width: MediaQuery.sizeOf(context).width,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SummaryLine(label: 'Customer', value: customerName),
+              _SummaryLine(
+                label: 'Date',
+                value: context.smartDate(transactionDate),
               ),
+              if (dueDate != null)
+                _SummaryLine(label: 'Due', value: context.smartDate(dueDate!)),
+              const Divider(height: AppSpacing.xxl),
+              ...items.map((item) {
+                final unit = DebtItemUnits.displayNameForQuantity(
+                  item.unit,
+                  item.quantity,
+                );
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${_quantityLabel(item.quantity)} $unit ${item.productName}',
+                          style: bodyStyle,
+                        ),
+                      ),
+                      MoneyText(item.price, style: bodyStyle),
+                    ],
+                  ),
+                );
+              }),
+              const Divider(height: AppSpacing.xxl),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Total',
+                      style: bodyStyle?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  MoneyText(total),
+                ],
+              ),
+              if (hasNotes) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  notes!,
+                  style: bodyStyle?.copyWith(color: AppColors.textMuted),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actions: [
@@ -853,7 +860,9 @@ class _SummaryLine extends StatelessWidget {
               style: bodyStyle?.copyWith(color: AppColors.textMuted),
             ),
           ),
-          Expanded(child: Text(value, style: bodyStyle)),
+          Expanded(
+            child: Text(value, textAlign: TextAlign.end, style: bodyStyle),
+          ),
         ],
       ),
     );
