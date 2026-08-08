@@ -1,19 +1,16 @@
 {
-  "version": "1.0.36",
+  "version": "1.0.37",
   "date": "2026-08-08",
   "notes": {
     "added": [
-      "Daily 09:00 reminders for due and overdue utang — turn on Reminders in Settings",
-      "Sort customers by name, newest, or oldest with the new sort button",
-      "A check mark now appears on the selected customer in the picker"
+      "Review a summary before recording a new utang"
     ],
     "changed": [
-      "You'll only be asked for notification permission when you enable reminders",
-      "Payments now follow your local day, so today's records show up correctly"
+      "Reminders now start off until you enable them in Settings",
+      "The new utang confirmation dialog is wider and better balanced"
     ],
     "fixed": [
-      "You can no longer record a payment of ₱0 or a negative amount",
-      "The payment screen no longer keeps a debt that's already been paid"
+      "Saved utang and bayad forms now return to the previous screen"
     ]
   }
 }
