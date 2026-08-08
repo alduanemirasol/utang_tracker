@@ -15,16 +15,15 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
   static const String _channelName = 'Utang reminders';
 
   final FlutterLocalNotificationsPlugin _plugin;
+  tz.Location? _manila;
   bool _initialized = false;
 
-  tz.Location get _manila {
-    tzdata.initializeTimeZones();
-    return tz.getLocation('Asia/Manila');
-  }
+  tz.Location get manila => _manila ??= tz.getLocation('Asia/Manila');
 
   @override
   Future<void> initialize() async {
     if (_initialized) return;
+    tzdata.initializeTimeZones();
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -50,7 +49,7 @@ class FlutterLocalNotificationsReminderScheduler implements ReminderScheduler {
   Future<void> _schedule(DebtReminder reminder) async {
     final date = reminder.scheduledDate;
     final firstFire = tz.TZDateTime(
-      _manila,
+      manila,
       date.year,
       date.month,
       date.day,
