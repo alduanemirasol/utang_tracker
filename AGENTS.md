@@ -11,7 +11,9 @@
 - After editing drift tables: `dart run build_runner build --delete-conflicting-outputs` — `lib/core/database/app_database.g.dart` is generated AND committed
 - Verify before committing: `flutter analyze` then `flutter test` (matches CI order)
 - Single test: `flutter test test/<file>.dart`
-- Release: bump version in BOTH `pubspec.yaml` and `assets/release_notes/current.json`, then tag `v<version>`. CI fails if tag ≠ pubspec version ≠ notes version.
+- Release: bump version in BOTH `pubspec.yaml` and `assets/release_notes/current.json`, then tag `v<version>` — pushing the tag triggers the full CI release. CI's `verify-version.sh` compares only the semver part (ignores the `+N` build number): tag must equal pubspec version must equal notes `.version`; notes must also have valid `date` + `added/changed/fixed` schema.
+- Do NOT build/sign release APKs locally: release signing keys come from GH secrets (`configure-signing.sh`) — CI handles the APK build and GitHub release on tag push.
+- After changing `assets/images/new-logo*.png`: run `dart run flutter_launcher_icons` and `dart run flutter_native_splash` to regenerate launcher/splash assets.
 
 ## Data rules (enforced in repository impls, not SQL)
 
