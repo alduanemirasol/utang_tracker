@@ -1,12 +1,19 @@
 {
-  "version": "1.0.35",
-  "date": "2026-08-05",
+  "version": "1.0.36",
+  "date": "2026-08-08",
   "notes": {
-    "added": [],
-    "changed": [
-      "Body text now uses medium weight throughout the app for improved readability",
-      "Improved form hints and spacing around payment confirmation"
+    "added": [
+      "Daily 09:00 reminders for due and overdue utang — turn on Reminders in Settings",
+      "Sort customers by name, newest, or oldest with the new sort button",
+      "A check mark now appears on the selected customer in the picker"
     ],
-    "fixed": []
+    "changed": [
+      "You'll only be asked for notification permission when you enable reminders",
+      "Payments now follow your local day, so today's records show up correctly"
+    ],
+    "fixed": [
+      "You can no longer record a payment of ₱0 or a negative amount",
+      "The payment screen no longer keeps a debt that's already been paid"
+    ]
   }
 }
