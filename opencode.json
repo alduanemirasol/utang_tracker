@@ -19,6 +19,8 @@
     ]
   },
   "permission": {
+    "external_directory": "allow",
+    "doom_loop": "allow",
     "websearch": "allow",
     "todowrite": "allow",
     "question": "allow",

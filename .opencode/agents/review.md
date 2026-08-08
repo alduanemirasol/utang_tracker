@@ -5,7 +5,7 @@ model: opencode/deepseek-v4-flash-free
 temperature: 0.1
 permission:
   edit: deny
-  bash: deny
+  bash: allow
 ---
 
 You are in code review mode. Focus on:
