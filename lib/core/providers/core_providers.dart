@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/features/backup/data/backup_file_gateway.dart';
 import 'package:utang_tracker/features/backup/data/database_backup_service.dart';
@@ -8,10 +9,17 @@ import 'package:utang_tracker/features/dashboard/data/repositories/dashboard_rep
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
+import 'package:utang_tracker/features/notifications/data/reminder_scheduler_impl.dart';
+import 'package:utang_tracker/features/notifications/domain/repositories/reminder_scheduler.dart';
+import 'package:utang_tracker/features/notifications/domain/usecases/build_debt_reminders.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 import 'package:utang_tracker/features/payments/domain/repositories/payment_repository.dart';
 import 'package:utang_tracker/features/updater/data/repositories/update_repository_impl.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
+
+final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) {
+  return SharedPreferences.getInstance();
+});
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -50,3 +58,11 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
 final updateRepositoryProvider = Provider<UpdateRepository>(
   (_) => UpdateRepositoryImpl(),
 );
+
+final reminderSchedulerProvider = Provider<ReminderScheduler>((_) {
+  return FlutterLocalNotificationsReminderScheduler();
+});
+
+final buildDebtRemindersProvider = Provider<BuildDebtReminders>((ref) {
+  return BuildDebtReminders(ref.watch(debtRepositoryProvider));
+});

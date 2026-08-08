@@ -27,6 +27,8 @@ dependencies:
   uuid: ^4.5.3
   http: ^1.4.0
   path: ^1.9.1
+  flutter_local_notifications: ^22.3.0
+  timezone: ^0.10.0
 
 dev_dependencies:
   flutter_test:

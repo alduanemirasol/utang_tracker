@@ -25,3 +25,23 @@ class DebtNotificationsNotifier extends AsyncNotifier<DebtNotificationFeed> {
     );
   }
 }
+
+class ReminderEnabled extends AsyncNotifier<bool> {
+  static const String _key = 'reminders_enabled';
+
+  @override
+  Future<bool> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    return prefs.getBool(_key) ?? true;
+  }
+
+  Future<void> setEnabled(bool value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setBool(_key, value);
+    state = AsyncData(value);
+  }
+}
+
+final reminderEnabledProvider = AsyncNotifierProvider<ReminderEnabled, bool>(
+  ReminderEnabled.new,
+);

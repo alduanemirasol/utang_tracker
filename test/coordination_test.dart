@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/domain/money.dart';
@@ -11,8 +12,28 @@ import 'package:utang_tracker/features/dashboard/presentation/providers/dashboar
 import 'package:utang_tracker/features/debts/data/repositories/debt_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
+import 'package:utang_tracker/features/notifications/domain/entities/debt_reminder.dart';
+import 'package:utang_tracker/features/notifications/domain/repositories/reminder_scheduler.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
+
+class _FakeReminderScheduler implements ReminderScheduler {
+  int rescheduleCount = 0;
+  int cancelCount = 0;
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> rescheduleAll(List<DebtReminder> reminders) async {
+    rescheduleCount++;
+  }
+
+  @override
+  Future<void> cancelAll() async {
+    cancelCount++;
+  }
+}
 
 class _RefHarness extends ConsumerWidget {
   const _RefHarness({required this.onRef});
@@ -31,14 +52,17 @@ void main() {
   late CustomerRepositoryImpl customers;
   late DebtRepositoryImpl debts;
   late PaymentRepositoryImpl payments;
+  late _FakeReminderScheduler fakeScheduler;
   late WidgetRef harnessRef;
   var customerRepoBuilds = 0;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     db = AppDatabase.forTesting();
     customers = CustomerRepositoryImpl(db);
     debts = DebtRepositoryImpl(db);
     payments = PaymentRepositoryImpl(db);
+    fakeScheduler = _FakeReminderScheduler();
     customerRepoBuilds = 0;
     addTearDown(() => db.close());
   });
@@ -58,6 +82,7 @@ void main() {
           paymentRepositoryProvider.overrideWith(
             (ref) => PaymentRepositoryImpl(ref.watch(databaseProvider)),
           ),
+          reminderSchedulerProvider.overrideWithValue(fakeScheduler),
         ],
         child: _RefHarness(onRef: (ref) => harnessRef = ref),
       ),
@@ -107,6 +132,9 @@ void main() {
     final dashboard = await harnessRef.read(dashboardSummaryProvider.future);
     expect(dashboard.collectedToday.centavos, 2000);
     expect(dashboard.activeDebtsCount, 1);
+
+    await tester.pumpAndSettle();
+    expect(fakeScheduler.rescheduleCount, greaterThan(0));
   });
 
   testWidgets('refreshes a specific customer detail after invalidation', (
@@ -168,5 +196,8 @@ void main() {
     final list = await harnessRef.read(customersListProvider.future);
     expect(list, isEmpty);
     expect(customerRepoBuilds, beforeBuilds + 1);
+
+    await tester.pumpAndSettle();
+    expect(fakeScheduler.rescheduleCount, greaterThan(0));
   });
 }
