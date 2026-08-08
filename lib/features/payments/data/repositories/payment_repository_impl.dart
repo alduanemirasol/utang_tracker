@@ -150,6 +150,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
       savedAt,
     ).toUtc();
 
+    if (!amount.isPositive) {
+      throw const ValidationException(
+        'Payment amount must be greater than zero.',
+      );
+    }
+
     await _db.transaction(() async {
       final debt =
           await (_db.select(_db.debts)

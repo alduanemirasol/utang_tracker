@@ -89,6 +89,47 @@ void main() {
     );
   });
 
+  test('recordPayment rejects zero and negative amounts', () async {
+    final customer = await customers.create(name: 'Zero Pay');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime.now(),
+      items: [
+        DebtItemInput(
+          productName: 'Rice',
+          quantity: 1,
+          price: Money.fromPesos(50),
+        ),
+      ],
+    );
+
+    await expectLater(
+      payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.zero(),
+        paymentDate: DateTime.now(),
+        paymentMethod: 'Cash',
+      ),
+      throwsA(isA<ValidationException>()),
+    );
+
+    await expectLater(
+      payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.fromCentavos(-100),
+        paymentDate: DateTime.now(),
+        paymentMethod: 'Cash',
+      ),
+      throwsA(isA<ValidationException>()),
+    );
+
+    // No payment row was inserted and the debt is untouched.
+    expect(await payments.getByDebt(debt.id), isEmpty);
+    final detail = await debts.getById(debt.id);
+    expect(detail!.debt.status, DebtStatus.unpaid);
+    expect(detail.debt.paidAmount.isZero, isTrue);
+  });
+
   test('debt saves use the selected day and current save time', () async {
     var savedAt = DateTime(2026, 7, 19, 14, 25, 36);
     debts = DebtRepositoryImpl(db, now: () => savedAt);
