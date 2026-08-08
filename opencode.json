@@ -8,19 +8,17 @@
       ".git/**",
       ".dart_tool/**",
       ".idea/**",
-      ".gradle/**",
-      ".kotlin/**",
       "*.iml",
       ".flutter-plugins-dependencies",
+      "build/**",
+      "android/.gradle/**",
       "android/key.properties",
       "android/local.properties",
-      "android/app/utang-tracker-release.jks"
+      "android/app/utang-tracker-release.jks",
+      ".metadata"
     ]
   },
   "permission": {
-    "external_directory": "ask",
-    "doom_loop": "ask",
-    "edit": "ask",
     "websearch": "allow",
     "todowrite": "allow",
     "question": "allow",
