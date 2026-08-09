@@ -1,0 +1,151 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "default_agent": "plan",
+  "instructions": ["AGENTS.md"],
+
+  "agent": {
+    "build": {
+      "model": "openai/gpt-5.5",
+      "temperature": 0.3,
+      "color": "#5c9cf5",
+      "prompt": "{file:./.opencode/prompts/build.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+
+    "plan": {
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "color": "#f5a742",
+      "prompt": "{file:./.opencode/prompts/plan.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+
+    "explore": {
+      "description": "Finds relevant files, symbols, dependencies, and existing implementations",
+      "mode": "subagent",
+      "model": "opencode/mimo-v2.5-free",
+      "temperature": 0.2,
+      "prompt": "{file:./.opencode/prompts/explore.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+
+    "analyze": {
+      "description": "Performs deep technical analysis and root-cause investigation",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/analyze.txt}",
+      "permission": {
+        "edit": "deny"
+      }
+    },
+
+    "brainstorm": {
+      "description": "Generates and compares practical implementation approaches",
+      "mode": "subagent",
+      "model": "opencode/mimo-v2.5-free",
+      "temperature": 0.7,
+      "prompt": "{file:./.opencode/prompts/brainstorm.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+
+    "debug": {
+      "description": "Investigates bugs, failures, crashes, logs, and unexpected behavior",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/debug.txt}",
+      "permission": {
+        "edit": "deny"
+      }
+    },
+
+    "code-reviewer": {
+      "description": "Reviews code for correctness, security, performance, and maintainability",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/code-reviewer.txt}",
+      "permission": {
+        "edit": "deny"
+      }
+    },
+
+    "test": {
+      "description": "Runs relevant tests, analysis, linting, formatting, and build checks",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/test.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+
+    "security": {
+      "description": "Reviews authentication, permissions, secrets, input validation, storage, APIs, and security risks",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/security.txt}",
+      "permission": {
+        "edit": "deny"
+      }
+    },
+
+    "docs": {
+      "description": "Updates project documentation based on actual implementation changes",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.3,
+      "prompt": "{file:./.opencode/prompts/docs.txt}",
+      "permission": {
+        "bash": "deny"
+      }
+    }
+  },
+
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      ".dart_tool/**",
+      ".idea/**",
+      ".gradle/**",
+      ".kotlin/**",
+      "*.iml",
+      ".flutter-plugins-dependencies",
+      "android/key.properties",
+      "android/local.properties",
+      "android/app/utang-tracker-release.jks"
+    ]
+  },
+
+  "permission": {
+    "websearch": "allow",
+    "todowrite": "allow",
+    "question": "allow",
+    "webfetch": "allow",
+    "skill": "allow",
+    "bash": "allow",
+    "read": "allow",
+    "grep": "allow",
+    "glob": "allow",
+    "task": "allow",
+    "list": "allow",
+    "lsp": "allow"
+  }
+}
