@@ -116,30 +116,6 @@
       "permission": {
         "bash": "deny"
       }
-    },
-
-    "push": {
-      "description": "Safely commits and pushes completed changes to the current branch",
-      "mode": "subagent",
-      "model": "opencode/longcat-2.0-free",
-      "temperature": 0.0,
-      "prompt": "{file:./.opencode/prompts/push.txt}",
-      "permission": {
-        "edit": "deny",
-        "bash": "allow"
-      }
-    },
-
-    "release": {
-      "description": "Analyzes changes since the latest pushed tag, bumps the version, updates release notes, commits, tags, and pushes the release",
-      "mode": "subagent",
-      "model": "opencode/deepseek-v4-flash-free",
-      "temperature": 0.1,
-      "prompt": "{file:./.opencode/prompts/release.txt}",
-      "permission": {
-        "edit": "allow",
-        "bash": "allow"
-      }
     }
   },
 
