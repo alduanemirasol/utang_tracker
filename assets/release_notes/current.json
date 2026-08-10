@@ -1,12 +1,13 @@
 {
-  "version": "1.0.35",
-  "date": "2026-08-05",
+  "version": "1.0.36",
+  "date": "2026-08-10",
   "notes": {
     "added": [],
     "changed": [
-      "Body text now uses medium weight throughout the app for improved readability",
-      "Improved form hints and spacing around payment confirmation"
+      "Add item button moved below the item list on the new utang screen"
     ],
-    "fixed": []
+    "fixed": [
+      "Hardened payment validation and backup restore handling"
+    ]
   }
 }
