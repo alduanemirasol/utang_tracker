@@ -192,6 +192,16 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       _items.add(_LineItemControllers());
     });
     _markDirty();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // ponytail: relies on new items staying expanded; use a GlobalKey if that changes.
+      final ctx = _items.last.productFocusNode.context;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.2,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
   }
 
   List<DebtItemInput>? _buildItems() {
@@ -431,6 +441,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         appBar: AppBar(
           title: Text(widget.isEditing ? 'Edit utang' : 'New utang'),
         ),
+        bottomNavigationBar: _buildBottomBar(),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
           children: [
@@ -643,28 +654,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 ),
               );
             }),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _addItem,
-                icon: const Icon(Icons.add),
-                label: const Text('Add item'),
-              ),
-            ),
             const SizedBox(height: AppSpacing.md),
-            AppCard(
-              child: Row(
-                children: [
-                  Text('Total', style: Theme.of(context).textTheme.titleMedium),
-                  const Spacer(),
-                  MoneyText(
-                    _total,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
             AppTextField(
               controller: _notesController,
               label: 'Notes',
@@ -673,22 +663,71 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               maxLines: 6,
               onChanged: (_) => _markDirty(),
             ),
+            const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding,
+          AppSpacing.sm,
+          AppSpacing.pagePadding,
+          AppSpacing.sm,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             if (_error != null) ...[
-              const SizedBox(height: AppSpacing.md),
               Text(
                 _error!,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: AppColors.danger),
               ),
+              const SizedBox(height: AppSpacing.sm),
             ],
-            const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              label: widget.isEditing ? 'Save changes' : 'Save',
-              onPressed: _save,
-              isLoading: _saving,
+            Row(
+              children: [
+                Text(
+                  'Total',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                MoneyText(
+                  _total,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _addItem,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add item'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: AppButton(
+                    label: widget.isEditing ? 'Save changes' : 'Save',
+                    onPressed: _save,
+                    isLoading: _saving,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
