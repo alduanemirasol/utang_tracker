@@ -2,22 +2,16 @@
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
   "default_agent": "plan",
-  "instructions": ["AGENTS.md"],
-
+  "subagent_depth": 1,
+  "instructions": [
+    "AGENTS.md",
+    ".opencode/WORKFLOWS.md"
+  ],
   "agent": {
-    "build": {
-      "model": "openai/gpt-5.5",
-      "temperature": 0.3,
-      "color": "#5c9cf5",
-      "prompt": "{file:./.opencode/prompts/build.txt}",
-      "permission": {
-        "edit": "allow",
-        "bash": "allow"
-      }
-    },
-
     "plan": {
-      "model": "opencode/deepseek-v4-flash-free",
+      "description": "Tech lead that understands requirements, selects the workflow, and creates implementation plans",
+      "mode": "primary",
+      "model": "opencode/mimo-v2.5-free",
       "temperature": 0.1,
       "color": "#f5a742",
       "prompt": "{file:./.opencode/prompts/plan.txt}",
@@ -26,68 +20,132 @@
         "bash": "deny"
       }
     },
-
+    "build": {
+      "description": "Lead developer for complex features, difficult fixes, and multi-file implementation",
+      "mode": "primary",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.2,
+      "color": "#5c9cf5",
+      "prompt": "{file:./.opencode/prompts/build.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "light-build": {
+      "description": "Handles small fixes, simple features, configuration changes, and straightforward implementation",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.2,
+      "prompt": "{file:./.opencode/prompts/light-build.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
     "explore": {
-      "description": "Finds relevant files, symbols, dependencies, and existing implementations",
+      "description": "Finds relevant files, symbols, dependencies, patterns, and existing implementations",
       "mode": "subagent",
       "model": "opencode/mimo-v2.5-free",
-      "temperature": 0.2,
+      "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/explore.txt}",
       "permission": {
         "edit": "deny",
         "bash": "deny"
       }
     },
-
+    "architect": {
+      "description": "Designs how complex features should fit into the existing architecture",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/architect.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "architecture-guard": {
+      "description": "Checks that changes strictly follow existing architecture, layers, patterns, and conventions",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/architecture-guard.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
     "analyze": {
       "description": "Performs deep technical analysis and root-cause investigation",
       "mode": "subagent",
-      "model": "opencode/deepseek-v4-flash-free",
+      "model": "opencode/longcat-2.0-free",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/analyze.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "deny"
       }
     },
-
     "brainstorm": {
       "description": "Generates and compares practical implementation approaches",
       "mode": "subagent",
       "model": "opencode/mimo-v2.5-free",
-      "temperature": 0.7,
+      "temperature": 0.6,
       "prompt": "{file:./.opencode/prompts/brainstorm.txt}",
       "permission": {
         "edit": "deny",
         "bash": "deny"
       }
     },
-
     "debug": {
-      "description": "Investigates bugs, failures, crashes, logs, and unexpected behavior",
+      "description": "Investigates bugs, crashes, failed tests, logs, and unexpected behavior",
       "mode": "subagent",
-      "model": "opencode/deepseek-v4-flash-free",
+      "model": "opencode/longcat-2.0-free",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/debug.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "allow"
       }
     },
-
-    "code-reviewer": {
-      "description": "Reviews code for correctness, security, performance, and maintainability",
+    "ui": {
+      "description": "Implements screens, components, layouts, forms, navigation, and UI behavior",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.2,
+      "prompt": "{file:./.opencode/prompts/ui.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "database": {
+      "description": "Handles schemas, migrations, queries, indexes, transactions, and persistence",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/database.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "refactor": {
+      "description": "Improves existing code structure while preserving behavior",
       "mode": "subagent",
       "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.1,
-      "prompt": "{file:./.opencode/prompts/code-reviewer.txt}",
+      "prompt": "{file:./.opencode/prompts/refactor.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "allow",
+        "bash": "allow"
       }
     },
-
     "test": {
-      "description": "Runs relevant tests, analysis, linting, formatting, and build checks",
+      "description": "Verifies changes with tests, analysis, linting, formatting, and build checks",
       "mode": "subagent",
-      "model": "opencode/longcat-2.0-free",
+      "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/test.txt}",
       "permission": {
@@ -95,30 +153,73 @@
         "bash": "allow"
       }
     },
-
-    "security": {
-      "description": "Reviews authentication, permissions, secrets, input validation, storage, APIs, and security risks",
+    "code-reviewer": {
+      "description": "Reviews completed changes for correctness, maintainability, security, and regressions",
       "mode": "subagent",
-      "model": "opencode/deepseek-v4-flash-free",
+      "model": "opencode/longcat-2.0-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/code-reviewer.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "security": {
+      "description": "Reviews authentication, authorization, validation, secrets, storage, and security risks",
+      "mode": "subagent",
+      "model": "opencode/longcat-2.0-free",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/security.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "deny"
       }
     },
-
-    "docs": {
-      "description": "Updates project documentation based on actual implementation changes",
+    "performance": {
+      "description": "Finds meaningful performance bottlenecks and inefficient operations",
       "mode": "subagent",
       "model": "opencode/longcat-2.0-free",
-      "temperature": 0.3,
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/performance.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "dependency": {
+      "description": "Handles dependency compatibility, upgrades, package conflicts, and version issues",
+      "mode": "subagent",
+      "model": "opencode/mimo-v2.5-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/dependency.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "git": {
+      "description": "Handles Git state, branches, diffs, merges, conflicts, commits, tags, and releases safely",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/git.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "docs": {
+      "description": "Updates project documentation to match actual implemented behavior",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.2,
       "prompt": "{file:./.opencode/prompts/docs.txt}",
       "permission": {
+        "edit": "allow",
         "bash": "deny"
       }
     }
   },
-
   "watcher": {
     "ignore": [
       ".git/**",
@@ -128,17 +229,17 @@
       ".kotlin/**",
       "*.iml",
       ".flutter-plugins-dependencies",
+      "build/**",
       "android/key.properties",
       "android/local.properties",
       "android/app/utang-tracker-release.jks"
     ]
   },
-
   "permission": {
     "websearch": "allow",
+    "webfetch": "allow",
     "todowrite": "allow",
     "question": "allow",
-    "webfetch": "allow",
     "skill": "allow",
     "bash": "allow",
     "read": "allow",
