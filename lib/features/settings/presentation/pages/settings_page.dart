@@ -25,6 +25,13 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           _MenuItem(
+            icon: Icons.help_outline_rounded,
+            title: 'Help',
+            subtitle: 'How to use the app',
+            onTap: () => context.push('/help'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App version and updates',
