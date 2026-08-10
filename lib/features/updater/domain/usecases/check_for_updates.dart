@@ -82,8 +82,12 @@ ReleaseAsset? selectApkAsset(
 }
 
 bool isNewerVersion(String currentVersion, String latestVersion) {
-  return Version.parse(_pad(latestVersion)) >
-      Version.parse(_pad(currentVersion));
+  try {
+    return Version.parse(_pad(latestVersion)) >
+        Version.parse(_pad(currentVersion));
+  } on FormatException {
+    return false;
+  }
 }
 
 String _pad(String v) {

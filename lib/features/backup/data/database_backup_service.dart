@@ -117,21 +117,23 @@ class DatabaseBackupService {
         wasMigrated: prepared.wasMigrated,
       );
     } catch (error) {
+      var rollbackSucceeded = false;
       try {
         await _deleteIfExists(live);
         await rollback.copy(live.path);
         await _deleteSidecars(live);
         _validateOffline(live, requireCurrentSchema: true);
         await _verifyDriftCanOpen(live);
+        rollbackSucceeded = true;
       } catch (rollbackError) {
         throw BackupException(
           BackupFailureKind.restore,
-          'Restore and automatic rollback both failed. The rollback file is at ${rollback.path}.',
+          'Restore and automatic rollback both failed. Your previous database is preserved at ${displaced.path}. The rollback file is at ${rollback.path}.',
           rollbackError,
         );
       } finally {
         await _deleteIfExists(incoming);
-        await _deleteIfExists(displaced);
+        if (rollbackSucceeded) await _deleteIfExists(displaced);
       }
       throw BackupException(
         BackupFailureKind.restore,

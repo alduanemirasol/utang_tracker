@@ -167,6 +167,53 @@ void main() {
       expect(_allBusinessRows(liveFile), before);
     },
   );
+
+  test(
+    'failed activation keeps displaced database when rollback also fails',
+    () async {
+      final source = await _currentBackup('incoming-double-failure');
+      final liveFile = File(p.join(root.path, 'live.sqlite'));
+      final live = AppDatabase(NativeDatabase(liveFile));
+      await _seed(live, 'original-double-failure');
+      final before = _allBusinessRows(liveFile);
+      final rollback = File(
+        p.join(
+          root.path,
+          'rollback-double-failure-stage-docs',
+          'backups',
+          'utang-tracker-before-restore-2026-07-28T13-00-00.000Z.sqlite',
+        ),
+      );
+      final service = _service(
+        live,
+        liveFile,
+        'rollback-double-failure-stage',
+        afterReplacement: () async {
+          await rollback.delete();
+          throw StateError('simulated activation failure');
+        },
+      );
+      final prepared = await service.prepareRestore(source);
+      final displaced = File('${liveFile.path}.pre_restore');
+
+      await expectLater(
+        () => service.restore(prepared),
+        throwsA(
+          isA<BackupException>()
+              .having((error) => error.kind, 'kind', BackupFailureKind.restore)
+              .having(
+                (error) => error.message,
+                'message',
+                allOf(contains('both failed'), contains(displaced.path)),
+              ),
+        ),
+      );
+
+      expect(await displaced.exists(), isTrue);
+      expect(_allBusinessRows(displaced), before);
+      expect(await File('${liveFile.path}.incoming').exists(), isFalse);
+    },
+  );
 }
 
 DatabaseBackupService _service(

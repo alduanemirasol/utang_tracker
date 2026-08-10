@@ -112,6 +112,41 @@ void main() {
     expect(find.text('Juan Cruz'), findsOneWidget);
   });
 
+  testWidgets('date range compares stored UTC payments by local day', (
+    tester,
+  ) async {
+    final paymentDate = DateTime.utc(2026, 7, 15, 23, 30);
+    final localDay = DateFormatters.startOfLocalDay(paymentDate);
+    final utcDay = DateTime(
+      paymentDate.year,
+      paymentDate.month,
+      paymentDate.day,
+    );
+    final container = await _pumpPage(tester, [
+      _payment(
+        id: 'utc-payment',
+        paymentDate: paymentDate,
+        customerName: 'UTC Payment',
+      ),
+    ]);
+
+    container
+        .read(paymentFiltersProvider.notifier)
+        .setDateRange(startDate: localDay, endDate: localDay);
+    await tester.pumpAndSettle();
+
+    expect(find.text('UTC Payment'), findsOneWidget);
+
+    if (localDay != utcDay) {
+      container
+          .read(paymentFiltersProvider.notifier)
+          .setDateRange(startDate: utcDay, endDate: utcDay);
+      await tester.pumpAndSettle();
+
+      expect(find.text('UTC Payment'), findsNothing);
+    }
+  });
+
   testWidgets('clear filters restores all payments and clears search text', (
     tester,
   ) async {

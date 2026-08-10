@@ -8,13 +8,20 @@ class Money {
   factory Money.fromPesoString(String value) {
     final cleaned = value.trim().replaceAll(',', '');
     if (cleaned.isEmpty) {
-      throw FormatException('Empty amount');
+      throw const FormatException('Empty amount');
     }
-    final pesos = double.tryParse(cleaned);
-    if (pesos == null) {
+    final match = RegExp(
+      r'^(?:(\d+)(?:\.(\d{0,2}))?|\.(\d{1,2}))$',
+    ).firstMatch(cleaned);
+    if (match == null) {
       throw FormatException('Invalid amount: $value');
     }
-    return Money.fromPesos(pesos);
+    final pesos = int.tryParse(match.group(1) ?? '') ?? 0;
+    final centavosText = match.group(2) ?? match.group(3);
+    final centavos =
+        pesos * 100 +
+        (centavosText == null ? 0 : int.parse(centavosText.padRight(2, '0')));
+    return Money._(centavos);
   }
 
   factory Money.fromPesos(double pesos) {

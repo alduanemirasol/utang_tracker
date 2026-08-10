@@ -48,6 +48,13 @@ void main() {
     test('missing patch segment defaults to 0', () {
       expect(isNewerVersion('1.0', '1.0.1'), isTrue);
     });
+
+    test('malformed versions are treated as not newer', () {
+      expect(isNewerVersion('1.0.0', '1.0.0.1'), isFalse);
+      expect(isNewerVersion('1.0.0', '1.0-beta'), isFalse);
+      expect(isNewerVersion('1.0.0', ''), isFalse);
+      expect(isNewerVersion('garbage', '1.2.3'), isFalse);
+    });
   });
 
   group('GithubReleaseDto.fromJson', () {

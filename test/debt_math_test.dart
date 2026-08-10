@@ -50,6 +50,28 @@ void main() {
     test('parses peso strings', () {
       expect(Money.fromPesoString('12.50').centavos, 1250);
       expect(Money.fromPesoString('12').centavos, 1200);
+      expect(Money.fromPesoString('1,234.56').centavos, 123456);
+      expect(Money.fromPesoString('12.').centavos, 1200);
+      expect(Money.fromPesoString('.50').centavos, 50);
+      expect(Money.fromPesoString('0').centavos, 0);
+    });
+
+    test('rejects invalid peso strings', () {
+      for (final value in [
+        '',
+        'abc',
+        'NaN',
+        'Infinity',
+        '1e3',
+        '1.999',
+        '-5',
+      ]) {
+        expect(
+          () => Money.fromPesoString(value),
+          throwsA(isA<FormatException>()),
+          reason: value,
+        );
+      }
     });
 
     test('formats with peso symbol', () {

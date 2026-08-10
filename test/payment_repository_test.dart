@@ -189,6 +189,62 @@ void main() {
     );
   });
 
+  test('rejects zero and negative payment amounts in repository', () async {
+    final customer = await customers.create(name: 'Invalid Amount');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime.now(),
+      items: [
+        DebtItemInput(
+          productName: 'Soda',
+          quantity: 1,
+          price: Money.fromPesos(20),
+        ),
+      ],
+    );
+
+    for (final amount in [Money.zero(), Money.fromCentavos(-1)]) {
+      await expectLater(
+        () => payments.recordPayment(
+          debtId: debt.id,
+          amount: amount,
+          paymentDate: DateTime.now(),
+          paymentMethod: 'Cash',
+        ),
+        throwsA(isA<ValidationException>()),
+      );
+    }
+
+    expect(await payments.getByDebt(debt.id), isEmpty);
+  });
+
+  test('rejects empty payment method in repository', () async {
+    final customer = await customers.create(name: 'Invalid Method');
+    final debt = await debts.create(
+      customerId: customer.id,
+      transactionDate: DateTime.now(),
+      items: [
+        DebtItemInput(
+          productName: 'Soda',
+          quantity: 1,
+          price: Money.fromPesos(20),
+        ),
+      ],
+    );
+
+    await expectLater(
+      () => payments.recordPayment(
+        debtId: debt.id,
+        amount: Money.fromPesos(5),
+        paymentDate: DateTime.now(),
+        paymentMethod: '   ',
+      ),
+      throwsA(isA<ValidationException>()),
+    );
+
+    expect(await payments.getByDebt(debt.id), isEmpty);
+  });
+
   test('paid history remains visible after customer deletion', () async {
     final customer = await customers.create(name: 'Archived customer');
     final debt = await debts.create(
