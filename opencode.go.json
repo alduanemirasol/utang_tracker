@@ -2,12 +2,15 @@
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
   "default_agent": "plan",
-  "instructions": ["AGENTS.md"],
-  
+  "instructions": [
+    "AGENTS.md"
+  ],
   "agent": {
     "build": {
-      "model": "opencode-go/deepseek-v4-pro",
-      "temperature": 0.3,
+      "description": "Handles complex features, large refactors, architecture changes, and difficult implementations",
+      "mode": "primary",
+      "model": "opencode-go/gpt-5.6-luna",
+      "temperature": 0.2,
       "color": "#5c9cf5",
       "prompt": "{file:./.opencode/prompts/build.txt}",
       "permission": {
@@ -15,9 +18,21 @@
         "bash": "allow"
       }
     },
-
-    "plan": {
+    "light-build": {
+      "description": "Handles small fixes, simple features, minor refactors, and straightforward code changes",
+      "mode": "subagent",
       "model": "opencode-go/deepseek-v4-flash",
+      "temperature": 0.2,
+      "prompt": "{file:./.opencode/prompts/light-build.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "plan": {
+      "description": "Creates clear implementation plans before code changes begin",
+      "mode": "primary",
+      "model": "opencode-go/qwen3.7-plus",
       "temperature": 0.1,
       "color": "#f5a742",
       "prompt": "{file:./.opencode/prompts/plan.txt}",
@@ -26,68 +41,98 @@
         "bash": "deny"
       }
     },
-
+    "architect": {
+      "description": "Designs structure, boundaries, data flow, and architecture for complex features",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/architect.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
     "explore": {
       "description": "Finds relevant files, symbols, dependencies, and existing implementations",
       "mode": "subagent",
       "model": "opencode-go/mimo-v2.5",
-      "temperature": 0.2,
+      "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/explore.txt}",
       "permission": {
         "edit": "deny",
         "bash": "deny"
       }
     },
-
     "analyze": {
       "description": "Performs deep technical analysis and root-cause investigation",
       "mode": "subagent",
-      "model": "opencode-go/qwen3.7-plus",
+      "model": "opencode-go/deepseek-v4-pro",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/analyze.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "deny"
       }
     },
-
     "brainstorm": {
       "description": "Generates and compares practical implementation approaches",
       "mode": "subagent",
       "model": "opencode-go/mimo-v2.5",
-      "temperature": 0.7,
+      "temperature": 0.6,
       "prompt": "{file:./.opencode/prompts/brainstorm.txt}",
       "permission": {
         "edit": "deny",
         "bash": "deny"
       }
     },
-
     "debug": {
-      "description": "Investigates bugs, failures, crashes, logs, and unexpected behavior",
+      "description": "Investigates bugs, crashes, logs, failed tests, and unexpected behavior",
       "mode": "subagent",
-      "model": "opencode-go/kimi-k2.7-code",
+      "model": "opencode-go/deepseek-v4-pro",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/debug.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "allow"
       }
     },
-
-    "code-reviewer": {
-      "description": "Reviews code for correctness, security, performance, and maintainability",
+    "refactor": {
+      "description": "Improves code structure without changing existing behavior",
       "mode": "subagent",
-      "model": "opencode-go/qwen3.7-plus",
+      "model": "opencode-go/deepseek-v4-flash",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/refactor.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "database": {
+      "description": "Handles schemas, migrations, queries, indexes, transactions, and data integrity",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/database.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "code-reviewer": {
+      "description": "Reviews completed changes for correctness, security, performance, and maintainability",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.2",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/code-reviewer.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "deny"
       }
     },
-
     "test": {
-      "description": "Runs relevant tests, analysis, linting, formatting, and build checks",
+      "description": "Runs tests, analysis, linting, formatting checks, and build validation",
       "mode": "subagent",
-      "model": "opencode-go/minimax-m2.7",
+      "model": "opencode-go/minimax-m3",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/test.txt}",
       "permission": {
@@ -95,30 +140,62 @@
         "bash": "allow"
       }
     },
-
     "security": {
-      "description": "Reviews authentication, permissions, secrets, input validation, storage, APIs, and security risks",
+      "description": "Reviews authentication, authorization, secrets, validation, storage, APIs, and security risks",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/glm-5.2",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/security.txt}",
       "permission": {
-        "edit": "deny"
+        "edit": "deny",
+        "bash": "deny"
       }
     },
-
-    "docs": {
-      "description": "Updates project documentation based on actual implementation changes",
+    "performance": {
+      "description": "Finds performance bottlenecks, inefficient queries, unnecessary work, and memory issues",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/performance.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "dependency": {
+      "description": "Analyzes package upgrades, compatibility, conflicts, and dependency-related issues",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/dependency.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "git": {
+      "description": "Handles Git state, diffs, branches, commits, merges, conflicts, tags, and releases safely",
       "mode": "subagent",
       "model": "opencode-go/deepseek-v4-flash",
-      "temperature": 0.3,
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/git.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "docs": {
+      "description": "Updates documentation to accurately reflect implemented project behavior",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "temperature": 0.2,
       "prompt": "{file:./.opencode/prompts/docs.txt}",
       "permission": {
+        "edit": "allow",
         "bash": "deny"
       }
     }
   },
-
   "watcher": {
     "ignore": [
       ".git/**",
@@ -128,12 +205,12 @@
       ".kotlin/**",
       "*.iml",
       ".flutter-plugins-dependencies",
+      "build/**",
       "android/key.properties",
       "android/local.properties",
       "android/app/utang-tracker-release.jks"
     ]
   },
-
   "permission": {
     "websearch": "allow",
     "todowrite": "allow",
