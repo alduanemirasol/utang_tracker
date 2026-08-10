@@ -1,14 +1,11 @@
 {
-  "version": "1.0.37",
+  "version": "1.0.38",
   "date": "2026-08-10",
   "notes": {
-    "added": [
-      "In-app help page with a manual guide"
-    ],
+    "added": [],
     "changed": [
-      "Total, Add item, and Save stay visible in a bottom bar on the new utang screen",
-      "Update dialog release notes now display as sections",
-      "Notes icon added to customer details"
+      "Total row on the new utang screen is more compact",
+      "Removed the in-app Help page"
     ],
     "fixed": []
   }
