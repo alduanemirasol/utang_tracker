@@ -3,7 +3,8 @@
   "lsp": true,
   "default_agent": "plan",
   "instructions": [
-    "AGENTS.md"
+    "AGENTS.md",
+    ".opencode/WORKFLOWS.md"
   ],
   "agent": {
     "build": {
@@ -193,6 +194,28 @@
       "permission": {
         "edit": "allow",
         "bash": "deny"
+      }
+    },
+    "architecture-guard": {
+      "description": "Checks that changes strictly follow the project's existing architecture and conventions",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/architecture-guard.txt}",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "ui": {
+      "description": "Implements screens, components, layouts, forms, navigation, and UI behavior",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "temperature": 0.2,
+      "prompt": "{file:./.opencode/prompts/ui.txt}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
       }
     }
   },
