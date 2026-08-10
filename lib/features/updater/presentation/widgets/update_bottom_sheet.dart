@@ -27,7 +27,9 @@ class _UpdateSheet extends ConsumerWidget {
       title: 'App update',
       heightFactor: 0.85,
       child: switch (state) {
-        UpdateChecking() => const LoadingIndicator(message: 'Checking for updates…'),
+        UpdateChecking() => const LoadingIndicator(
+          message: 'Checking for updates…',
+        ),
         UpdateNotAvailable() => _UpToDate(onDone: () => Navigator.pop(context)),
         UpdateAvailable(:final release, :final asset, :final currentVersion) =>
           _UpdateAvailableBody(
@@ -40,30 +42,33 @@ class _UpdateSheet extends ConsumerWidget {
               Navigator.pop(context);
             },
           ),
-        UpdateDownloading(:final progress, :final release) =>
-          _DownloadingBody(
-            release: release,
-            progress: progress,
-            onCancel: () {
-              notifier.reset();
-              Navigator.pop(context);
-            },
-          ),
+        UpdateDownloading(:final progress, :final release) => _DownloadingBody(
+          release: release,
+          progress: progress,
+          onCancel: () {
+            notifier.reset();
+            Navigator.pop(context);
+          },
+        ),
         UpdateDownloaded(:final release) => _DownloadedBody(
           release: release,
           onInstall: notifier.install,
           onCancel: () => Navigator.pop(context),
         ),
-        UpdatePermissionRequired(:final release) =>
-          _PermissionRequiredBody(
-            release: release,
-            onOpenSettings: notifier.openInstallSettings,
-            onInstall: notifier.install,
-            onDismiss: () => Navigator.pop(context),
-          ),
-        UpdateInstalling() =>
-          const LoadingIndicator(message: 'Opening installer…'),
-        UpdateError(:final message, :final isNetworkError, :final isPermissionError) =>
+        UpdatePermissionRequired(:final release) => _PermissionRequiredBody(
+          release: release,
+          onOpenSettings: notifier.openInstallSettings,
+          onInstall: notifier.install,
+          onDismiss: () => Navigator.pop(context),
+        ),
+        UpdateInstalling() => const LoadingIndicator(
+          message: 'Opening installer…',
+        ),
+        UpdateError(
+          :final message,
+          :final isNetworkError,
+          :final isPermissionError,
+        ) =>
           _ErrorBody(
             message: message,
             isNetworkError: isNetworkError,
@@ -113,9 +118,9 @@ class _UpToDate extends StatelessWidget {
           Text(
             'The latest version is already installed.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(label: 'Done', onPressed: onDone),
@@ -163,10 +168,7 @@ class _UpdateAvailableBody extends StatelessWidget {
                   latestVersion: release.version,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _InfoChip(
-                  icon: Icons.download_outlined,
-                  label: '$sizeMb MB',
-                ),
+                _InfoChip(icon: Icons.download_outlined, label: '$sizeMb MB'),
                 const SizedBox(height: AppSpacing.lg),
                 if (release.releaseNotes.isNotEmpty) ...[
                   Text(
@@ -182,13 +184,7 @@ class _UpdateAvailableBody extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppColors.outline),
                     ),
-                    child: Text(
-                      release.releaseNotes,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.6,
-                      ),
-                    ),
+                    child: _ReleaseNotesBody(body: release.releaseNotes),
                   ),
                 ],
               ],
@@ -225,6 +221,88 @@ class _UpdateAvailableBody extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ReleaseNotesBody extends StatelessWidget {
+  const _ReleaseNotesBody({required this.body});
+
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final sections = _parseReleaseNotes(body);
+    if (sections.isEmpty) {
+      return Text(
+        body,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppColors.textSecondary,
+          height: 1.6,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var index = 0; index < sections.length; index++) ...[
+          if (index > 0) const SizedBox(height: AppSpacing.md),
+          Text(
+            sections[index].label,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          for (final note in sections[index].notes) _ReleaseNoteBullet(note),
+        ],
+      ],
+    );
+  }
+}
+
+class _ReleaseNoteBullet extends StatelessWidget {
+  const _ReleaseNoteBullet(this.note);
+
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: AppColors.textSecondary,
+      height: 1.6,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('•  ', style: style),
+        Expanded(child: Text(note, style: style)),
+      ],
+    );
+  }
+}
+
+List<({String label, List<String> notes})> _parseReleaseNotes(String body) {
+  final sections = <({String label, List<String> notes})>[];
+  String? label;
+  final notes = <String>[];
+
+  void flush() {
+    if (label != null && notes.isNotEmpty) {
+      sections.add((label: label, notes: List.of(notes)));
+    }
+    notes.clear();
+  }
+
+  for (final line in body.split('\n')) {
+    final trimmed = line.trim();
+    if (trimmed.startsWith('## ')) {
+      flush();
+      label = trimmed.substring(3).trim();
+    } else if (trimmed.startsWith('- ') && label != null) {
+      notes.add(trimmed.substring(2).trim());
+    }
+  }
+  flush();
+
+  return sections;
 }
 
 class _DownloadingBody extends StatelessWidget {
@@ -274,9 +352,9 @@ class _DownloadingBody extends StatelessWidget {
           Text(
             '$pct%',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppButton(
@@ -334,9 +412,9 @@ class _DownloadedBody extends StatelessWidget {
           Text(
             'Tap Install to open the Android package installer.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
@@ -378,8 +456,8 @@ class _ErrorBody extends StatelessWidget {
     final icon = isPermissionError
         ? Icons.security_rounded
         : isNetworkError
-            ? Icons.wifi_off_rounded
-            : Icons.error_outline_rounded;
+        ? Icons.wifi_off_rounded
+        : Icons.error_outline_rounded;
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
@@ -403,10 +481,7 @@ class _ErrorBody extends StatelessWidget {
               onPressed: onOpenSettings,
             ),
           ] else ...[
-            AppButton(
-              label: 'Try again',
-              onPressed: onRetry,
-            ),
+            AppButton(label: 'Try again', onPressed: onRetry),
           ],
           const SizedBox(height: AppSpacing.sm),
           AppButton(
@@ -467,9 +542,9 @@ class _PermissionRequiredBody extends StatelessWidget {
             'v${release.version} has been downloaded. To install it, '
             'allow the app to install from unknown sources in your device settings.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
@@ -575,9 +650,9 @@ class _VersionBadge extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             version,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: textColor,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: textColor),
           ),
         ],
       ),
