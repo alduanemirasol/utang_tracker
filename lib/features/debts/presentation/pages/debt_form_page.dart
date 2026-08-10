@@ -465,20 +465,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                     },
             ),
             const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: [
-                AppTextField.buildLabel(
-                  context,
-                  'Items *',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: _addItem,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add item'),
-                ),
-              ],
+            AppTextField.buildLabel(
+              context,
+              'Items *',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
             ...List.generate(_items.length, (index) {
@@ -653,6 +643,15 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 ),
               );
             }),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _addItem,
+                icon: const Icon(Icons.add),
+                label: const Text('Add item'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
             AppCard(
               child: Row(
                 children: [
