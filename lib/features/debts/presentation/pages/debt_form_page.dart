@@ -20,7 +20,6 @@ import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
-import 'package:utang_tracker/features/customers/domain/usecases/customer_usecases.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
@@ -94,9 +93,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _resolveCustomerName(String id) async {
-    final customer = await GetCustomerById(
-      ref.read(customerRepositoryProvider),
-    )(id);
+    final customer = await ref.read(customerRepositoryProvider).getById(id);
     if (!mounted || customer == null) return;
     if (_customerId != id) return;
     setState(() => _customerName = customer.name);
@@ -108,17 +105,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   Future<void> _confirmBack() async {
     if (_saving) return;
-    final confirmed = await showConfirmationDialog(
-      context: context,
-      title: 'Discard changes?',
-      message:
-          'You have unsaved changes. Are you sure you want to discard them?',
-      confirmLabel: 'Discard',
-      isDestructive: true,
-    );
-    if (confirmed && mounted) {
-      context.pop();
-    }
+    if (await confirmDiscardChanges(context) && mounted) context.pop();
   }
 
   Future<void> _pickCustomer() async {
@@ -147,7 +134,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
   Money get _total {
     final prices = _items.map(_itemSubtotal).where((price) => price.isPositive);
-    return DebtMath.computeTotal(prices);
+    return computeTotal(prices);
   }
 
   Money _itemSubtotal(_LineItemControllers item) {
@@ -282,8 +269,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
 
     setState(() => _saving = true);
     try {
+      final repo = ref.read(debtRepositoryProvider);
       if (widget.isEditing) {
-        await ref.read(updateDebtProvider)(
+        await repo.update(
           id: widget.debtId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
@@ -296,7 +284,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           debtId: widget.debtId,
         );
       } else {
-        final debt = await ref.read(createDebtProvider)(
+        final debt = await repo.create(
           customerId: _customerId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
@@ -947,8 +935,8 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
       final trimmed = query.trim();
       final repo = ref.read(customerRepositoryProvider);
       final results = trimmed.isEmpty
-          ? await GetCustomers(repo)()
-          : await SearchCustomers(repo)(trimmed);
+          ? await repo.getAll()
+          : await repo.search(trimmed);
       if (!mounted) return;
       setState(() {
         _customers = results;

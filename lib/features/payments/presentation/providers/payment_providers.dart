@@ -4,10 +4,6 @@ import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 import 'package:utang_tracker/features/payments/domain/usecases/payment_usecases.dart';
 
-final getPaymentsProvider = Provider((ref) {
-  return GetPayments(ref.watch(paymentRepositoryProvider));
-});
-
 final recordPaymentUseCaseProvider = Provider((ref) {
   return RecordPayment(ref.watch(paymentRepositoryProvider));
 });
@@ -30,25 +26,6 @@ class PaymentFilters {
       paymentMethod != null ||
       startDate != null ||
       endDate != null;
-
-  PaymentFilters copyWith({
-    String? searchQuery,
-    String? paymentMethod,
-    DateTime? startDate,
-    DateTime? endDate,
-    bool clearPaymentMethod = false,
-    bool clearStartDate = false,
-    bool clearEndDate = false,
-  }) {
-    return PaymentFilters(
-      searchQuery: searchQuery ?? this.searchQuery,
-      paymentMethod: clearPaymentMethod
-          ? null
-          : paymentMethod ?? this.paymentMethod,
-      startDate: clearStartDate ? null : startDate ?? this.startDate,
-      endDate: clearEndDate ? null : endDate ?? this.endDate,
-    );
-  }
 }
 
 class PaymentFiltersNotifier extends Notifier<PaymentFilters> {
@@ -56,22 +33,29 @@ class PaymentFiltersNotifier extends Notifier<PaymentFilters> {
   PaymentFilters build() => const PaymentFilters();
 
   void setSearchQuery(String query) {
-    state = state.copyWith(searchQuery: query);
+    state = PaymentFilters(
+      searchQuery: query,
+      paymentMethod: state.paymentMethod,
+      startDate: state.startDate,
+      endDate: state.endDate,
+    );
   }
 
   void setPaymentMethod(String? method) {
-    state = state.copyWith(
+    state = PaymentFilters(
+      searchQuery: state.searchQuery,
       paymentMethod: method,
-      clearPaymentMethod: method == null,
+      startDate: state.startDate,
+      endDate: state.endDate,
     );
   }
 
   void setDateRange({DateTime? startDate, DateTime? endDate}) {
-    state = state.copyWith(
+    state = PaymentFilters(
+      searchQuery: state.searchQuery,
+      paymentMethod: state.paymentMethod,
       startDate: startDate,
       endDate: endDate,
-      clearStartDate: startDate == null,
-      clearEndDate: endDate == null,
     );
   }
 
@@ -98,7 +82,7 @@ class PaymentFilterOptions {
 final paymentFilterOptionsProvider = FutureProvider<PaymentFilterOptions>((
   ref,
 ) async {
-  final payments = await ref.watch(getPaymentsProvider)();
+  final payments = await ref.watch(paymentRepositoryProvider).getAll();
   final methods =
       payments
           .map((payment) => payment.paymentMethod)
@@ -122,7 +106,7 @@ class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
   @override
   Future<List<Payment>> build() async {
     final filters = ref.watch(paymentFiltersProvider);
-    final payments = await ref.watch(getPaymentsProvider)();
+    final payments = await ref.watch(paymentRepositoryProvider).getAll();
     return _applyFilters(payments, filters);
   }
 
@@ -130,7 +114,7 @@ class PaymentsListNotifier extends AsyncNotifier<List<Payment>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final filters = ref.read(paymentFiltersProvider);
-      final payments = await ref.read(getPaymentsProvider)();
+      final payments = await ref.read(paymentRepositoryProvider).getAll();
       return _applyFilters(payments, filters);
     });
   }

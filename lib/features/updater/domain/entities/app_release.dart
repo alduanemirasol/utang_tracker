@@ -17,31 +17,24 @@ class ReleaseAsset extends Equatable {
 
 class AppRelease extends Equatable {
   const AppRelease({
-    required this.tagName,
     required this.version,
     required this.releaseNotes,
-    required this.publishedAt,
     required this.isDraft,
     required this.isPrerelease,
     required this.assets,
   });
 
-  final String tagName;
-
   final String version;
 
   final String releaseNotes;
-  final DateTime publishedAt;
   final bool isDraft;
   final bool isPrerelease;
   final List<ReleaseAsset> assets;
 
   @override
   List<Object?> get props => [
-    tagName,
     version,
     releaseNotes,
-    publishedAt,
     isDraft,
     isPrerelease,
     assets,

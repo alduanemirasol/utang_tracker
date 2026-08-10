@@ -56,9 +56,9 @@ void main() {
       () => _service(live, liveFile, 'foreign-stage').prepareRestore(fixture),
       throwsA(
         isA<BackupException>().having(
-          (error) => error.kind,
-          'kind',
-          BackupFailureKind.wrongApplication,
+          (error) => error.message,
+          'message',
+          'This file was not created by Utang Tracker.',
         ),
       ),
     );
@@ -80,9 +80,9 @@ void main() {
       () => _service(live, liveFile, 'newer-stage').prepareRestore(fixture),
       throwsA(
         isA<BackupException>().having(
-          (error) => error.kind,
-          'kind',
-          BackupFailureKind.unsupportedSchema,
+          (error) => error.message,
+          'message',
+          contains('Update the app before restoring it.'),
         ),
       ),
     );
@@ -199,13 +199,11 @@ void main() {
       await expectLater(
         () => service.restore(prepared),
         throwsA(
-          isA<BackupException>()
-              .having((error) => error.kind, 'kind', BackupFailureKind.restore)
-              .having(
-                (error) => error.message,
-                'message',
-                allOf(contains('both failed'), contains(displaced.path)),
-              ),
+          isA<BackupException>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('both failed'), contains(displaced.path)),
+          ),
         ),
       );
 

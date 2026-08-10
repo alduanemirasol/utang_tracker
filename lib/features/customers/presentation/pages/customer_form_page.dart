@@ -9,6 +9,7 @@ import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 
@@ -48,17 +49,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   }
 
   Future<void> _confirmBack() async {
-    final confirmed = await showConfirmationDialog(
-      context: context,
-      title: 'Discard changes?',
-      message:
-          'You have unsaved changes. Are you sure you want to discard them?',
-      confirmLabel: 'Discard',
-      isDestructive: true,
-    );
-    if (confirmed && mounted) {
-      context.pop();
-    }
+    if (await confirmDiscardChanges(context) && mounted) context.pop();
   }
 
   void _populate(Customer customer) {
@@ -85,8 +76,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     });
 
     try {
+      final repo = ref.read(customerRepositoryProvider);
       if (widget.isEditing && _existing != null) {
-        await ref.read(updateCustomerProvider)(
+        await repo.update(
           Customer(
             id: _existing!.id,
             name: name,
@@ -98,7 +90,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         );
         invalidateBusinessData(ref, customerId: _existing!.id);
       } else {
-        final created = await ref.read(createCustomerProvider)(
+        final created = await repo.create(
           name: name,
           phone: _phoneController.text,
           notes: _notesController.text,

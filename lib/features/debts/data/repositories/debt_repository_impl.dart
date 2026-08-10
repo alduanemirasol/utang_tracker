@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/utils/date_time_utils.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
+import 'package:utang_tracker/core/utils/string_utils.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item.dart';
@@ -130,17 +131,14 @@ class DebtRepositoryImpl implements DebtRepository {
     }
 
     final prepared = _prepareItems(items);
-    final total = DebtMath.computeTotal(prepared.map((e) => e.price));
+    final total = computeTotal(prepared.map((e) => e.price));
     final paid = Money.zero();
-    final balance = DebtMath.computeBalance(
-      totalAmount: total,
-      paidAmount: paid,
-    );
-    final status = DebtMath.deriveStatus(totalAmount: total, paidAmount: paid);
+    final balance = total - paid;
+    final status = deriveStatus(totalAmount: total, paidAmount: paid);
 
     final savedAt = _now();
     final now = savedAt.toUtc();
-    final savedTransactionDate = DateTimeUtils.combineLocalDateAndTime(
+    final savedTransactionDate = combineLocalDateAndTime(
       transactionDate,
       savedAt,
     ).toUtc();
@@ -159,7 +157,7 @@ class DebtRepositoryImpl implements DebtRepository {
               status: status.value,
               transactionDate: savedTransactionDate,
               dueDate: Value(dueDate?.toUtc()),
-              notes: Value(_emptyToNull(notes)),
+              notes: Value(emptyToNull(notes)),
               createdAt: now,
               updatedAt: now,
             ),
@@ -205,16 +203,13 @@ class DebtRepositoryImpl implements DebtRepository {
 
     _validateItems(items);
     final prepared = _prepareItems(items);
-    final total = DebtMath.computeTotal(prepared.map((e) => e.price));
+    final total = computeTotal(prepared.map((e) => e.price));
     final paid = Money.zero();
-    final balance = DebtMath.computeBalance(
-      totalAmount: total,
-      paidAmount: paid,
-    );
-    final status = DebtMath.deriveStatus(totalAmount: total, paidAmount: paid);
+    final balance = total - paid;
+    final status = deriveStatus(totalAmount: total, paidAmount: paid);
     final savedAt = _now();
     final now = savedAt.toUtc();
-    final savedTransactionDate = DateTimeUtils.combineLocalDateAndTime(
+    final savedTransactionDate = combineLocalDateAndTime(
       transactionDate,
       savedAt,
     ).toUtc();
@@ -235,7 +230,7 @@ class DebtRepositoryImpl implements DebtRepository {
               status: Value(status.value),
               transactionDate: Value(savedTransactionDate),
               dueDate: Value(dueDate?.toUtc()),
-              notes: Value(_emptyToNull(notes)),
+              notes: Value(emptyToNull(notes)),
               updatedAt: Value(now),
             ),
           );
@@ -328,11 +323,5 @@ class DebtRepositoryImpl implements DebtRepository {
         price: item.price,
       );
     }).toList();
-  }
-
-  String? _emptyToNull(String? value) {
-    if (value == null) return null;
-    final t = value.trim();
-    return t.isEmpty ? null : t;
   }
 }

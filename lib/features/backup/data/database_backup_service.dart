@@ -49,7 +49,6 @@ class DatabaseBackupService {
   Future<PreparedRestore> prepareRestore(File source) async {
     if (!await source.exists() || await source.length() == 0) {
       throw const BackupException(
-        BackupFailureKind.invalidFile,
         'The selected backup is empty or cannot be read.',
       );
     }
@@ -85,7 +84,6 @@ class DatabaseBackupService {
     } catch (error) {
       await _deleteIfExists(staged);
       throw BackupException(
-        BackupFailureKind.invalidFile,
         'This backup does not match a supported Utang Tracker database.',
         error,
       );
@@ -127,7 +125,6 @@ class DatabaseBackupService {
         rollbackSucceeded = true;
       } catch (rollbackError) {
         throw BackupException(
-          BackupFailureKind.restore,
           'Restore and automatic rollback both failed. Your previous database is preserved at ${displaced.path}. The rollback file is at ${rollback.path}.',
           rollbackError,
         );
@@ -136,7 +133,6 @@ class DatabaseBackupService {
         if (rollbackSucceeded) await _deleteIfExists(displaced);
       }
       throw BackupException(
-        BackupFailureKind.restore,
         'The restore failed. Your previous database was restored automatically.',
         error,
       );
@@ -168,13 +164,11 @@ class DatabaseBackupService {
           .map((row) => row.values.first.toString());
       if (integrity.length != 1 || integrity.first.toLowerCase() != 'ok') {
         throw const BackupException(
-          BackupFailureKind.integrity,
           'The backup failed SQLite integrity validation.',
         );
       }
       if (raw.select('PRAGMA foreign_key_check').isNotEmpty) {
         throw const BackupException(
-          BackupFailureKind.integrity,
           'The backup contains broken data relationships.',
         );
       }
@@ -182,27 +176,23 @@ class DatabaseBackupService {
       final applicationId = _pragmaInt(raw, 'application_id');
       if (applicationId != AppDatabase.applicationId) {
         throw const BackupException(
-          BackupFailureKind.wrongApplication,
           'This file was not created by Utang Tracker.',
         );
       }
       final version = _pragmaInt(raw, 'user_version');
       if (version < 1) {
         throw const BackupException(
-          BackupFailureKind.invalidFile,
           'The backup has no supported database schema version.',
         );
       }
       if (version > AppDatabase.currentSchemaVersion) {
         throw BackupException(
-          BackupFailureKind.unsupportedSchema,
           'This backup uses schema $version, but this app supports up to schema ${AppDatabase.currentSchemaVersion}. Update the app before restoring it.',
         );
       }
       if (requireCurrentSchema) {
         if (version != AppDatabase.currentSchemaVersion) {
           throw const BackupException(
-            BackupFailureKind.unsupportedSchema,
             'The backup could not be migrated to the current schema.',
           );
         }
@@ -213,7 +203,6 @@ class DatabaseBackupService {
       rethrow;
     } catch (error) {
       throw BackupException(
-        BackupFailureKind.invalidFile,
         'The selected file is not a valid SQLite backup.',
         error,
       );
@@ -274,7 +263,6 @@ class DatabaseBackupService {
           .toSet();
       if (!columns.containsAll(entry.value)) {
         throw const BackupException(
-          BackupFailureKind.invalidFile,
           'The backup schema does not match Utang Tracker.',
         );
       }

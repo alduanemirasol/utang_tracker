@@ -1,34 +1,19 @@
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 
-class DebtMath {
-  DebtMath._();
+Money computeTotal(Iterable<Money> prices) {
+  return prices.fold(Money.zero(), (total, price) => total + price);
+}
 
-  static Money computeTotal(Iterable<Money> prices) {
-    var total = Money.zero();
-    for (final price in prices) {
-      total = total + price;
-    }
-    return total;
+DebtStatus deriveStatus({
+  required Money totalAmount,
+  required Money paidAmount,
+}) {
+  if (paidAmount.centavos <= 0) {
+    return DebtStatus.unpaid;
   }
-
-  static Money computeBalance({
-    required Money totalAmount,
-    required Money paidAmount,
-  }) {
-    return totalAmount - paidAmount;
+  if (paidAmount.centavos >= totalAmount.centavos) {
+    return DebtStatus.paid;
   }
-
-  static DebtStatus deriveStatus({
-    required Money totalAmount,
-    required Money paidAmount,
-  }) {
-    if (paidAmount.centavos <= 0) {
-      return DebtStatus.unpaid;
-    }
-    if (paidAmount.centavos >= totalAmount.centavos) {
-      return DebtStatus.paid;
-    }
-    return DebtStatus.partial;
-  }
+  return DebtStatus.partial;
 }

@@ -4,40 +4,29 @@ import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 
 void main() {
-  group('DebtMath', () {
+  group('debt math', () {
     test('total is sum of custom item prices', () {
-      final total = DebtMath.computeTotal([
-        Money.fromPesos(50),
-        Money.fromPesos(25.50),
-      ]);
+      final total = computeTotal([Money.fromPesos(50), Money.fromPesos(25.50)]);
       expect(total.centavos, 7550);
-    });
-
-    test('balance = total - paid', () {
-      final balance = DebtMath.computeBalance(
-        totalAmount: Money.fromPesos(100),
-        paidAmount: Money.fromPesos(40),
-      );
-      expect(balance.centavos, 6000);
     });
 
     test('status derivation', () {
       expect(
-        DebtMath.deriveStatus(
+        deriveStatus(
           totalAmount: Money.fromPesos(100),
           paidAmount: Money.zero(),
         ),
         DebtStatus.unpaid,
       );
       expect(
-        DebtMath.deriveStatus(
+        deriveStatus(
           totalAmount: Money.fromPesos(100),
           paidAmount: Money.fromPesos(40),
         ),
         DebtStatus.partial,
       );
       expect(
-        DebtMath.deriveStatus(
+        deriveStatus(
           totalAmount: Money.fromPesos(100),
           paidAmount: Money.fromPesos(100),
         ),

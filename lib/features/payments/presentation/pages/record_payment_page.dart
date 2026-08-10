@@ -18,9 +18,9 @@ import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
-import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 import 'package:utang_tracker/features/payments/presentation/providers/payment_providers.dart';
 
 class RecordPaymentPage extends ConsumerStatefulWidget {
@@ -74,23 +74,13 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
   Future<void> _confirmBack() async {
     if (_saving) return;
-    final confirmed = await showConfirmationDialog(
-      context: context,
-      title: 'Discard changes?',
-      message:
-          'You have unsaved changes. Are you sure you want to discard them?',
-      confirmLabel: 'Discard',
-      isDestructive: true,
-    );
-    if (confirmed && mounted) {
-      context.pop();
-    }
+    if (await confirmDiscardChanges(context) && mounted) context.pop();
   }
 
   Future<void> _resolveInitialDebt(String id) async {
     setState(() => _resolvingInitial = true);
     try {
-      final detail = await ref.read(getDebtDetailProvider)(id);
+      final detail = await ref.read(debtRepositoryProvider).getById(id);
       if (!mounted || detail == null) return;
       final debt = detail.debt;
       if (debt.status == DebtStatus.paid) {
@@ -462,9 +452,9 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       _error = null;
     });
     try {
-      final getDebts = ref.read(getDebtsProvider);
-      final unpaid = await getDebts(status: DebtStatus.unpaid);
-      final partial = await getDebts(status: DebtStatus.partial);
+      final repo = ref.read(debtRepositoryProvider);
+      final unpaid = await repo.getAll(status: DebtStatus.unpaid);
+      final partial = await repo.getAll(status: DebtStatus.partial);
       final open = [...unpaid, ...partial]
         ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
 

@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
 import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/utils/string_utils.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
@@ -66,8 +67,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
           CustomersCompanion.insert(
             id: id,
             name: trimmed,
-            phone: Value(_emptyToNull(phone)),
-            notes: Value(_emptyToNull(notes)),
+            phone: Value(emptyToNull(phone)),
+            notes: Value(emptyToNull(notes)),
             createdAt: now,
             updatedAt: now,
           ),
@@ -91,8 +92,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
         )..where((t) => t.id.equals(customer.id) & t.deletedAt.isNull())).write(
           CustomersCompanion(
             name: Value(trimmed),
-            phone: Value(_emptyToNull(customer.phone)),
-            notes: Value(_emptyToNull(customer.notes)),
+            phone: Value(emptyToNull(customer.phone)),
+            notes: Value(emptyToNull(customer.notes)),
             updatedAt: Value(now),
           ),
         );
@@ -172,11 +173,5 @@ class CustomerRepositoryImpl implements CustomerRepository {
         'A customer with this name already exists.',
       );
     }
-  }
-
-  String? _emptyToNull(String? value) {
-    if (value == null) return null;
-    final t = value.trim();
-    return t.isEmpty ? null : t;
   }
 }

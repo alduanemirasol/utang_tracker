@@ -7,22 +7,6 @@ import 'package:utang_tracker/features/debts/domain/repositories/debt_repository
 import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
-final getDebtsProvider = Provider((ref) {
-  return GetDebts(ref.watch(debtRepositoryProvider));
-});
-
-final getDebtDetailProvider = Provider((ref) {
-  return GetDebtDetail(ref.watch(debtRepositoryProvider));
-});
-
-final createDebtProvider = Provider((ref) {
-  return CreateDebt(ref.watch(debtRepositoryProvider));
-});
-
-final updateDebtProvider = Provider((ref) {
-  return UpdateDebt(ref.watch(debtRepositoryProvider));
-});
-
 class DebtStatusFilter extends Notifier<DebtStatus?> {
   @override
   DebtStatus? build() => null;
@@ -53,7 +37,9 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
   Future<List<Debt>> build() async {
     final status = ref.watch(debtStatusFilterProvider);
     final sort = ref.watch(debtSortOrderProvider);
-    final debts = await ref.watch(getDebtsProvider)(status: status);
+    final debts = await ref
+        .watch(debtRepositoryProvider)
+        .getAll(status: status);
     return applySort(debts, sort);
   }
 
@@ -62,13 +48,13 @@ class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
     state = await AsyncValue.guard(() async {
       final status = ref.read(debtStatusFilterProvider);
       final sort = ref.read(debtSortOrderProvider);
-      final debts = await ref.read(getDebtsProvider)(status: status);
+      final debts = await ref
+          .read(debtRepositoryProvider)
+          .getAll(status: status);
       return applySort(debts, sort);
     });
   }
-
 }
-
 
 class DebtDetailViewData {
   const DebtDetailViewData({required this.detail, required this.payments});
@@ -81,7 +67,7 @@ final debtDetailProvider = FutureProvider.family<DebtDetailViewData?, String>((
   ref,
   id,
 ) async {
-  final detail = await ref.watch(getDebtDetailProvider)(id);
+  final detail = await ref.watch(debtRepositoryProvider).getById(id);
   if (detail == null) return null;
   final payments = await ref.watch(paymentRepositoryProvider).getByDebt(id);
   return DebtDetailViewData(detail: detail, payments: payments);

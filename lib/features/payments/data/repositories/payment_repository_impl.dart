@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/utils/date_time_utils.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
+import 'package:utang_tracker/core/utils/string_utils.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
@@ -154,7 +155,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     final paymentId = _uuid.v4();
     final savedAt = _now();
     final now = savedAt.toUtc();
-    final savedPaymentDate = DateTimeUtils.combineLocalDateAndTime(
+    final savedPaymentDate = combineLocalDateAndTime(
       paymentDate,
       savedAt,
     ).toUtc();
@@ -189,21 +190,15 @@ class PaymentRepositoryImpl implements PaymentRepository {
               amount: amount.centavos,
               paymentDate: savedPaymentDate,
               paymentMethod: paymentMethod.trim(),
-              notes: Value(_emptyToNull(notes)),
+              notes: Value(emptyToNull(notes)),
               createdAt: now,
             ),
           );
 
       final total = Money.fromCentavos(debt.totalAmount);
       final newPaid = Money.fromCentavos(debt.paidAmount) + amount;
-      final newBalance = DebtMath.computeBalance(
-        totalAmount: total,
-        paidAmount: newPaid,
-      );
-      final newStatus = DebtMath.deriveStatus(
-        totalAmount: total,
-        paidAmount: newPaid,
-      );
+      final newBalance = total - newPaid;
+      final newStatus = deriveStatus(totalAmount: total, paidAmount: newPaid);
 
       await (_db.update(
         _db.debts,
@@ -221,11 +216,5 @@ class PaymentRepositoryImpl implements PaymentRepository {
       _db.payments,
     )..where((t) => t.id.equals(paymentId) & t.deletedAt.isNull())).getSingle();
     return mapPayment(row);
-  }
-
-  String? _emptyToNull(String? value) {
-    if (value == null) return null;
-    final t = value.trim();
-    return t.isEmpty ? null : t;
   }
 }

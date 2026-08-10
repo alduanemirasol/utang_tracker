@@ -10,12 +10,8 @@ class GithubReleaseDto {
         .toList(growable: false);
 
     return AppRelease(
-      tagName: tagName,
       version: version,
       releaseNotes: json['body'] as String? ?? '',
-      publishedAt: DateTime.parse(
-        json['published_at'] as String? ?? DateTime.now().toIso8601String(),
-      ),
       isDraft: json['draft'] as bool? ?? false,
       isPrerelease: json['prerelease'] as bool? ?? false,
       assets: assets,

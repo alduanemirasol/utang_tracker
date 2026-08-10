@@ -16,6 +16,8 @@ import 'package:utang_tracker/features/updater/domain/repositories/update_reposi
 import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
 import 'package:utang_tracker/features/updater/presentation/providers/update_providers.dart';
 
+const _supportedAbis = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -76,7 +78,6 @@ void main() {
     test('parses basic fields correctly', () {
       final release = GithubReleaseDto.fromJson(baseJson());
 
-      expect(release.tagName, 'v1.2.0');
       expect(release.version, '1.2.0');
       expect(release.releaseNotes, 'Bug fixes and improvements.');
       expect(release.isDraft, isFalse);
@@ -125,10 +126,8 @@ void main() {
 
     AppRelease makeRelease({bool isDraft = false, bool isPrerelease = false}) =>
         AppRelease(
-          tagName: 'v1.0.0',
           version: '1.0.0',
           releaseNotes: '',
-          publishedAt: DateTime(2024),
           isDraft: isDraft,
           isPrerelease: isPrerelease,
           assets: [dummyAsset()],
@@ -165,7 +164,7 @@ void main() {
         asset('utang-tracker-x86_64-v1.0.0.apk'),
         asset('utang-tracker-universal-v1.0.0.apk'),
       ];
-      final selected = selectApkAsset(assets, AppConstants.supportedAbis);
+      final selected = selectApkAsset(assets, _supportedAbis);
       expect(selected?.name, 'utang-tracker-arm64-v8a-v1.0.0.apk');
     });
 
@@ -174,7 +173,7 @@ void main() {
         asset('utang-tracker-armeabi-v7a-v1.0.0.apk'),
         asset('utang-tracker-universal-v1.0.0.apk'),
       ];
-      final selected = selectApkAsset(assets, AppConstants.supportedAbis);
+      final selected = selectApkAsset(assets, _supportedAbis);
       expect(selected?.name, 'utang-tracker-armeabi-v7a-v1.0.0.apk');
     });
 
@@ -189,13 +188,13 @@ void main() {
 
     test('universal APK fallback when no ABI-specific asset exists', () {
       final assets = [asset('utang-tracker-universal-v1.0.0.apk')];
-      final selected = selectApkAsset(assets, AppConstants.supportedAbis);
+      final selected = selectApkAsset(assets, _supportedAbis);
       expect(selected?.name, 'utang-tracker-universal-v1.0.0.apk');
     });
 
     test('returns null when no matching asset found', () {
       final assets = [asset('some-other-app-arm64.apk')];
-      final selected = selectApkAsset(assets, AppConstants.supportedAbis);
+      final selected = selectApkAsset(assets, _supportedAbis);
       expect(selected, isNull);
     });
 
@@ -435,10 +434,8 @@ void main() {
 }
 
 AppRelease _releaseWithAssets(List<ReleaseAsset> assets) => AppRelease(
-  tagName: 'v1.1.0',
   version: '1.1.0',
   releaseNotes: '',
-  publishedAt: DateTime(2026),
   isDraft: false,
   isPrerelease: false,
   assets: assets,

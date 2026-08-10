@@ -6,7 +6,6 @@ class AppColors {
   static const Color primary = Color(0xFF2457D6);
   static const Color primaryDark = Color(0xFF172F55);
   static const Color primaryLight = Color(0xFFE8EEFF);
-  static const Color primaryRaised = Color(0xFF284569);
   static const Color primaryDivider = Color(0xFF526985);
   static const Color accent = Color(0xFFF5B942);
   static const Color accentLight = Color(0xFFFFF3D6);
@@ -21,7 +20,6 @@ class AppColors {
   static const Color textSecondary = Color(0xFF5B667A);
   static const Color textMuted = Color(0xFF8C96A8);
   static const Color textOnPrimarySoft = Color(0xFFD7E0ED);
-  static const Color textOnPrimaryMuted = Color(0xFFB9C7DC);
 
   static const Color unpaid = Color(0xFFB53C49);
   static const Color unpaidBg = Color(0xFFFFE9EC);

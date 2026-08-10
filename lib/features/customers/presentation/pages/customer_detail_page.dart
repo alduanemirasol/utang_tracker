@@ -14,6 +14,7 @@ import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
+import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
@@ -75,7 +76,9 @@ class CustomerDetailPage extends ConsumerWidget {
                     );
                     if (!confirmed || !context.mounted) return;
                     try {
-                      await ref.read(deleteCustomerProvider)(customerId);
+                      await ref
+                          .read(customerRepositoryProvider)
+                          .delete(customerId);
                       invalidateBusinessData(ref);
                       if (!context.mounted) return;
                       AppSnackBar.success(context, 'Customer deleted');
@@ -239,11 +242,17 @@ class _DebtHistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (debts.isEmpty) {
-      return const _HistoryEmptyState(
-        key: PageStorageKey('empty-debt-history'),
-        icon: Icons.receipt_long_outlined,
-        title: 'Walay utang',
-        message: 'Tap "+ New utang" para marecord ang utang.',
+      return ListView(
+        key: const PageStorageKey('empty-debt-history'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        children: [
+          EmptyState(
+            icon: Icons.receipt_long_outlined,
+            title: 'Walay utang',
+            message: 'Tap "+ New utang" para marecord ang utang.',
+          ),
+        ],
       );
     }
 
@@ -303,11 +312,17 @@ class _PaymentHistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (payments.isEmpty) {
-      return const _HistoryEmptyState(
-        key: PageStorageKey('empty-payment-history'),
-        icon: Icons.payments_outlined,
-        title: 'Walay bayad',
-        message: 'Tap "+ Record bayad" para marecord ang bayad.',
+      return ListView(
+        key: const PageStorageKey('empty-payment-history'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
+        children: [
+          EmptyState(
+            icon: Icons.payments_outlined,
+            title: 'Walay bayad',
+            message: 'Tap "+ Record bayad" para marecord ang bayad.',
+          ),
+        ],
       );
     }
 
@@ -359,28 +374,6 @@ class _PaymentHistoryList extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _HistoryEmptyState extends StatelessWidget {
-  const _HistoryEmptyState({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: 100),
-      children: [EmptyState(icon: icon, title: title, message: message)],
     );
   }
 }

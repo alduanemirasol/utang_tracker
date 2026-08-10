@@ -1,11 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/notifications/domain/entities/debt_notification.dart';
-import 'package:utang_tracker/features/notifications/domain/usecases/get_debt_notifications.dart';
-
-final getDebtNotificationsProvider = Provider((ref) {
-  return GetDebtNotifications(ref.watch(debtRepositoryProvider));
-});
 
 final debtNotificationsProvider =
     AsyncNotifierProvider<DebtNotificationsNotifier, DebtNotificationFeed>(
@@ -14,14 +9,16 @@ final debtNotificationsProvider =
 
 class DebtNotificationsNotifier extends AsyncNotifier<DebtNotificationFeed> {
   @override
-  Future<DebtNotificationFeed> build() {
-    return ref.watch(getDebtNotificationsProvider)();
+  Future<DebtNotificationFeed> build() async {
+    final debts = await ref.watch(debtRepositoryProvider).getAll();
+    return DebtNotificationFeed.fromDebts(debts, now: DateTime.now());
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(getDebtNotificationsProvider)(),
-    );
+    state = await AsyncValue.guard(() async {
+      final debts = await ref.read(debtRepositoryProvider).getAll();
+      return DebtNotificationFeed.fromDebts(debts, now: DateTime.now());
+    });
   }
 }

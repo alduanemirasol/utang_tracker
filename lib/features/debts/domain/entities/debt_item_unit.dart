@@ -1,15 +1,3 @@
-class DebtItemUnitOption {
-  const DebtItemUnitOption({
-    required this.value,
-    required this.label,
-    required this.pluralLabel,
-  });
-
-  final String value;
-  final String label;
-  final String pluralLabel;
-}
-
 class DebtItemUnits {
   DebtItemUnits._();
 
@@ -28,22 +16,23 @@ class DebtItemUnits {
   static const String tray = 'tray';
   static const String bundle = 'bundle';
 
-  static const List<DebtItemUnitOption> common = [
-    DebtItemUnitOption(value: piece, label: 'piece', pluralLabel: 'pieces'),
-    DebtItemUnitOption(value: pack, label: 'pack', pluralLabel: 'packs'),
-    DebtItemUnitOption(value: box, label: 'box', pluralLabel: 'boxes'),
-    DebtItemUnitOption(value: bottle, label: 'bottle', pluralLabel: 'bottles'),
-    DebtItemUnitOption(value: kilogram, label: 'kg', pluralLabel: 'kg'),
-    DebtItemUnitOption(value: gram, label: 'gram', pluralLabel: 'grams'),
-    DebtItemUnitOption(value: liter, label: 'liter', pluralLabel: 'liters'),
-    DebtItemUnitOption(value: milliliter, label: 'ml', pluralLabel: 'ml'),
-    DebtItemUnitOption(value: can, label: 'can', pluralLabel: 'cans'),
-    DebtItemUnitOption(value: sachet, label: 'sachet', pluralLabel: 'sachets'),
-    DebtItemUnitOption(value: bag, label: 'bag', pluralLabel: 'bags'),
-    DebtItemUnitOption(value: dozen, label: 'dozen', pluralLabel: 'dozens'),
-    DebtItemUnitOption(value: tray, label: 'tray', pluralLabel: 'trays'),
-    DebtItemUnitOption(value: bundle, label: 'bundle', pluralLabel: 'bundles'),
-  ];
+  static const List<({String value, String label, String pluralLabel})> common =
+      [
+        (value: piece, label: 'piece', pluralLabel: 'pieces'),
+        (value: pack, label: 'pack', pluralLabel: 'packs'),
+        (value: box, label: 'box', pluralLabel: 'boxes'),
+        (value: bottle, label: 'bottle', pluralLabel: 'bottles'),
+        (value: kilogram, label: 'kg', pluralLabel: 'kg'),
+        (value: gram, label: 'gram', pluralLabel: 'grams'),
+        (value: liter, label: 'liter', pluralLabel: 'liters'),
+        (value: milliliter, label: 'ml', pluralLabel: 'ml'),
+        (value: can, label: 'can', pluralLabel: 'cans'),
+        (value: sachet, label: 'sachet', pluralLabel: 'sachets'),
+        (value: bag, label: 'bag', pluralLabel: 'bags'),
+        (value: dozen, label: 'dozen', pluralLabel: 'dozens'),
+        (value: tray, label: 'tray', pluralLabel: 'trays'),
+        (value: bundle, label: 'bundle', pluralLabel: 'bundles'),
+      ];
 
   static bool isCommon(String value) {
     return common.any((option) => option.value == value);

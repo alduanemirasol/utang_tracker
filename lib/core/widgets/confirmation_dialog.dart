@@ -33,3 +33,13 @@ Future<bool> showConfirmationDialog({
   );
   return result ?? false;
 }
+
+Future<bool> confirmDiscardChanges(BuildContext context) {
+  return showConfirmationDialog(
+    context: context,
+    title: 'Discard changes?',
+    message: 'You have unsaved changes. Are you sure you want to discard them?',
+    confirmLabel: 'Discard',
+    isDestructive: true,
+  );
+}

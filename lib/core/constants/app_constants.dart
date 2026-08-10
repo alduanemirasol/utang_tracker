@@ -3,7 +3,6 @@ class AppConstants {
 
   static const String appName = 'Utang Tracker';
   static const String logoAsset = 'assets/images/new-logo.png';
-  static const String currencySymbol = '₱';
 
   static const List<String> paymentMethods = [
     'Cash',
@@ -19,12 +18,6 @@ class AppConstants {
   static const String githubApiBaseUrl = 'https://api.github.com';
 
   static const String apkAssetPrefix = 'utang-tracker';
-
-  static const List<String> supportedAbis = [
-    'arm64-v8a',
-    'armeabi-v7a',
-    'x86_64',
-  ];
 
   static const String universalAbiName = 'universal';
 

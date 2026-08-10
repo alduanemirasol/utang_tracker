@@ -2,7 +2,7 @@ import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
-import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_data.dart';
+import 'package:utang_tracker/features/dashboard/domain/entities/recent_activity_item.dart';
 import 'package:utang_tracker/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:utang_tracker/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:utang_tracker/features/debts/domain/repositories/debt_repository.dart';
@@ -20,19 +20,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
   final PaymentRepository payments;
 
   @override
-  Future<DashboardSummary> getSummary() async {
-    final data = await getDashboardData();
-    return DashboardSummary(
-      outstandingBalance: data.outstandingBalance,
-      collectedToday: data.collectedToday,
-      activeDebtsCount: data.activeDebtsCount,
-      totalCustomers: data.totalCustomers,
-      recentActivity: const [],
-    );
-  }
-
-  @override
-  Future<DashboardData> getDashboardData() async {
+  Future<DashboardSummary> getDashboardData() async {
     final now = DateTime.now();
     final start = DateFormatters.startOfLocalDay(now);
     final end = DateFormatters.endOfLocalDay(now);
@@ -51,13 +39,38 @@ class DashboardRepositoryImpl implements DashboardRepository {
       limit: AppConstants.recentItemsLimit,
     );
 
-    return DashboardData(
+    final recentActivity = <RecentActivityItem>[
+      ...recentDebts.map(
+        (d) => RecentActivityItem(
+          type: RecentActivityType.debt,
+          id: d.id,
+          debtId: d.id,
+          customerName: d.customerName ?? 'Customer',
+          amount: d.totalAmount,
+          date: d.createdAt,
+        ),
+      ),
+      ...recentPayments.map(
+        (p) => RecentActivityItem(
+          type: RecentActivityType.payment,
+          id: p.id,
+          debtId: p.debtId,
+          customerName: p.customerName ?? 'Customer',
+          amount: p.amount,
+          date: p.createdAt,
+          paymentMethod: p.paymentMethod,
+        ),
+      ),
+    ]..sort((a, b) => b.date.compareTo(a.date));
+
+    return DashboardSummary(
       outstandingBalance: Money.fromCentavos(outstandingCentavos),
       collectedToday: collectedToday,
       activeDebtsCount: activeDebts,
       totalCustomers: totalCustomers,
-      recentDebts: recentDebts,
-      recentPayments: recentPayments,
+      recentActivity: recentActivity
+          .take(AppConstants.recentItemsLimit)
+          .toList(growable: false),
     );
   }
 }

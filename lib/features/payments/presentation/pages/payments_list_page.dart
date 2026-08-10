@@ -5,6 +5,7 @@ import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_filter_chip.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
@@ -244,7 +245,7 @@ class _PaymentFiltersBar extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _FilterChip(
+                      AppFilterChip(
                         label: 'All',
                         selected: filters.paymentMethod == null,
                         onSelected: () => onMethodSelected(null),
@@ -253,7 +254,7 @@ class _PaymentFiltersBar extends StatelessWidget {
                       ...paymentMethods.map(
                         (method) => Padding(
                           padding: const EdgeInsets.only(right: AppSpacing.sm),
-                          child: _FilterChip(
+                          child: AppFilterChip(
                             label: method,
                             selected: filters.paymentMethod == method,
                             onSelected: () => onMethodSelected(method),
@@ -336,37 +337,6 @@ class _DateFilterChip extends StatelessWidget {
       labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
       ),
-      side: BorderSide(
-        color: selected ? AppColors.primaryDark : AppColors.outline,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onSelected(),
-      showCheckmark: false,
-      selectedColor: AppColors.primaryDark,
-      labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-        color: selected ? AppColors.textOnPrimary : AppColors.textPrimary,
-      ),
-      backgroundColor: AppColors.surfaceCard,
       side: BorderSide(
         color: selected ? AppColors.primaryDark : AppColors.outline,
       ),

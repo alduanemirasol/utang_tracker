@@ -4,7 +4,7 @@ import 'package:utang_tracker/core/utils/date_time_utils.dart';
 void main() {
   group('combineLocalDateAndTime', () {
     test('uses the selected local day and supplied local clock time', () {
-      final result = DateTimeUtils.combineLocalDateAndTime(
+      final result = combineLocalDateAndTime(
         DateTime(2026, 5, 3),
         DateTime(2026, 7, 19, 14, 25, 36, 789, 123),
       );
@@ -19,7 +19,7 @@ void main() {
       final localDate = date.toLocal();
       final localTime = time.toLocal();
 
-      final result = DateTimeUtils.combineLocalDateAndTime(date, time);
+      final result = combineLocalDateAndTime(date, time);
 
       expect(
         result,

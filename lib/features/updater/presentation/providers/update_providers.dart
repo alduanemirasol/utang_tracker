@@ -6,18 +6,14 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 import 'package:utang_tracker/features/updater/domain/usecases/check_for_updates.dart';
-import 'package:utang_tracker/features/updater/domain/usecases/download_update.dart';
 
 final checkForUpdatesProvider = Provider((ref) {
   return CheckForUpdates(ref.watch(updateRepositoryProvider));
 });
 
-final downloadUpdateProvider = Provider((ref) {
-  return DownloadUpdate(ref.watch(updateRepositoryProvider));
-});
-
-final updateNotifierProvider =
-    NotifierProvider<UpdateNotifier, UpdateState>(UpdateNotifier.new);
+final updateNotifierProvider = NotifierProvider<UpdateNotifier, UpdateState>(
+  UpdateNotifier.new,
+);
 
 sealed class UpdateState {
   const UpdateState();
@@ -122,12 +118,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
         currentVersion: result.currentVersion!,
       );
     } on AppException catch (e) {
-      final isNetwork = e.message.contains('internet') ||
-          e.message.contains('Network error');
-      state = UpdateError(
-        message: e.message,
-        isNetworkError: isNetwork,
-      );
+      final isNetwork =
+          e.message.contains('internet') || e.message.contains('Network error');
+      state = UpdateError(message: e.message, isNetworkError: isNetwork);
     } catch (e) {
       state = UpdateError(message: 'Unexpected error: $e');
     } finally {
@@ -144,20 +137,15 @@ class UpdateNotifier extends Notifier<UpdateState> {
     state = UpdateDownloading(release: current.release, progress: 0);
 
     try {
-      final path = await ref.read(downloadUpdateProvider)(
-        current.asset,
-        (p) {
-          state = UpdateDownloading(release: current.release, progress: p);
-        },
-      );
+      await _repo.cleanupOldApks();
+      final path = await _repo.downloadApk(current.asset, (p) {
+        state = UpdateDownloading(release: current.release, progress: p);
+      });
       state = UpdateDownloaded(release: current.release, apkPath: path);
     } on AppException catch (e) {
-      final isNetwork = e.message.contains('internet') ||
-          e.message.contains('interrupted');
-      state = UpdateError(
-        message: e.message,
-        isNetworkError: isNetwork,
-      );
+      final isNetwork =
+          e.message.contains('internet') || e.message.contains('interrupted');
+      state = UpdateError(message: e.message, isNetworkError: isNetwork);
     } catch (e) {
       state = UpdateError(message: 'Download failed: $e');
     } finally {
