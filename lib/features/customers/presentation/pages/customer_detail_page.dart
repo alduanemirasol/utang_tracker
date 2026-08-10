@@ -181,11 +181,24 @@ class _CustomerSummaryCard extends StatelessWidget {
           ],
           if (customer.notes != null && customer.notes!.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              customer.notes!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.notes_outlined,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    customer.notes!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
