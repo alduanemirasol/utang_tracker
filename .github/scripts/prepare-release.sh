@@ -24,8 +24,4 @@ copy_apk \
   "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" \
   "$APP_NAME-armeabi-v7a-$TAG_NAME.apk"
 
-copy_apk \
-  "build/app/outputs/flutter-apk/app-x86_64-release.apk" \
-  "$APP_NAME-x86_64-$TAG_NAME.apk"
-
-echo "Split APKs prepared in $RELEASE_DIR."
+echo "ARM64 and ARM32 APKs prepared in $RELEASE_DIR."

@@ -61,9 +61,9 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: bash .github/scripts/configure-signing.sh
-
-      - name: Build split APKs
-        run: flutter build apk --release --split-per-abi
+      
+      - name: Build ARM64 and ARM32 APKs
+        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
 
       - name: Prepare release files
         run: bash .github/scripts/prepare-release.sh
