@@ -696,7 +696,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               children: [
                 Text(
                   'Total',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -704,7 +704,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 const Spacer(),
                 MoneyText(
                   _total,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ],
             ),
