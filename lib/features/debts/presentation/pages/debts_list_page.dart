@@ -12,7 +12,6 @@ import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_sort_order.dart';
-import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/debts/presentation/providers/debt_providers.dart';
 
 class DebtsListPage extends ConsumerWidget {
@@ -53,26 +52,28 @@ class DebtsListPage extends ConsumerWidget {
                       children: [
                         AppFilterChip(
                           label: 'All',
-                          selected: filter == null,
+                          selected: filter == DebtListFilter.all,
                           onSelected: () => ref
                               .read(debtStatusFilterProvider.notifier)
-                              .setFilter(null),
+                              .setFilter(DebtListFilter.all),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        ...DebtStatus.values.map(
-                          (s) => Padding(
-                            padding: const EdgeInsets.only(
-                              right: AppSpacing.sm,
+                        ...DebtListFilter.values
+                            .skip(1)
+                            .map(
+                              (f) => Padding(
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.sm,
+                                ),
+                                child: AppFilterChip(
+                                  label: f.label,
+                                  selected: filter == f,
+                                  onSelected: () => ref
+                                      .read(debtStatusFilterProvider.notifier)
+                                      .setFilter(f),
+                                ),
+                              ),
                             ),
-                            child: AppFilterChip(
-                              label: s.label,
-                              selected: filter == s,
-                              onSelected: () => ref
-                                  .read(debtStatusFilterProvider.notifier)
-                                  .setFilter(s),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -128,7 +129,7 @@ class DebtsListPage extends ConsumerWidget {
                   return EmptyState(
                     icon: Icons.receipt_long_outlined,
                     title: 'Walay utang',
-                    message: filter == null
+                    message: filter == DebtListFilter.all
                         ? 'Tap "+ New utang" para marecord ang utang.'
                         : 'Walay ${filter.label.toLowerCase()} utang.',
                   );

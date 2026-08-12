@@ -7,15 +7,34 @@ import 'package:utang_tracker/features/debts/domain/repositories/debt_repository
 import 'package:utang_tracker/features/debts/domain/usecases/debt_usecases.dart';
 import 'package:utang_tracker/features/payments/domain/entities/payment.dart';
 
-class DebtStatusFilter extends Notifier<DebtStatus?> {
-  @override
-  DebtStatus? build() => null;
+enum DebtListFilter { all, unpaid, partial, paid, overdue }
 
-  void setFilter(DebtStatus? status) => state = status;
+extension DebtListFilterX on DebtListFilter {
+  String get label => switch (this) {
+    DebtListFilter.all => 'All',
+    DebtListFilter.unpaid => DebtStatus.unpaid.label,
+    DebtListFilter.partial => DebtStatus.partial.label,
+    DebtListFilter.paid => DebtStatus.paid.label,
+    DebtListFilter.overdue => 'Overdue',
+  };
+
+  DebtStatus? get status => switch (this) {
+    DebtListFilter.unpaid => DebtStatus.unpaid,
+    DebtListFilter.partial => DebtStatus.partial,
+    DebtListFilter.paid => DebtStatus.paid,
+    _ => null,
+  };
+}
+
+class DebtStatusFilter extends Notifier<DebtListFilter> {
+  @override
+  DebtListFilter build() => DebtListFilter.all;
+
+  void setFilter(DebtListFilter filter) => state = filter;
 }
 
 final debtStatusFilterProvider =
-    NotifierProvider<DebtStatusFilter, DebtStatus?>(DebtStatusFilter.new);
+    NotifierProvider<DebtStatusFilter, DebtListFilter>(DebtStatusFilter.new);
 
 class DebtSortFilter extends Notifier<DebtSortOrder> {
   @override
@@ -35,25 +54,45 @@ final debtsListProvider = AsyncNotifierProvider<DebtsListNotifier, List<Debt>>(
 class DebtsListNotifier extends AsyncNotifier<List<Debt>> {
   @override
   Future<List<Debt>> build() async {
-    final status = ref.watch(debtStatusFilterProvider);
+    final filter = ref.watch(debtStatusFilterProvider);
     final sort = ref.watch(debtSortOrderProvider);
-    final debts = await ref
-        .watch(debtRepositoryProvider)
-        .getAll(status: status);
+    final debts = await _loadDebts(filter);
     return applySort(debts, sort);
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final status = ref.read(debtStatusFilterProvider);
+      final filter = ref.read(debtStatusFilterProvider);
       final sort = ref.read(debtSortOrderProvider);
-      final debts = await ref
-          .read(debtRepositoryProvider)
-          .getAll(status: status);
+      final debts = await _loadDebts(filter);
       return applySort(debts, sort);
     });
   }
+
+  Future<List<Debt>> _loadDebts(DebtListFilter filter) async {
+    final debts = await ref
+        .read(debtRepositoryProvider)
+        .getAll(status: filter.status);
+    if (filter != DebtListFilter.overdue) return debts;
+
+    return debts.where(_isOverdue).toList(growable: false);
+  }
+}
+
+bool _isOverdue(Debt debt) {
+  final dueDate = debt.dueDate;
+  if (dueDate == null ||
+      debt.status == DebtStatus.paid ||
+      !debt.balance.isPositive) {
+    return false;
+  }
+  return _localDay(dueDate).isBefore(_localDay(DateTime.now()));
+}
+
+DateTime _localDay(DateTime date) {
+  final local = date.toLocal();
+  return DateTime(local.year, local.month, local.day);
 }
 
 class DebtDetailViewData {

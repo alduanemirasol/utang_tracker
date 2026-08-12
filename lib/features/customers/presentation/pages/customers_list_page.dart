@@ -15,6 +15,7 @@ class CustomersListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sort = ref.watch(customerSortOrderProvider);
     final customersAsync = ref.watch(customersListProvider);
 
     return Scaffold(
@@ -34,11 +35,55 @@ class CustomersListPage extends ConsumerWidget {
               AppSpacing.pagePadding,
               AppSpacing.md,
             ),
-            child: AppSearchBar(
-              hintText: 'Search by name',
-              onChanged: (value) {
-                ref.read(customerSearchQueryProvider.notifier).setQuery(value);
-              },
+            child: Row(
+              children: [
+                Expanded(
+                  child: AppSearchBar(
+                    hintText: 'Search by name',
+                    onChanged: (value) {
+                      ref
+                          .read(customerSearchQueryProvider.notifier)
+                          .setQuery(value);
+                    },
+                  ),
+                ),
+                PopupMenuButton<CustomerSortOrder>(
+                  tooltip: 'Sort customers',
+                  initialValue: sort,
+                  onSelected: (order) {
+                    ref.read(customerSortOrderProvider.notifier).setSort(order);
+                  },
+                  itemBuilder: (context) {
+                    return CustomerSortOrder.values.map((order) {
+                      return PopupMenuItem<CustomerSortOrder>(
+                        value: order,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 28,
+                              child: sort == order
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: AppColors.primaryDark,
+                                    )
+                                  : null,
+                            ),
+                            Expanded(child: Text(order.label)),
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.sm),
+                    child: Icon(
+                      Icons.swap_vert_rounded,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(

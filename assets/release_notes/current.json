@@ -1,11 +1,13 @@
 {
-  "version": "1.0.38",
-  "date": "2026-08-10",
+  "version": "1.0.39",
+  "date": "2026-08-12",
   "notes": {
-    "added": [],
+    "added": [
+      "Customer sorting by name or date",
+      "Overdue filter for the utang list"
+    ],
     "changed": [
-      "Total row on the new utang screen is more compact",
-      "Removed the in-app Help page"
+      "Customer search and sorting now work together"
     ],
     "fixed": []
   }
