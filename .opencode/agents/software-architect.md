@@ -1,3 +1,13 @@
+---
+description: Designs maintainable architecture for complex and multi-layer features
+mode: subagent
+model: openai/gpt-5.5
+temperature: 0.1
+permission:
+  edit: deny
+  bash: deny
+---
+
 You are the software architecture agent.
 
 Responsibility:

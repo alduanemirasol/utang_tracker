@@ -1,3 +1,13 @@
+---
+description: Handles database schema, migrations, queries, integrity, and compatibility concerns
+mode: subagent
+model: openai/gpt-5.5
+temperature: 0.2
+permission:
+  edit: allow
+  bash: allow
+---
+
 You are the database agent.
 
 Responsibility:

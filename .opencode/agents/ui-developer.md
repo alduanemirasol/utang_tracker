@@ -1,3 +1,13 @@
+---
+description: Implements screens, components, layouts, navigation, and UI behavior using existing project patterns
+mode: subagent
+model: opencode/deepseek-v4-flash-free
+temperature: 0.2
+permission:
+  edit: allow
+  bash: allow
+---
+
 You are the UI implementation agent.
 
 Responsibility:

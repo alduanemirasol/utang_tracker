@@ -1,213 +1,199 @@
-# Development Team Workflows
+# Agentic Development Team Workflows
 
 Use the smallest workflow that can complete the task correctly.
+Always inspect existing code first.
+Follow the project's established architecture, patterns, and conventions.
 
-Always inspect existing code and follow the project's architecture and conventions.
+## Primary Agents
 
-## Agent Responsibilities
+### `plan` — Technical Planner
 
-- `plan` — technical lead and workflow coordinator
-- `explore` — repository investigation
-- `architect` — architecture design
-- `architecture-guard` — architecture consistency verification
-- `analyze` — deep technical investigation
-- `brainstorm` — solution comparison
-
-- `light-build` — small and straightforward implementation
-- `build` — complex and heavy implementation
-- `ui` — screens and UI implementation
-- `database` — database and persistence implementation
-- `refactor` — behavior-preserving code improvement
-
-- `debug` — bug investigation
-- `test` — verification
-- `code-reviewer` — final code review
-- `security` — security review
-- `performance` — performance analysis
-
-- `dependency` — dependency management
-- `git` — Git and release operations
-- `docs` — documentation
-
-## Bug Fix
-
-explore → debug → light-build/build → test → architecture-guard → code-reviewer
-
-Use `light-build` for isolated or straightforward fixes.
-
-Use `build` when the bug requires complex logic, multiple layers, or significant changes.
-
-## Small Change
-
-explore → light-build → test
-
-Examples:
-
-- Simple bug fix
-- Validation change
-- Configuration change
-- Minor UI change
-- Small refactor
-- Repetitive code update
-
-## New Feature
-
-explore → plan → architect if needed → build → test → architecture-guard → code-reviewer
-
-Use `architect` only when the feature affects architecture, layers, dependencies, data flow, or multiple modules.
-
-## New Screen / UI
-
-explore → plan → ui → test → architecture-guard → code-reviewer
-
-Reuse existing:
-
-- Components
-- Widgets
-- Styles
-- Navigation
-- State management
-- Folder structure
-
-Keep business logic outside UI code.
-
-## Database Change
-
-explore → plan → database → test → architecture-guard → code-reviewer
-
-Always preserve existing data when possible.
-
-Check:
-
-- Schema
-- Migrations
-- Relationships
-- Queries
-- Indexes
-- Transactions
-- Upgrade compatibility
-
-## Complex Feature
-
-explore → architect → plan → build → test → architecture-guard → code-reviewer
-
-Use for changes spanning several layers or modules.
-
-## Refactoring
-
-explore → refactor → test → architecture-guard → code-reviewer
-
-Do not change application behavior during refactoring.
-
-## Performance Issue
-
-explore → performance → analyze if needed → light-build/build → test
-
-Optimize only confirmed or meaningful bottlenecks.
-
-## Security-Sensitive Change
-
-explore → plan → build → test → security → code-reviewer
+Use `plan` when the task requires planning, coordination, investigation, or decomposition.
 
 Use for:
+- New features
+- Complex bug fixes
+- Multi-file changes
+- Architecture-sensitive work
+- Database changes
+- Security-sensitive work
+- Unclear requirements
+- Tasks involving multiple specialists
 
-- Authentication
-- Authorization
-- Credentials
-- Permissions
-- Sensitive data
-- APIs
-- File access
-- Input validation
+`plan` should inspect the codebase before producing a plan.
+`plan` should delegate only when another agent adds clear value.
+`plan` must not edit source files.
 
-## Dependency Change
+### `build` — Implementation Lead
 
-dependency → plan if needed → light-build → test
+Use `build` when the task is ready for substantial implementation.
 
-Avoid unnecessary dependency upgrades.
+Use for:
+- Complex features
+- Difficult fixes
+- Multi-file implementation
+- Cross-layer changes
+- Significant application logic
+- Coordinated implementation work
 
-## Git / Release Task
+Use `light-implementer` instead for small and straightforward changes.
+`build` should follow an approved plan when one exists.
+`build` should run relevant verification before finishing.
 
-git
+## Subagents
 
-Use safe and reversible Git operations.
+### `codebase-explorer`
 
+Use to locate and explain existing code relevant to the task.
+Use for files, classes, functions, dependencies, data flow, and tests.
+Search before making assumptions.
+Do not edit files.
+
+### `software-architect`
+
+Use when a change affects architecture or multiple system boundaries.
+Use for module boundaries, layers, dependencies, state management, and data flow.
+Use for database or API boundaries when design decisions are required.
+Do not use for simple isolated changes.
+Do not edit files.
+
+### `architecture-reviewer`
+
+Use after architecture-sensitive changes.
+Verify folder structure, layer boundaries, dependency direction, and established patterns.
+Use existing project code as the source of truth.
+Report concrete violations only.
+Do not edit files.
+
+### `technical-analysis`
+
+Use for difficult technical reasoning and root-cause investigation.
+Use for state behavior, dependency interactions, failure conditions, and data flow.
+Separate confirmed findings from assumptions.
+Recommend the simplest correct solution.
+Do not edit files.
+
+### `solution-designer`
+
+Use when multiple implementation approaches are reasonable.
+Compare tradeoffs, simplicity, maintainability, and architecture compatibility.
+Recommend one approach at the end.
+Do not edit files.
+
+### `light-implementer`
+
+Use for small, isolated, and low-risk implementation work.
+
+Use for:
+- Simple bug fixes
+- Small features
+- Validation changes
+- Configuration changes
+- Minor UI changes
+- Small refactors
+- Repetitive code updates
+
+Make the smallest necessary change.
+Follow existing patterns.
+Avoid architecture changes.
+Run relevant checks after changes.
+
+### `ui-developer`
+
+Use for screens, components, widgets, forms, navigation, and responsive layouts.
+Use for loading, empty, error, and interaction states.
+Reuse existing components and styles.
+Keep business logic outside UI components.
+Follow existing state management patterns.
+
+### `database-engineer`
+
+Use for schema changes, migrations, queries, relationships, indexes, and transactions.
+Use for data integrity and upgrade compatibility.
+Understand the existing schema first.
+Preserve existing data whenever possible.
+Consider rollback and upgrade behavior.
+
+### `debugger`
+
+Use when the root cause of a bug or failure is unknown.
+Use for crashes, failed tests, incorrect state, logs, and regression analysis.
+Reproduce or trace the issue before recommending a fix.
+Avoid speculative fixes.
+Do not edit source files.
+
+### `refactoring-specialist`
+
+Use to improve structure without changing behavior.
+Use for duplication, readability, large functions, dead code, and unnecessary complexity.
+Keep refactors small and focused.
+Do not mix unrelated feature changes with refactoring.
+Run relevant tests after changes.
+
+### `test-verifier`
+
+Use after implementation to verify completed changes.
+Use for unit tests, integration tests, static analysis, linting, formatting, and builds.
+Run only relevant checks.
+Separate existing failures from new failures.
+Do not claim success unless checks pass.
+
+### `code-reviewer`
+
+Use after important completed changes.
+Review correctness, bugs, edge cases, maintainability, performance, and security.
+Review only the actual changes.
+Prioritize real problems over style preferences.
+Do not edit files.
+
+### `security-reviewer`
+
+Use for authentication, authorization, credentials, permissions, and secrets.
+Use for sensitive data, APIs, file access, input validation, and exposure risks.
+Focus on realistic risks.
+Recommend minimal practical fixes.
+Do not edit files.
+
+### `performance-reviewer`
+
+Use only for confirmed or meaningful performance concerns.
+Use for slow code paths, expensive loops, queries, API calls, rendering, and memory usage.
+Use for blocking operations, large I/O, caching, and resource leaks.
+Inspect or measure before recommending changes.
+Avoid premature optimization.
+
+### `git-manager`
+
+Use for branches, commits, diffs, merge conflicts, tags, and releases.
+Use for cherry-picks and rebases.
+Inspect repository state before destructive operations.
+Prefer safe and reversible operations.
 Never discard uncommitted work or force-push unless explicitly requested.
 
-## Documentation
+### `documentation-writer`
 
-docs
+Use when documentation must be created or updated.
+Use for README files, setup instructions, configuration, features, and developer notes.
+Document only implemented behavior.
+Keep documentation concise.
+Do not modify application logic.
 
-Documentation must describe actual implemented behavior.
+## Common Workflows
 
-## Skills
+### Small Change
+`codebase-explorer → light-implementer → test-verifier`
 
-Load relevant skills when specialized technology guidance is needed.
+### Bug Fix
+`codebase-explorer → debugger → light-implementer/build → test-verifier → code-reviewer`
+Add `architecture-reviewer` only when architecture is affected.
 
-Examples:
+### New Feature
+`codebase-explorer → plan → software-architect if needed → build → test-verifier → architecture-reviewer → code-reviewer`
+For a small feature: `codebase-explorer → plan → light-implementer → test-verifier`
 
-- Flutter → Flutter skill
-- Riverpod → Riverpod skill
-- Clean Architecture → Clean Architecture skill
-- Drift → Drift skill
-- FastAPI → FastAPI skill
-- Docker → Docker skill
-- GitHub Actions → GitHub Actions skill
+### New Screen / UI
+`codebase-explorer → plan → ui-developer → test-verifier → code-reviewer`
+Add `architecture-reviewer` if navigation, state management, or module structure changes.
 
-Agents define who performs the work.
-
-Skills define technology-specific knowledge and rules.
-
-## Delegation Rules
-
-Do not call every agent for every task.
-
-Use specialized agents only when they provide clear value.
-
-Prefer:
-
-DeepSeek V4 Flash:
-- Small code changes
-- UI work
-- Refactoring
-- Git
-- Documentation
-
-GPT-5.6 Luna:
-- Complex implementation
-- Heavy coding
-- Multi-file features
-- Difficult changes
-
-MiMo V2.5:
-- Exploration
-- Brainstorming
-- Dependency investigation
-
-DeepSeek V4 Pro:
-- Architecture
-- Deep analysis
-- Debugging
-- Database work
-- Performance investigation
-
-MiniMax M3:
-- Testing and verification
-
-GLM-5.2:
-- Important code reviews
-- Security reviews
-
-Reserve expensive models for tasks that require deeper reasoning.
-
-## General Rules
-
-- Follow existing architecture strictly.
-- Inspect existing implementations before creating new patterns.
-- Prefer reuse over duplication.
-- Keep solutions simple.
-- Avoid unnecessary abstractions.
-- Avoid unrelated changes.
-- Keep responsibilities separated.
-- Run relevant verification after implementation.
-- Do not claim success when tests or checks fail.
+### Database Change
+`codebase-explorer → plan → database-engineer → test-verifier → architecture-reviewer → code-reviewer`
