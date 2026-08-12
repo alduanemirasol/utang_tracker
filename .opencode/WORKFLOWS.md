@@ -36,7 +36,7 @@ Use for:
 - Significant application logic
 - Coordinated implementation work
 
-Use `light-implementer` instead for small and straightforward changes.
+Use `implementer` for implementation work ranging from small fixes to complex multi-file changes.
 `build` should follow an approved plan when one exists.
 `build` should run relevant verification before finishing.
 
@@ -80,23 +80,16 @@ Compare tradeoffs, simplicity, maintainability, and architecture compatibility.
 Recommend one approach at the end.
 Do not edit files.
 
-### `light-implementer`
+### `implementer`
 
-Use for small, isolated, and low-risk implementation work.
-
-Use for:
-- Simple bug fixes
-- Small features
-- Validation changes
-- Configuration changes
-- Minor UI changes
-- Small refactors
-- Repetitive code updates
-
-Make the smallest necessary change.
-Follow existing patterns.
-Avoid architecture changes.
-Run relevant checks after changes.
+Use for implementation work ranging from small fixes to complex multi-file changes.
+Use for bug fixes, features, configuration changes, application logic, and integrations.
+Follow the approved plan when available.
+Inspect existing implementation before editing.
+Follow existing architecture and reuse existing patterns.
+Prefer the smallest correct change.
+Avoid unnecessary abstractions, rewrites, and unrelated cleanup.
+Run relevant verification before finishing.
 
 ### `ui-developer`
 
@@ -163,37 +156,44 @@ Inspect or measure before recommending changes.
 Avoid premature optimization.
 
 ### `git-manager`
-
 Use for branches, commits, diffs, merge conflicts, tags, and releases.
 Use for cherry-picks and rebases.
 Inspect repository state before destructive operations.
 Prefer safe and reversible operations.
 Never discard uncommitted work or force-push unless explicitly requested.
-
 ### `documentation-writer`
-
 Use when documentation must be created or updated.
 Use for README files, setup instructions, configuration, features, and developer notes.
 Document only implemented behavior.
 Keep documentation concise.
 Do not modify application logic.
-
 ## Common Workflows
-
 ### Small Change
-`codebase-explorer → light-implementer → test-verifier`
-
+`codebase-explorer → implementer → test-verifier`
 ### Bug Fix
-`codebase-explorer → debugger → light-implementer/build → test-verifier → code-reviewer`
+`codebase-explorer → debugger → implementer/build → test-verifier → code-reviewer`
 Add `architecture-reviewer` only when architecture is affected.
-
 ### New Feature
 `codebase-explorer → plan → software-architect if needed → build → test-verifier → architecture-reviewer → code-reviewer`
-For a small feature: `codebase-explorer → plan → light-implementer → test-verifier`
-
+For a small feature: `codebase-explorer → plan → implementer → test-verifier`
 ### New Screen / UI
 `codebase-explorer → plan → ui-developer → test-verifier → code-reviewer`
 Add `architecture-reviewer` if navigation, state management, or module structure changes.
-
 ### Database Change
 `codebase-explorer → plan → database-engineer → test-verifier → architecture-reviewer → code-reviewer`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
