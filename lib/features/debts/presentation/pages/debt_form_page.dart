@@ -278,6 +278,128 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       return;
     }
 
+    // Prepare formatted strings BEFORE showing dialog to avoid async gap context issues.
+    final customerLabel = _customerName ?? 'No customer';
+    final dateLabel = context.smartDate(_transactionDate);
+    final dueLabel = _dueDate == null
+        ? 'No due date'
+        : context.smartDate(_dueDate!);
+    final totalLabel = _total.format();
+    final notesText = _notesController.text.trim();
+    final notesLabel = notesText.isEmpty ? 'No notes' : notesText;
+    final confirmedItems = items!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(widget.isEditing ? 'Confirm changes?' : 'Confirm utang?'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSummaryRow(
+                dialogContext,
+                label: 'Customer',
+                value: customerLabel,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildSummaryRow(
+                dialogContext,
+                label: 'Date',
+                value: dateLabel,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildSummaryRow(dialogContext, label: 'Due', value: dueLabel),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Items',
+                style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              ...confirmedItems.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${e.productName} \u00b7 ${_formatQuantity(e.quantity)} ${DebtItemUnits.displayName(e.unit)}',
+                          style: Theme.of(dialogContext).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textPrimary),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        e.price.format(),
+                        style: Theme.of(dialogContext).textTheme.bodySmall
+                            ?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Text(
+                    'Total',
+                    style: Theme.of(dialogContext).textTheme.bodyMedium
+                        ?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    totalLabel,
+                    style: Theme.of(dialogContext).textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Notes',
+                style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                notesLabel,
+                style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                  color: notesText.isEmpty
+                      ? AppColors.textMuted
+                      : AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(widget.isEditing ? 'Save' : 'Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+
     setState(() => _saving = true);
     try {
       final repo = ref.read(debtRepositoryProvider);
@@ -321,6 +443,39 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  String _formatQuantity(double quantity) {
+    return quantity % 1 == 0
+        ? quantity.toInt().toString()
+        : quantity.toString();
+  }
+
+  Widget _buildSummaryRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$label: ',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void _loadEdit(DebtDetailViewData data) {
