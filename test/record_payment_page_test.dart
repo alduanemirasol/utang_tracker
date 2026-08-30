@@ -23,15 +23,16 @@ void main() {
     );
 
     final confirmRow = find.byKey(const Key('confirm-payment-row'));
-    final notesField = find.byWidgetPredicate(
-      (widget) => widget is AppTextField && widget.label == 'Notes',
-    );
+    final notesLabel = find.text('Notes');
+    expect(notesLabel, findsOneWidget);
+    expect(find.byIcon(Icons.add), findsOneWidget);
     await tester.ensureVisible(confirmRow);
     await tester.pump();
-    expect(
-      tester.getTopLeft(confirmRow).dy - tester.getBottomLeft(notesField).dy,
-      AppSpacing.lg,
-    );
+    // Notes is collapsed by default (header Row with label + IconButton);
+    // verify confirm row is below header with at least AppSpacing.lg spacing.
+    final spacing =
+        tester.getTopLeft(confirmRow).dy - tester.getBottomLeft(notesLabel).dy;
+    expect(spacing, greaterThanOrEqualTo(AppSpacing.lg));
 
     final confirmCheckbox = find.byType(Checkbox);
     expect(confirmCheckbox, findsOneWidget);
