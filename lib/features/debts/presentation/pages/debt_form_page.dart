@@ -486,11 +486,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
-            AppTextField.buildLabel(
-              context,
-              'Items *',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            AppTextField.buildLabel(context, 'Items *'),
             const SizedBox(height: AppSpacing.sm),
             ...List.generate(_items.length, (index) {
               final item = _items[index];
@@ -878,10 +874,28 @@ class _UnitPickerSheet extends StatelessWidget {
           if (index == DebtItemUnits.common.length) {
             return ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text('Custom unit'),
+              title: Text(
+                'Custom unit',
+                style: AppTextField.inputStyle(
+                  context,
+                  color: AppColors.textPrimary,
+                ),
+              ),
               subtitle: selectedIsCustom
-                  ? Text(DebtItemUnits.displayName(selectedUnit))
-                  : const Text('Use another selling unit'),
+                  ? Text(
+                      DebtItemUnits.displayName(selectedUnit),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                  : Text(
+                      'Use another selling unit',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
               trailing: selectedIsCustom
                   ? const Icon(Icons.check, color: AppColors.primaryDark)
                   : const Icon(Icons.chevron_right),
@@ -901,7 +915,13 @@ class _UnitPickerSheet extends StatelessWidget {
           final option = DebtItemUnits.common[index];
           final selected = option.value == selectedUnit;
           return ListTile(
-            title: Text(option.label),
+            title: Text(
+              option.label,
+              style: AppTextField.inputStyle(
+                context,
+                color: AppColors.textPrimary,
+              ),
+            ),
             trailing: selected
                 ? const Icon(Icons.check, color: AppColors.primaryDark)
                 : null,
