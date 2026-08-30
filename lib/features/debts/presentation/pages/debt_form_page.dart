@@ -564,7 +564,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                     ),
                                     const SizedBox(height: AppSpacing.xs),
                                     Text(
-                                      '${_formatQuantity(_items[i].quantity)} · ${DebtItemUnits.displayNameForQuantity(_items[i].unit, _items[i].quantity)}',
+                                      '${_formatQuantity(_items[i].quantity)} ${DebtItemUnits.displayNameForQuantity(_items[i].unit, _items[i].quantity)}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
