@@ -1,15 +1,13 @@
 {
-  "version": "1.0.40",
+  "version": "1.0.41",
   "date": "2026-08-30",
   "notes": {
-    "added": ["Confirm debt summary before save (Customer/Date/Due/Items/Total/Notes)"],
+    "added": ["Debt items bottom sheet and clean list (left name/qty unit, right subtotal + edit side-by-side)"],
     "changed": [
-      "Date and Due Date now side-by-side on New Debt",
-      "Notes collapsed by default with +/x toggle on Debt/Customer/Payment (matches input style)",
-      "Items label same size as Notes/Date (labelLarge)",
-      "Unit picker uses same weight as inputs (w500)",
-      "Confirm dialog wider for breath (16dp inset)"
+      "New Debt items now via Add/Edit bottom sheet instead of expandable cards",
+      "Add item moved to header right of Items label, empty state is plain No items",
+      "Dialogs wider (inset 8/12) and top spacing tighter, dot between qty and unit removed"
     ],
-    "fixed": ["Quantity+unit grammar: 1 piece vs 2 pieces, 1 box vs 3 boxes, 0.5 kg"]
+    "fixed": ["Debt and payment form tests updated for collapsed Notes and bottom sheet flow"]
   }
 }
