@@ -297,7 +297,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
         contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         title: Text(widget.isEditing ? 'Confirm changes?' : 'Confirm utang?'),
         content: SingleChildScrollView(
