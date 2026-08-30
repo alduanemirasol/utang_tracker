@@ -123,215 +123,31 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _showItemDialog({int? index}) async {
-    final isEditing = index != null;
     final existing = index != null ? _items[index] : null;
-    final productController = TextEditingController(
-      text: existing?.productName ?? '',
-    );
-    final quantityController = TextEditingController(
-      text: existing != null ? _formatQuantity(existing.quantity) : '1',
-    );
-    final priceController = TextEditingController(
-      text: existing != null ? existing.price.pesos.toStringAsFixed(2) : '',
-    );
-    String unit = existing?.unit ?? DebtItemUnits.piece;
-
-    String? productError;
-    String? quantityError;
-    String? priceError;
-
-    final result = await showDialog<bool>(
+    final result = await showAppModalBottomSheet<dynamic>(
       context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            Future<void> pickUnit() async {
-              final selected = await showAppModalBottomSheet<String>(
-                context: context,
-                builder: (context) => _UnitPickerSheet(selectedUnit: unit),
-              );
-              if (selected == null) return;
-              setDialogState(() => unit = selected);
-            }
-
-            void save() {
-              final productName = productController.text.trim();
-              final quantityText = quantityController.text.trim();
-              final priceText = priceController.text.trim();
-              final qty = double.tryParse(quantityText);
-
-              String? pErr;
-              String? qErr;
-              String? prErr;
-              Money? price;
-
-              if (productName.isEmpty) {
-                pErr = 'Product is required.';
-              }
-              if (quantityText.isEmpty) {
-                qErr = 'Quantity is required.';
-              } else if (qty == null) {
-                qErr = 'Enter a valid quantity.';
-              } else if (qty <= 0) {
-                qErr = 'Quantity must be greater than 0.';
-              }
-
-              if (priceText.isEmpty) {
-                prErr = 'Price is required.';
-              } else {
-                try {
-                  price = Money.fromPesoString(priceText);
-                  if (!price.isPositive) {
-                    prErr = 'Price must be greater than 0.';
-                  }
-                } catch (_) {
-                  prErr = 'Enter a valid price.';
-                }
-              }
-
-              if (pErr != null || qErr != null || prErr != null) {
-                setDialogState(() {
-                  productError = pErr;
-                  quantityError = qErr;
-                  priceError = prErr;
-                });
-                return;
-              }
-
-              final input = DebtItemInput(
-                productName: productName,
-                quantity: qty!,
-                unit: unit,
-                price: price!,
-              );
-              if (index != null) {
-                setState(() => _items[index] = input);
-              } else {
-                setState(() => _items.add(input));
-              }
-              _markDirty();
-              Navigator.of(dialogContext).pop(true);
-            }
-
-            return AlertDialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-              title: Text(isEditing ? 'Edit paninda' : 'Add paninda'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppTextField(
-                      controller: productController,
-                      label: 'Product *',
-                      hint: 'Bugas',
-                      errorText: productError,
-                      onChanged: (_) {
-                        if (productError != null) {
-                          setDialogState(() => productError = null);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: AppTextField(
-                            controller: quantityController,
-                            label: 'Quantity *',
-                            hint: '2',
-                            errorText: quantityError,
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[\d.]'),
-                              ),
-                            ],
-                            onChanged: (_) {
-                              if (quantityError != null) {
-                                setDialogState(() => quantityError = null);
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: _UnitField(
-                            unit: unit,
-                            onTap: pickUnit,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    AppTextField(
-                      controller: priceController,
-                      label: 'Halaga *',
-                      hint: '50.00',
-                      errorText: priceError,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                      ],
-                      onChanged: (_) {
-                        if (priceError != null) {
-                          setDialogState(() => priceError = null);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Buong halaga nito',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                if (isEditing)
-                  TextButton(
-                    onPressed: () {
-                      // ignore: unnecessary_cast
-                      setState(() => _items.removeAt(index as int));
-                      _markDirty();
-                      Navigator.of(dialogContext).pop(true);
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.danger,
-                    ),
-                    child: const Text('Delete'),
-                  ),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  onPressed: save,
-                  child: Text(isEditing ? 'Update' : 'Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => _ItemBottomSheet(existing: existing),
     );
-
-    // Dispose local controllers after dialog closes.
-    productController.dispose();
-    quantityController.dispose();
-    priceController.dispose();
-
-    if (result == true && mounted) {
-      setState(() => _error = null);
+    if (result == null) return;
+    if (!mounted) return;
+    if (result is DebtItemInput) {
+      setState(() {
+        if (index != null) {
+          _items[index] = result;
+        } else {
+          _items.add(result);
+        }
+        _error = null;
+      });
+      _markDirty();
+    } else if (result == true) {
+      if (index != null) {
+        setState(() {
+          _items.removeAt(index);
+          _error = null;
+        });
+        _markDirty();
+      }
     }
   }
 
@@ -380,11 +196,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 value: customerLabel,
               ),
               const SizedBox(height: AppSpacing.sm),
-              _buildSummaryRow(
-                dialogContext,
-                label: 'Date',
-                value: dateLabel,
-              ),
+              _buildSummaryRow(dialogContext, label: 'Date', value: dateLabel),
               const SizedBox(height: AppSpacing.sm),
               _buildSummaryRow(dialogContext, label: 'Due', value: dueLabel),
               const SizedBox(height: AppSpacing.md),
@@ -545,9 +357,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         Expanded(
           child: Text(
             value,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textPrimary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary),
           ),
         ),
       ],
@@ -694,8 +506,18 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.xl),
-            AppTextField.buildLabel(context, 'Items *'),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AppTextField.buildLabel(context, 'Items *'),
+                TextButton.icon(
+                  onPressed: () => _showItemDialog(),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add item'),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.sm),
             if (_items.isEmpty)
               Padding(
@@ -771,8 +593,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                       size: 20,
                                       color: AppColors.textMuted,
                                     ),
-                                    onPressed: () =>
-                                        _showItemDialog(index: i),
+                                    onPressed: () => _showItemDialog(index: i),
                                     padding: const EdgeInsets.all(12),
                                     constraints: const BoxConstraints(
                                       minWidth: 44,
@@ -804,7 +625,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 AppTextField.buildLabel(context, 'Notes'),
                 IconButton(
                   tooltip: _notesExpanded ? 'Hide note' : 'Add note',
-                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
+                  onPressed: () =>
+                      setState(() => _notesExpanded = !_notesExpanded),
                   icon: Icon(
                     _notesExpanded ? Icons.close : Icons.add,
                     size: 20,
@@ -868,31 +690,220 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                   ),
                 ),
                 const Spacer(),
-                MoneyText(
-                  _total,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+                MoneyText(_total, style: Theme.of(context).textTheme.bodyLarge),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: widget.isEditing ? 'Save changes' : 'Save',
+              onPressed: _save,
+              isLoading: _saving,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ItemBottomSheet extends StatefulWidget {
+  const _ItemBottomSheet({this.existing});
+
+  final DebtItemInput? existing;
+
+  @override
+  State<_ItemBottomSheet> createState() => _ItemBottomSheetState();
+}
+
+class _ItemBottomSheetState extends State<_ItemBottomSheet> {
+  late final TextEditingController _productController;
+  late final TextEditingController _quantityController;
+  late final TextEditingController _priceController;
+  late String _unit;
+  String? _productError;
+  String? _quantityError;
+  String? _priceError;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+    _productController = TextEditingController(
+      text: existing?.productName ?? '',
+    );
+    _quantityController = TextEditingController(
+      text: existing != null ? _formatQuantity(existing.quantity) : '1',
+    );
+    _priceController = TextEditingController(
+      text: existing != null ? existing.price.pesos.toStringAsFixed(2) : '',
+    );
+    _unit = existing?.unit ?? DebtItemUnits.piece;
+  }
+
+  @override
+  void dispose() {
+    _productController.dispose();
+    _quantityController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  String _formatQuantity(double quantity) {
+    return quantity % 1 == 0
+        ? quantity.toInt().toString()
+        : quantity.toString();
+  }
+
+  Future<void> _pickUnit() async {
+    final selected = await showAppModalBottomSheet<String>(
+      context: context,
+      builder: (context) => _UnitPickerSheet(selectedUnit: _unit),
+    );
+    if (selected == null) return;
+    setState(() => _unit = selected);
+  }
+
+  void _save() {
+    final productName = _productController.text.trim();
+    final quantityText = _quantityController.text.trim();
+    final priceText = _priceController.text.trim();
+    final qty = double.tryParse(quantityText);
+
+    String? pErr;
+    String? qErr;
+    String? prErr;
+    Money? price;
+
+    if (productName.isEmpty) {
+      pErr = 'Product is required.';
+    }
+    if (quantityText.isEmpty) {
+      qErr = 'Quantity is required.';
+    } else if (qty == null) {
+      qErr = 'Enter a valid quantity.';
+    } else if (qty <= 0) {
+      qErr = 'Quantity must be greater than 0.';
+    }
+
+    if (priceText.isEmpty) {
+      prErr = 'Price is required.';
+    } else {
+      try {
+        price = Money.fromPesoString(priceText);
+        if (!price.isPositive) {
+          prErr = 'Price must be greater than 0.';
+        }
+      } catch (_) {
+        prErr = 'Enter a valid price.';
+      }
+    }
+
+    if (pErr != null || qErr != null || prErr != null) {
+      setState(() {
+        _productError = pErr;
+        _quantityError = qErr;
+        _priceError = prErr;
+      });
+      return;
+    }
+
+    final input = DebtItemInput(
+      productName: productName,
+      quantity: qty!,
+      unit: _unit,
+      price: price!,
+    );
+    Navigator.of(context).pop(input);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppModalBottomSheet(
+      title: _isEditing ? 'Edit item' : 'Add item',
+      footer: Row(
+        children: [
+          if (_isEditing)
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+              child: const Text('Delete'),
+            ),
+          const Spacer(),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          FilledButton(
+            onPressed: _save,
+            child: Text(_isEditing ? 'Update' : 'Save'),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppTextField(
+              controller: _productController,
+              label: 'Product *',
+              hint: 'Bugas',
+              errorText: _productError,
+              onChanged: (_) {
+                if (_productError != null) {
+                  setState(() => _productError = null);
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showItemDialog(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add item'),
+                  child: AppTextField(
+                    controller: _quantityController,
+                    label: 'Quantity *',
+                    hint: '2',
+                    errorText: _quantityError,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                    ],
+                    onChanged: (_) {
+                      if (_quantityError != null) {
+                        setState(() => _quantityError = null);
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: AppButton(
-                    label: widget.isEditing ? 'Save changes' : 'Save',
-                    onPressed: _save,
-                    isLoading: _saving,
-                  ),
+                  child: _UnitField(unit: _unit, onTap: _pickUnit),
                 ),
               ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(
+              controller: _priceController,
+              label: 'Price *',
+              hint: '50.00',
+              errorText: _priceError,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+              ],
+              onChanged: (_) {
+                if (_priceError != null) {
+                  setState(() => _priceError = null);
+                }
+              },
             ),
           ],
         ),
