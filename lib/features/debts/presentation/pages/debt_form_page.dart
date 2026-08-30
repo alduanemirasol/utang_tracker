@@ -36,37 +36,6 @@ class DebtFormPage extends ConsumerStatefulWidget {
   ConsumerState<DebtFormPage> createState() => _DebtFormPageState();
 }
 
-class _LineItemControllers {
-  _LineItemControllers()
-    : product = TextEditingController(),
-      quantity = TextEditingController(text: '1'),
-      price = TextEditingController(),
-      productFocusNode = FocusNode(),
-      quantityFocusNode = FocusNode(),
-      priceFocusNode = FocusNode();
-
-  final TextEditingController product;
-  final TextEditingController quantity;
-  final TextEditingController price;
-  final FocusNode productFocusNode;
-  final FocusNode quantityFocusNode;
-  final FocusNode priceFocusNode;
-  String unit = DebtItemUnits.piece;
-  bool isExpanded = true;
-  String? productError;
-  String? quantityError;
-  String? priceError;
-
-  void dispose() {
-    product.dispose();
-    quantity.dispose();
-    price.dispose();
-    productFocusNode.dispose();
-    quantityFocusNode.dispose();
-    priceFocusNode.dispose();
-  }
-}
-
 class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   bool _isDirty = false;
   final _customerFieldKey = GlobalKey();
@@ -76,7 +45,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   DateTime? _dueDate;
   final _notesController = TextEditingController();
   bool _notesExpanded = false;
-  final List<_LineItemControllers> _items = [_LineItemControllers()];
+  final List<DebtItemInput> _items = [];
   bool _saving = false;
   bool _loaded = false;
   String? _customerError;
@@ -127,38 +96,11 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   @override
   void dispose() {
     _notesController.dispose();
-    for (final i in _items) {
-      i.dispose();
-    }
     super.dispose();
   }
 
   Money get _total {
-    final prices = _items.map(_itemSubtotal).where((price) => price.isPositive);
-    return computeTotal(prices);
-  }
-
-  Money _itemSubtotal(_LineItemControllers item) {
-    try {
-      return Money.fromPesoString(
-        item.price.text.isEmpty ? '0' : item.price.text,
-      );
-    } catch (_) {
-      return Money.zero();
-    }
-  }
-
-  String _collapsedItemSummary(_LineItemControllers item) {
-    final product = item.product.text.trim();
-    final quantity = item.quantity.text.trim();
-    final qty = double.tryParse(quantity);
-    final unitLabel = qty == null
-        ? DebtItemUnits.displayName(item.unit)
-        : DebtItemUnits.displayNameForQuantity(item.unit, qty);
-    final qtyText = qty == null
-        ? (quantity.isEmpty ? '0' : quantity)
-        : _formatQuantity(qty);
-    return '${product.isEmpty ? 'No product yet' : product} · $qtyText $unitLabel';
+    return computeTotal(_items.map((e) => e.price));
   }
 
   Future<void> _pickDate({required bool due}) async {
@@ -180,108 +122,235 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     _markDirty();
   }
 
-  Future<void> _pickUnit(_LineItemControllers item) async {
-    final selected = await showAppModalBottomSheet<String>(
-      context: context,
-      builder: (context) => _UnitPickerSheet(selectedUnit: item.unit),
+  Future<void> _showItemDialog({int? index}) async {
+    final isEditing = index != null;
+    final existing = index != null ? _items[index] : null;
+    final productController = TextEditingController(
+      text: existing?.productName ?? '',
     );
-    if (selected == null || !mounted) return;
-    setState(() => item.unit = selected);
-    _markDirty();
-  }
+    final quantityController = TextEditingController(
+      text: existing != null ? _formatQuantity(existing.quantity) : '1',
+    );
+    final priceController = TextEditingController(
+      text: existing != null ? existing.price.pesos.toStringAsFixed(2) : '',
+    );
+    String unit = existing?.unit ?? DebtItemUnits.piece;
 
-  void _addItem() {
-    setState(() {
-      for (final item in _items) {
-        item.isExpanded = false;
-      }
-      _items.add(_LineItemControllers());
-    });
-    _markDirty();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // ponytail: relies on new items staying expanded; use a GlobalKey if that changes.
-      final ctx = _items.last.productFocusNode.context;
-      if (ctx == null) return;
-      Scrollable.ensureVisible(
-        ctx,
-        alignment: 0.2,
-        duration: const Duration(milliseconds: 300),
-      );
-    });
-  }
+    String? productError;
+    String? quantityError;
+    String? priceError;
 
-  List<DebtItemInput>? _buildItems() {
-    final result = <DebtItemInput>[];
-    var hasErrors = false;
-    var expandedInvalidItem = false;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> pickUnit() async {
+              final selected = await showAppModalBottomSheet<String>(
+                context: context,
+                builder: (context) => _UnitPickerSheet(selectedUnit: unit),
+              );
+              if (selected == null) return;
+              setDialogState(() => unit = selected);
+            }
 
-    for (final item in _items) {
-      final name = item.product.text.trim();
-      final quantityText = item.quantity.text.trim();
-      final priceText = item.price.text.trim();
-      final qty = double.tryParse(quantityText);
+            void save() {
+              final productName = productController.text.trim();
+              final quantityText = quantityController.text.trim();
+              final priceText = priceController.text.trim();
+              final qty = double.tryParse(quantityText);
 
-      item.productError = name.isEmpty ? 'Product is required.' : null;
-      item.quantityError = quantityText.isEmpty
-          ? 'Quantity is required.'
-          : qty == null
-          ? 'Enter a valid quantity.'
-          : qty <= 0
-          ? 'Quantity must be greater than 0.'
-          : null;
+              String? pErr;
+              String? qErr;
+              String? prErr;
+              Money? price;
 
-      Money? price;
-      if (priceText.isEmpty) {
-        item.priceError = 'Price is required.';
-      } else {
-        try {
-          price = Money.fromPesoString(priceText);
-          item.priceError = price.isPositive
-              ? null
-              : 'Price must be greater than 0.';
-        } catch (_) {
-          item.priceError = 'Enter a valid price.';
-        }
-      }
+              if (productName.isEmpty) {
+                pErr = 'Product is required.';
+              }
+              if (quantityText.isEmpty) {
+                qErr = 'Quantity is required.';
+              } else if (qty == null) {
+                qErr = 'Enter a valid quantity.';
+              } else if (qty <= 0) {
+                qErr = 'Quantity must be greater than 0.';
+              }
 
-      final itemHasErrors =
-          item.productError != null ||
-          item.quantityError != null ||
-          item.priceError != null;
-      if (itemHasErrors) {
-        hasErrors = true;
-        if (!expandedInvalidItem) {
-          item.isExpanded = true;
-          expandedInvalidItem = true;
-        }
-        continue;
-      }
+              if (priceText.isEmpty) {
+                prErr = 'Price is required.';
+              } else {
+                try {
+                  price = Money.fromPesoString(priceText);
+                  if (!price.isPositive) {
+                    prErr = 'Price must be greater than 0.';
+                  }
+                } catch (_) {
+                  prErr = 'Enter a valid price.';
+                }
+              }
 
-      result.add(
-        DebtItemInput(
-          productName: name,
-          quantity: qty!,
-          unit: item.unit,
-          price: price!,
-        ),
-      );
+              if (pErr != null || qErr != null || prErr != null) {
+                setDialogState(() {
+                  productError = pErr;
+                  quantityError = qErr;
+                  priceError = prErr;
+                });
+                return;
+              }
+
+              final input = DebtItemInput(
+                productName: productName,
+                quantity: qty!,
+                unit: unit,
+                price: price!,
+              );
+              if (index != null) {
+                setState(() => _items[index] = input);
+              } else {
+                setState(() => _items.add(input));
+              }
+              _markDirty();
+              Navigator.of(dialogContext).pop(true);
+            }
+
+            return AlertDialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              title: Text(isEditing ? 'Edit paninda' : 'Add paninda'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppTextField(
+                      controller: productController,
+                      label: 'Product *',
+                      hint: 'Bugas',
+                      errorText: productError,
+                      onChanged: (_) {
+                        if (productError != null) {
+                          setDialogState(() => productError = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: AppTextField(
+                            controller: quantityController,
+                            label: 'Quantity *',
+                            hint: '2',
+                            errorText: quantityError,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[\d.]'),
+                              ),
+                            ],
+                            onChanged: (_) {
+                              if (quantityError != null) {
+                                setDialogState(() => quantityError = null);
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _UnitField(
+                            unit: unit,
+                            onTap: pickUnit,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      controller: priceController,
+                      label: 'Halaga *',
+                      hint: '50.00',
+                      errorText: priceError,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                      ],
+                      onChanged: (_) {
+                        if (priceError != null) {
+                          setDialogState(() => priceError = null);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Buong halaga nito',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                if (isEditing)
+                  TextButton(
+                    onPressed: () {
+                      // ignore: unnecessary_cast
+                      setState(() => _items.removeAt(index as int));
+                      _markDirty();
+                      Navigator.of(dialogContext).pop(true);
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                    ),
+                    child: const Text('Delete'),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: save,
+                  child: Text(isEditing ? 'Update' : 'Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    // Dispose local controllers after dialog closes.
+    productController.dispose();
+    quantityController.dispose();
+    priceController.dispose();
+
+    if (result == true && mounted) {
+      setState(() => _error = null);
     }
-    return hasErrors ? null : result;
   }
 
   Future<void> _save() async {
-    List<DebtItemInput>? items;
     setState(() {
       _error = null;
       _customerError = _customerId == null ? 'Select a customer.' : null;
-      items = _buildItems();
     });
-    if (_customerError != null || items == null) {
+    if (_customerError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToFirstError();
       });
       return;
     }
+    if (_items.isEmpty) {
+      setState(() => _error = 'Add at least one item');
+      return;
+    }
+    final items = _items.toList();
 
     // Prepare formatted strings BEFORE showing dialog to avoid async gap context issues.
     final customerLabel = _customerName ?? 'No customer';
@@ -292,7 +361,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     final totalLabel = _total.format();
     final notesText = _notesController.text.trim();
     final notesLabel = notesText.isEmpty ? 'No notes' : notesText;
-    final confirmedItems = items!;
+    final confirmedItems = items;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -416,7 +485,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
-          items: items!,
+          items: items,
         );
         invalidateBusinessData(
           ref,
@@ -429,7 +498,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
-          items: items!,
+          items: items,
         );
         invalidateBusinessData(ref, customerId: _customerId, debtId: debt.id);
       }
@@ -497,24 +566,18 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         if (_customerId != null) _resolveCustomerName(_customerId!);
       });
     }
-    for (final i in _items) {
-      i.dispose();
-    }
     _items
       ..clear()
       ..addAll(
-        data.detail.items.map((item) {
-          final c = _LineItemControllers();
-          c.product.text = item.productName;
-          c.quantity.text = item.quantity % 1 == 0
-              ? item.quantity.toInt().toString()
-              : item.quantity.toString();
-          c.unit = item.unit;
-          c.price.text = item.price.pesos.toStringAsFixed(2);
-          return c;
-        }),
+        data.detail.items.map(
+          (item) => DebtItemInput(
+            productName: item.productName,
+            quantity: item.quantity,
+            unit: item.unit,
+            price: item.price,
+          ),
+        ),
       );
-    if (_items.isEmpty) _items.add(_LineItemControllers());
     _isDirty = false;
     _loaded = true;
   }
@@ -528,22 +591,6 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           alignment: 0.2,
           duration: const Duration(milliseconds: 300),
         );
-      }
-      return;
-    }
-
-    for (final item in _items) {
-      if (item.productError != null) {
-        item.productFocusNode.requestFocus();
-        return;
-      }
-      if (item.quantityError != null) {
-        item.quantityFocusNode.requestFocus();
-        return;
-      }
-      if (item.priceError != null) {
-        item.priceFocusNode.requestFocus();
-        return;
       }
     }
   }
@@ -650,178 +697,106 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             const SizedBox(height: AppSpacing.xl),
             AppTextField.buildLabel(context, 'Items *'),
             const SizedBox(height: AppSpacing.sm),
-            ...List.generate(_items.length, (index) {
-              final item = _items[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Semantics(
-                              button: true,
-                              label: item.isExpanded
-                                  ? 'Collapse item ${index + 1}'
-                                  : 'Expand item ${index + 1}',
-                              child: InkWell(
-                                onTap: () => setState(
-                                  () => item.isExpanded = !item.isExpanded,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.sm,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Item ${index + 1}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                            if (!item.isExpanded)
-                                              Text(
-                                                _collapsedItemSummary(item),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(
-                                        item.isExpanded
-                                            ? Icons.keyboard_arrow_up_rounded
-                                            : Icons.keyboard_arrow_down_rounded,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (_items.length > 1)
-                            IconButton(
-                              tooltip: 'Remove item',
-                              onPressed: () {
-                                setState(() {
-                                  item.dispose();
-                                  _items.removeAt(index);
-                                });
-                                _markDirty();
-                              },
-                              icon: const Icon(Icons.close, size: 20),
-                            ),
-                        ],
-                      ),
-                      if (item.isExpanded) ...[
-                        const Divider(height: AppSpacing.lg),
-                        AppTextField(
-                          controller: item.product,
-                          focusNode: item.productFocusNode,
-                          label: 'Product *',
-                          hint: 'Bugas',
-                          errorText: item.productError,
-                          onChanged: (_) {
-                            _markDirty();
-                            setState(() => item.productError = null);
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: AppTextField(
-                                controller: item.quantity,
-                                focusNode: item.quantityFocusNode,
-                                label: 'Quantity *',
-                                hint: '2',
-                                errorText: item.quantityError,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[\d.]'),
-                                  ),
-                                ],
-                                onChanged: (_) {
-                                  _markDirty();
-                                  setState(() => item.quantityError = null);
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: _UnitField(
-                                unit: item.unit,
-                                onTap: () => _pickUnit(item),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        AppTextField(
-                          controller: item.price,
-                          focusNode: item.priceFocusNode,
-                          label: 'Price *',
-                          hint: '50.00',
-                          errorText: item.priceError,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                          ],
-                          onChanged: (_) {
-                            _markDirty();
-                            setState(() => item.priceError = null);
-                          },
-                        ),
-                      ],
-                      const Divider(height: AppSpacing.xl),
-                      Row(
-                        key: ValueKey('debt-form-item-subtotal-row-$index'),
-                        children: [
-                          Text(
-                            'Subtotal',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
-                          const Spacer(),
-                          MoneyText(
-                            _itemSubtotal(item),
-                            key: ValueKey(
-                              'debt-form-item-subtotal-amount-$index',
-                            ),
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ],
-                      ),
-                    ],
+            if (_items.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                child: Center(
+                  child: Text(
+                    'No items',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              );
-            }),
+              )
+            else
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < _items.length; i++) ...[
+                      InkWell(
+                        onTap: () => _showItemDialog(index: i),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.cardPadding,
+                            vertical: AppSpacing.md,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _items[i].productName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Text(
+                                      '${_formatQuantity(_items[i].quantity)} · ${DebtItemUnits.displayNameForQuantity(_items[i].unit, _items[i].quantity)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.textMuted,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  MoneyText(
+                                    _items[i].price,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      size: 20,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    onPressed: () =>
+                                        _showItemDialog(index: i),
+                                    padding: const EdgeInsets.all(12),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 44,
+                                      minHeight: 44,
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    tooltip: 'Edit',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (i < _items.length - 1)
+                        const Divider(
+                          height: 1,
+                          indent: AppSpacing.cardPadding,
+                          endIndent: AppSpacing.cardPadding,
+                        ),
+                    ],
+                  ],
+                ),
+              ),
             const SizedBox(height: AppSpacing.md),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -904,7 +879,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _addItem,
+                    onPressed: () => _showItemDialog(),
                     icon: const Icon(Icons.add),
                     label: const Text('Add item'),
                   ),
