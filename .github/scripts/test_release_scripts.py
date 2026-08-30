@@ -8,18 +8,15 @@ import tempfile
 import shutil
 from pathlib import Path
 
-
 def main():
     repo_root = Path(__file__).resolve().parents[2]
     test_dir = Path(tempfile.mkdtemp())
-    # trap 'rm -rf "$TEST_DIR"' EXIT  -> cleanup at end
     try:
         def generate_notes(fixture, output_dir):
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             env = os.environ.copy()
             env["TAG_NAME"] = "v1.0.35"
             env["RELEASE_NOTES_JSON"] = str(fixture)
-            # Use python generate_release_notes.py (preserve exact functionality)
             script = repo_root / ".github" / "scripts" / "generate_release_notes.py"
             result = subprocess.run(
                 [sys.executable, str(script)],
@@ -46,7 +43,6 @@ def main():
                 print(f"Empty release note categories were rendered in {file_path}.")
                 sys.exit(1)
 
-        # Fixture: mixed.json
         mixed_json = test_dir / "mixed.json"
         mixed_json.write_text(
             '{"version":"1.0.35","date":"2026-08-05","notes":{"added":["New item"],"changed":["Changed item"],"fixed":["Fixed item"]}}',
@@ -58,8 +54,6 @@ def main():
         assert_contains("## Added", str(mixed_output))
         assert_contains("## Changed", str(mixed_output))
         assert_contains("## Fixed", str(mixed_output))
-
-        # Fixture: changed.json
         changed_json = test_dir / "changed.json"
         changed_json.write_text(
             '{"version":"1.0.35","date":"2026-08-05","notes":{"added":[],"changed":["Changed item"],"fixed":[]}}',
@@ -72,8 +66,6 @@ def main():
         if re.search(r"^## (Added|Fixed)$", changed_content, re.MULTILINE):
             print(f"Empty Added or Fixed category was rendered in {changed_output}.")
             sys.exit(1)
-
-        # Fixture: empty.json
         empty_json = test_dir / "empty.json"
         empty_json.write_text(
             '{"version":"1.0.35","date":"2026-08-05","notes":{"added":[],"changed":[],"fixed":[]}}',
@@ -81,12 +73,9 @@ def main():
         )
         generate_notes(empty_json, test_dir / "empty")
         assert_no_category_headings(str(test_dir / "empty" / "RELEASE_NOTES.md"))
-
         print("Release script tests passed.")
-
     finally:
         shutil.rmtree(str(test_dir), ignore_errors=True)
-
 
 if __name__ == "__main__":
     main()
