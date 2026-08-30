@@ -75,6 +75,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   DateTime _transactionDate = DateTime.now();
   DateTime? _dueDate;
   final _notesController = TextEditingController();
+  bool _notesExpanded = false;
   final List<_LineItemControllers> _items = [_LineItemControllers()];
   bool _saving = false;
   bool _loaded = false;
@@ -328,6 +329,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     _transactionDate = data.detail.debt.transactionDate.toLocal();
     _dueDate = data.detail.debt.dueDate?.toLocal();
     _notesController.text = data.detail.debt.notes ?? '';
+    _notesExpanded = _notesController.text.trim().isNotEmpty;
     if (_customerName == null || _customerName!.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_customerId != null) _resolveCustomerName(_customerId!);
@@ -455,25 +457,33 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               errorText: _customerError,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _DateField(
-              label: 'Date',
-              required: true,
-              value: context.smartDate(_transactionDate),
-              onTap: () => _pickDate(due: false),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _DateField(
-              label: 'Due date',
-              value: _dueDate == null
-                  ? 'Optional'
-                  : context.smartDate(_dueDate!),
-              onTap: () => _pickDate(due: true),
-              onClear: _dueDate == null
-                  ? null
-                  : () {
-                      setState(() => _dueDate = null);
-                      _markDirty();
-                    },
+            Row(
+              children: [
+                Expanded(
+                  child: _DateField(
+                    label: 'Date',
+                    required: true,
+                    value: context.smartDate(_transactionDate),
+                    onTap: () => _pickDate(due: false),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _DateField(
+                    label: 'Due date',
+                    value: _dueDate == null
+                        ? 'Optional'
+                        : context.smartDate(_dueDate!),
+                    onTap: () => _pickDate(due: true),
+                    onClear: _dueDate == null
+                        ? null
+                        : () {
+                            setState(() => _dueDate = null);
+                            _markDirty();
+                          },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.xl),
             AppTextField.buildLabel(
@@ -655,14 +665,37 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               );
             }),
             const SizedBox(height: AppSpacing.md),
-            AppTextField(
-              controller: _notesController,
-              label: 'Notes',
-              hint: 'Optional',
-              minLines: 4,
-              maxLines: 6,
-              onChanged: (_) => _markDirty(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AppTextField.buildLabel(context, 'Notes'),
+                IconButton(
+                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
+                  icon: Icon(
+                    _notesExpanded ? Icons.close : Icons.add,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(
+                    minWidth: 44,
+                    minHeight: 44,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
             ),
+            if (_notesExpanded) ...[
+              const SizedBox(height: AppSpacing.sm),
+              AppTextField(
+                controller: _notesController,
+                hint: 'Optional',
+                minLines: 4,
+                maxLines: 6,
+                onChanged: (_) => _markDirty(),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
@@ -1113,7 +1146,12 @@ class _DateField extends StatelessWidget {
                     )
                   : const Icon(Icons.calendar_today_outlined, size: 18),
             ),
-            child: Text(value, style: AppTextField.inputStyle(context)),
+            child: Text(
+              value,
+              style: AppTextField.inputStyle(context),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],
