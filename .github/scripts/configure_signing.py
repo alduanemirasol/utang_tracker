@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+import os
+import sys
+import base64
+from pathlib import Path
+
+
+def main():
+    signing_key_base64 = os.environ.get("SIGNING_KEY_BASE64", "")
+    key_store_password = os.environ.get("KEY_STORE_PASSWORD", "")
+    key_password = os.environ.get("KEY_PASSWORD", "")
+    key_alias = os.environ.get("KEY_ALIAS", "")
+
+    if not signing_key_base64:
+        print("SIGNING_KEY_BASE64 is missing.")
+        sys.exit(1)
+
+    if not key_store_password:
+        print("KEY_STORE_PASSWORD is missing.")
+        sys.exit(1)
+
+    if not key_password:
+        print("KEY_PASSWORD is missing.")
+        sys.exit(1)
+
+    if not key_alias:
+        print("KEY_ALIAS is missing.")
+        sys.exit(1)
+
+    # base64 --decode > android/app/release.keystore
+    keystore_path = Path("android/app/release.keystore")
+    keystore_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        decoded = base64.b64decode(signing_key_base64, validate=True)
+    except Exception:
+        # Fallback without validate for compatibility with bash `base64 --decode` which is lenient
+        decoded = base64.b64decode(signing_key_base64)
+    keystore_path.write_bytes(decoded)
+
+    # cat > android/key.properties <<EOF
+    key_properties_path = Path("android/key.properties")
+    key_properties_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(key_properties_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(f"storePassword={key_store_password}\n")
+        f.write(f"keyPassword={key_password}\n")
+        f.write(f"keyAlias={key_alias}\n")
+        f.write("storeFile=app/release.keystore\n")
+
+    print("Android signing configured.")
+
+
+if __name__ == "__main__":
+    main()

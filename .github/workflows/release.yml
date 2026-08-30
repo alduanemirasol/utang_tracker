@@ -28,10 +28,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify app and release versions
-        run: bash .github/scripts/verify-version.sh
+        run: python .github/scripts/verify_version.py
 
       - name: Test release note generation
-        run: bash .github/scripts/test-release-scripts.sh
+        run: python .github/scripts/test_release_scripts.py
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -60,16 +60,16 @@ jobs:
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        run: bash .github/scripts/configure-signing.sh
+        run: python .github/scripts/configure_signing.py
       
       - name: Build ARM64 and ARM32 APKs
         run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
 
       - name: Prepare release files
-        run: bash .github/scripts/prepare-release.sh
+        run: python .github/scripts/prepare_release.py
 
       - name: Generate release notes
-        run: bash .github/scripts/generate-release-notes.sh
+        run: python .github/scripts/generate_release_notes.py
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v3
