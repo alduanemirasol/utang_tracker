@@ -6,90 +6,187 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_theme.dart';
 import 'package:utang_tracker/core/domain/money.dart';
+import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_text_field.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt_item_unit.dart';
 import 'package:utang_tracker/features/debts/presentation/pages/debt_form_page.dart';
 
 void main() {
-  testWidgets('each debt item card shows a live subtotal row', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(400, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'adding item via bottom sheet shows in list with correct subtotal and quantity/unit grammar',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
-      ),
-    );
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
+        ),
+      );
 
-    final transactionDate = find.text('Today');
-    expect(transactionDate, findsOneWidget);
-    expect(
-      tester.widget<Text>(transactionDate).style?.fontWeight,
-      FontWeight.w500,
-    );
-    expect(
-      tester.widget<Text>(find.text('Select customer')).style?.fontWeight,
-      FontWeight.w500,
-    );
+      final transactionDate = find.text('Today');
+      expect(transactionDate, findsOneWidget);
+      expect(
+        tester.widget<Text>(transactionDate).style?.fontWeight,
+        FontWeight.w500,
+      );
+      expect(
+        tester.widget<Text>(find.text('Select customer')).style?.fontWeight,
+        FontWeight.w500,
+      );
 
-    final unitValue = find.text(DebtItemUnits.displayName(DebtItemUnits.piece));
-    expect(tester.widget<Text>(unitValue).style?.fontWeight, FontWeight.w500);
+      // Initially empty list shows No items and Add item header button
+      expect(find.text('No items'), findsOneWidget);
+      final headerAddItem = find.widgetWithText(TextButton, 'Add item');
+      expect(headerAddItem, findsOneWidget);
 
-    final firstSubtotal = find.byKey(
-      const ValueKey('debt-form-item-subtotal-amount-0'),
-    );
-    expect(find.text('Subtotal'), findsOneWidget);
-    expect(
-      find.descendant(
-        of: firstSubtotal,
-        matching: find.text(Money.zero().format()),
-      ),
-      findsOneWidget,
-    );
+      // Open bottom sheet via header Add item
+      await tester.tap(headerAddItem);
+      await tester.pumpAndSettle();
 
-    final priceField = find.byWidgetPredicate(
-      (widget) => widget is AppTextField && widget.label == 'Price *',
-    );
-    await tester.ensureVisible(priceField);
-    expect(
-      tester
-          .widget<TextField>(
-            find.descendant(of: priceField, matching: find.byType(TextField)),
-          )
-          .style
-          ?.fontWeight,
-      FontWeight.w500,
-    );
-    await tester.enterText(
-      find.descendant(of: priceField, matching: find.byType(TextField)),
-      '75.50',
-    );
-    await tester.pump();
+      expect(find.byType(AppModalBottomSheet), findsOneWidget);
+      // Sheet title Add item appears inside bottom sheet (also header has Add item)
+      // Verify sheet contains Product * field
+      expect(
+        find.descendant(
+          of: find.byType(AppModalBottomSheet),
+          matching: find.byWidgetPredicate(
+            (w) => w is AppTextField && w.label == 'Product *',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AppModalBottomSheet),
+          matching: find.byWidgetPredicate(
+            (w) => w is AppTextField && w.label == 'Quantity *',
+          ),
+        ),
+        findsOneWidget,
+      );
+      // Price * is the actual label in _ItemBottomSheet (not Halaga)
+      expect(
+        find.descendant(
+          of: find.byType(AppModalBottomSheet),
+          matching: find.byWidgetPredicate(
+            (w) => w is AppTextField && w.label == 'Price *',
+          ),
+        ),
+        findsOneWidget,
+      );
+      // Unit field shows piece
+      expect(find.text('piece'), findsOneWidget);
 
-    expect(
-      find.descendant(
-        of: firstSubtotal,
-        matching: find.text(Money.fromPesos(75.50).format()),
-      ),
-      findsOneWidget,
-    );
+      // Fill first item: Bugas, qty 2, price 75.50
+      final productField = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Product *',
+      );
+      final quantityField = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Quantity *',
+      );
+      final priceField = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Price *',
+      );
 
-    await tester.tap(find.text('Item 1'));
-    await tester.pumpAndSettle();
-    expect(firstSubtotal, findsOneWidget);
+      await tester.enterText(
+        find.descendant(of: productField, matching: find.byType(TextField)),
+        'Bugas',
+      );
+      await tester.enterText(
+        find.descendant(of: quantityField, matching: find.byType(TextField)),
+        '2',
+      );
+      await tester.enterText(
+        find.descendant(of: priceField, matching: find.byType(TextField)),
+        '75.50',
+      );
+      await tester.pump();
 
-    await tester.ensureVisible(find.text('Add item'));
-    await tester.tap(find.text('Add item'));
-    await tester.pump();
+      // Save sheet
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Subtotal'), findsNWidgets(2));
-    expect(
-      find.byKey(const ValueKey('debt-form-item-subtotal-amount-1')),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      // Sheet closed, list shows Bugas, 2 pieces, correct Money
+      expect(find.text('Bugas'), findsOneWidget);
+      expect(find.text('2 pieces'), findsOneWidget);
+      // Price appears in list row and bottom total (2 widgets)
+      expect(find.text(Money.fromPesos(75.50).format()), findsWidgets);
+      expect(find.text('No items'), findsNothing);
+
+      // Total should reflect single item (duplicate of row price)
+      expect(find.text(Money.fromPesos(75.50).format()), findsNWidgets(2));
+
+      // Add second item
+      await tester.tap(find.widgetWithText(TextButton, 'Add item'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppModalBottomSheet), findsOneWidget);
+
+      // Re-find fields for second item
+      final productField2 = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Product *',
+      );
+      final quantityField2 = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Quantity *',
+      );
+      final priceField2 = find.byWidgetPredicate(
+        (w) => w is AppTextField && w.label == 'Price *',
+      );
+
+      await tester.enterText(
+        find.descendant(of: productField2, matching: find.byType(TextField)),
+        'Kape',
+      );
+      await tester.enterText(
+        find.descendant(of: quantityField2, matching: find.byType(TextField)),
+        '1',
+      );
+      // Change unit to sachet via picker
+      final pieceInSheet = find.descendant(
+        of: find.byType(AppModalBottomSheet),
+        matching: find.text('piece'),
+      );
+      expect(pieceInSheet, findsOneWidget);
+      await tester.ensureVisible(pieceInSheet);
+      final pieceInkWell = find.ancestor(
+        of: pieceInSheet,
+        matching: find.byType(InkWell),
+      );
+      await tester.tap(pieceInkWell.first);
+      await tester.pumpAndSettle();
+      // Unit picker sheet appears
+      expect(find.text('Select unit'), findsOneWidget);
+      // Scroll to ensure sachet visible and tap
+      await tester.scrollUntilVisible(
+        find.text('sachet'),
+        100,
+        scrollable: find.descendant(
+          of: find.byKey(const Key('app-modal-bottom-sheet')),
+          matching: find.byType(Scrollable),
+        ).last,
+      );
+      await tester.tap(find.text('sachet'));
+      await tester.pumpAndSettle();
+      // Now unit should be sachet displayed in field
+      await tester.enterText(
+        find.descendant(of: priceField2, matching: find.byType(TextField)),
+        '12.00',
+      );
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bugas'), findsOneWidget);
+      expect(find.text('Kape'), findsOneWidget);
+      expect(find.text('1 sachet'), findsOneWidget);
+      expect(find.text(Money.fromPesos(12.00).format()), findsOneWidget);
+      // Total updates to 87.50
+      expect(find.text(Money.fromPesos(87.50).format()), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('custom unit dialog stays compact', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
@@ -101,10 +198,28 @@ void main() {
       ),
     );
 
-    final unit = find.text(DebtItemUnits.displayName(DebtItemUnits.piece));
-    await tester.ensureVisible(unit);
-    await tester.tap(unit);
+    // Open Add item sheet
+    await tester.tap(find.widgetWithText(TextButton, 'Add item'));
     await tester.pumpAndSettle();
+
+    expect(find.byType(AppModalBottomSheet), findsOneWidget);
+    expect(find.text('Add item'), findsWidgets);
+
+    // Tap unit piece inside sheet to open picker
+    final unit = find.text(DebtItemUnits.displayName(DebtItemUnits.piece));
+    expect(unit, findsOneWidget);
+    await tester.ensureVisible(unit);
+    // _UnitField is InkWell wrapping InputDecorator containing piece text
+    final unitInkWell = find.ancestor(
+      of: unit,
+      matching: find.byType(InkWell),
+    );
+    expect(unitInkWell, findsWidgets);
+    await tester.tap(unitInkWell.first);
+    await tester.pumpAndSettle();
+
+    // Unit picker sheet should appear
+    expect(find.text('Select unit'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Custom unit'),
@@ -112,8 +227,9 @@ void main() {
       scrollable: find.descendant(
         of: find.byKey(const Key('app-modal-bottom-sheet')),
         matching: find.byType(Scrollable),
-      ),
+      ).last,
     );
+    expect(find.text('Custom unit'), findsOneWidget);
     await tester.tap(find.text('Custom unit'));
     await tester.pumpAndSettle();
 
@@ -129,9 +245,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('adding an item collapses all previous item forms', (
-    tester,
-  ) async {
+  testWidgets('adding items appends to list without collapsing', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -141,50 +255,116 @@ void main() {
       ),
     );
 
-    final addItem = find.text('Add item');
-    await tester.ensureVisible(addItem);
+    expect(find.text('No items'), findsOneWidget);
+    expect(find.text('Bugas'), findsNothing);
+    // Header Items * is rendered via AppTextField.buildLabel with rich text
+    expect(find.byWidgetPredicate((w) {
+      if (w is Text) {
+        return w.data != null && w.data!.contains('Items');
+      }
+      if (w is TextSpan) return false;
+      // Text.rich creates RichText? Check Text widget predicate for rich
+      return false;
+    }), findsNothing);
+    // Alternative check: AppTextField.buildLabel creates Text.rich, verify via finds Text.rich containing Items
+    // Use textContaining fallback
+    expect(find.textContaining('Items'), findsOneWidget);
+
+    final addItem = find.widgetWithText(TextButton, 'Add item');
+    expect(addItem, findsOneWidget);
     await tester.tap(addItem);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    final collapsedSummary =
-        'No product yet · 1 '
-        '${DebtItemUnits.displayName(DebtItemUnits.piece)}';
-    expect(find.text(collapsedSummary), findsOneWidget);
-    expect(find.text('Product *'), findsOneWidget);
+    // Add first item via sheet
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Product *'),
+        matching: find.byType(TextField),
+      ),
+      'Bugas',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Quantity *'),
+        matching: find.byType(TextField),
+      ),
+      '2',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Price *'),
+        matching: find.byType(TextField),
+      ),
+      '10.00',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
 
-    await tester.tap(addItem);
-    await tester.pump();
+    expect(find.text('No items'), findsNothing);
+    expect(find.text('Bugas'), findsOneWidget);
+    expect(find.text('2 pieces'), findsOneWidget);
+    // No collapsed summary strings should exist
+    expect(find.textContaining('No product yet'), findsNothing);
+    expect(find.textContaining('collapsedSummary'), findsNothing);
 
-    expect(find.text(collapsedSummary), findsNWidgets(2));
-    expect(find.text('Product *'), findsOneWidget);
+    // Add second item
+    await tester.tap(find.widgetWithText(TextButton, 'Add item'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Product *'),
+        matching: find.byType(TextField),
+      ),
+      'Kape',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Quantity *'),
+        matching: find.byType(TextField),
+      ),
+      '1',
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Price *'),
+        matching: find.byType(TextField),
+      ),
+      '5.00',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bugas'), findsOneWidget);
+    expect(find.text('Kape'), findsOneWidget);
+    expect(find.textContaining('Items'), findsOneWidget);
+    expect(find.textContaining('No product yet'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('required debt fields show and clear inline errors', (
-    tester,
-  ) async {
+  testWidgets('required debt fields show and clear inline errors', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
+    final database = AppDatabase.forTesting();
+    addTearDown(database.close);
+    final customers = CustomerRepositoryImpl(database);
+    final testCustomer = await customers.create(name: 'Test Customer');
+
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(database)],
         child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
       ),
     );
+    // use variable to satisfy analyzer
+    expect(testCustomer.name, 'Test Customer');
 
-    expect(find.text('Product *'), findsOneWidget);
-    expect(find.text('Quantity *'), findsOneWidget);
-    expect(find.text('Price *'), findsOneWidget);
-
-    final addItem = find.text('Add item');
-    await tester.ensureVisible(addItem);
-    await tester.tap(addItem);
-    await tester.pump();
-    expect(find.text('Product *'), findsOneWidget);
-    final collapsedSummary =
-        'No product yet · 1 '
-        '${DebtItemUnits.displayName(DebtItemUnits.piece)}';
-    expect(find.text(collapsedSummary), findsOneWidget);
+    // Initial state: Items * header, No items empty, Add item header, Save bottom
+    expect(find.text('No items'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Add item'), findsOneWidget);
+    expect(find.text('Save'), findsOneWidget);
+    expect(find.textContaining('Items'), findsOneWidget);
 
     final save = find.text('Save');
     final scrollable = find.byType(Scrollable).first;
@@ -198,7 +378,8 @@ void main() {
       scrollable: scrollable,
     );
     expect(find.text('Select a customer.'), findsOneWidget);
-    expect(find.text(collapsedSummary), findsNothing);
+    // When customer missing, _save returns early; Add at least one item not yet shown
+    expect(find.text('Add at least one item'), findsNothing);
 
     final customerDecorator = find.ancestor(
       of: find.text('Select customer'),
@@ -208,6 +389,27 @@ void main() {
       tester.widget<InputDecorator>(customerDecorator).decoration.errorText,
       'Select a customer.',
     );
+
+    // Select a customer then save again to trigger items validation
+    await tester.tap(find.text('Select customer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(testCustomer.name));
+    await tester.pumpAndSettle();
+    expect(find.text(testCustomer.name), findsOneWidget);
+
+    await tester.scrollUntilVisible(save, 500, scrollable: scrollable);
+    await tester.tap(save);
+    await tester.pump();
+    expect(find.text('Add at least one item'), findsOneWidget);
+
+    // Now test dialog validation: add item sheet with empty product should show error
+    await tester.tap(find.widgetWithText(TextButton, 'Add item'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppModalBottomSheet), findsOneWidget);
+    // Try saving with empty product
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pump();
 
     final productFields = find.byWidgetPredicate(
       (widget) => widget is AppTextField && widget.label == 'Product *',
@@ -229,9 +431,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('customer picker check follows the selected customer', (
-    tester,
-  ) async {
+  testWidgets('customer picker check follows the selected customer', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
