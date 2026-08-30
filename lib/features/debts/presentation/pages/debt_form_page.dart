@@ -151,9 +151,14 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   String _collapsedItemSummary(_LineItemControllers item) {
     final product = item.product.text.trim();
     final quantity = item.quantity.text.trim();
-    final unit = DebtItemUnits.displayName(item.unit);
-    return '${product.isEmpty ? 'No product yet' : product} · '
-        '${quantity.isEmpty ? '0' : quantity} $unit';
+    final qty = double.tryParse(quantity);
+    final unitLabel = qty == null
+        ? DebtItemUnits.displayName(item.unit)
+        : DebtItemUnits.displayNameForQuantity(item.unit, qty);
+    final qtyText = qty == null
+        ? (quantity.isEmpty ? '0' : quantity)
+        : _formatQuantity(qty);
+    return '${product.isEmpty ? 'No product yet' : product} · $qtyText $unitLabel';
   }
 
   Future<void> _pickDate({required bool due}) async {
@@ -292,6 +297,8 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         title: Text(widget.isEditing ? 'Confirm changes?' : 'Confirm utang?'),
         content: SingleChildScrollView(
           child: Column(
@@ -328,7 +335,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          '${e.productName} \u00b7 ${_formatQuantity(e.quantity)} ${DebtItemUnits.displayName(e.unit)}',
+                          '${e.productName} \u00b7 ${_formatQuantity(e.quantity)} ${DebtItemUnits.displayNameForQuantity(e.unit, e.quantity)}',
                           style: Theme.of(dialogContext).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textPrimary),
                         ),
