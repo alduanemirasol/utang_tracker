@@ -2,7 +2,7 @@ name: utang_tracker
 description: "Utang tracker for sari-sari stores in the Philippines."
 publish_to: 'none'
 
-version: 1.0.39+38
+version: 1.0.40+39
 
 environment:
   sdk: ^3.12.0
@@ -73,3 +73,4 @@ flutter:
           weight: 600
         - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
+

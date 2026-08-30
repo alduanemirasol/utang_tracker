@@ -1,14 +1,15 @@
 {
-  "version": "1.0.39",
-  "date": "2026-08-12",
+  "version": "1.0.40",
+  "date": "2026-08-30",
   "notes": {
-    "added": [
-      "Customer sorting by name or date",
-      "Overdue filter for the utang list"
-    ],
+    "added": ["Confirm debt summary before save (Customer/Date/Due/Items/Total/Notes)"],
     "changed": [
-      "Customer search and sorting now work together"
+      "Date and Due Date now side-by-side on New Debt",
+      "Notes collapsed by default with +/x toggle on Debt/Customer/Payment (matches input style)",
+      "Items label same size as Notes/Date (labelLarge)",
+      "Unit picker uses same weight as inputs (w500)",
+      "Confirm dialog wider for breath (16dp inset)"
     ],
-    "fixed": []
+    "fixed": ["Quantity+unit grammar: 1 piece vs 2 pieces, 1 box vs 3 boxes, 0.5 kg"]
   }
 }
