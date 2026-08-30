@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
@@ -29,6 +30,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   final _nameFocusNode = FocusNode();
+  bool _notesExpanded = false;
   bool _isDirty = false;
   String? _nameError;
   bool _saving = false;
@@ -57,6 +59,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     _nameController.text = customer.name;
     _phoneController.text = customer.phone ?? '';
     _notesController.text = customer.notes ?? '';
+    _notesExpanded = _notesController.text.trim().isNotEmpty;
     _isDirty = false;
     _loaded = true;
   }
@@ -187,15 +190,38 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               onChanged: (_) => _markDirty(),
             ),
             const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              controller: _notesController,
-              label: 'Notes',
-              hint: 'Optional notes',
-              minLines: 4,
-              maxLines: 6,
-              textInputAction: TextInputAction.done,
-              onChanged: (_) => _markDirty(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AppTextField.buildLabel(context, 'Notes'),
+                IconButton(
+                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
+                  icon: Icon(
+                    _notesExpanded ? Icons.close : Icons.add,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(
+                    minWidth: 44,
+                    minHeight: 44,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
             ),
+            if (_notesExpanded) ...[
+              const SizedBox(height: AppSpacing.sm),
+              AppTextField(
+                controller: _notesController,
+                hint: 'Optional',
+                minLines: 4,
+                maxLines: 6,
+                textInputAction: TextInputAction.done,
+                onChanged: (_) => _markDirty(),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xl),
             AppButton(
               label: widget.isEditing ? 'Save changes' : 'Add customer',

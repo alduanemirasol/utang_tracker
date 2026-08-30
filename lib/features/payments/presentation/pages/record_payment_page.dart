@@ -42,6 +42,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   DateTime _paymentDate = DateTime.now();
   String _method = AppConstants.paymentMethods.first;
   final _notesController = TextEditingController();
+  bool _notesExpanded = false;
   bool _saving = false;
   bool _confirmed = false;
   String? _debtError;
@@ -310,14 +311,37 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               decoration: const InputDecoration(),
             ),
             const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              controller: _notesController,
-              label: 'Notes',
-              hint: 'Optional',
-              minLines: 4,
-              maxLines: 6,
-              onChanged: (_) => _markDirty(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AppTextField.buildLabel(context, 'Notes'),
+                IconButton(
+                  tooltip: _notesExpanded ? 'Hide note' : 'Add note',
+                  onPressed: () => setState(() => _notesExpanded = !_notesExpanded),
+                  icon: Icon(
+                    _notesExpanded ? Icons.close : Icons.add,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(
+                    minWidth: 44,
+                    minHeight: 44,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
             ),
+            if (_notesExpanded) ...[
+              const SizedBox(height: AppSpacing.sm),
+              AppTextField(
+                controller: _notesController,
+                hint: 'Optional',
+                minLines: 4,
+                maxLines: 6,
+                onChanged: (_) => _markDirty(),
+              ),
+            ],
             if (selected != null) ...[
               const SizedBox(height: AppSpacing.md),
               Row(
