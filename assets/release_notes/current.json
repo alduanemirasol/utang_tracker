@@ -1,13 +1,9 @@
 {
-  "version": "1.0.41",
-  "date": "2026-08-30",
+  "version": "1.0.42",
+  "date": "2026-08-31",
   "notes": {
-    "added": ["Debt items bottom sheet and clean list (left name/qty unit, right subtotal + edit side-by-side)"],
-    "changed": [
-      "New Debt items now via Add/Edit bottom sheet instead of expandable cards",
-      "Add item moved to header right of Items label, empty state is plain No items",
-      "Dialogs wider (inset 8/12) and top spacing tighter, dot between qty and unit removed"
-    ],
-    "fixed": ["Debt and payment form tests updated for collapsed Notes and bottom sheet flow"]
+    "added": ["Recent Input Suggestions on product field — shows last 8 products and filters as you type in Add New Item"],
+    "changed": ["Home screen simplified — removed New utang and Record bayad quick actions and Mga utang hyperlink (use bottom tabs and FABs)"],
+    "fixed": []
   }
 }

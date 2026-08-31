@@ -119,4 +119,8 @@ class _FakeDebtRepository implements DebtRepository {
 
   @override
   Future<int> outstandingBalanceCentavos() async => throw UnimplementedError();
+
+  @override
+  Future<List<String>> getRecentProductNames({int limit = 20}) async =>
+      throw UnimplementedError();
 }

@@ -706,19 +706,20 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 }
 
-class _ItemBottomSheet extends StatefulWidget {
+class _ItemBottomSheet extends ConsumerStatefulWidget {
   const _ItemBottomSheet({this.existing});
 
   final DebtItemInput? existing;
 
   @override
-  State<_ItemBottomSheet> createState() => _ItemBottomSheetState();
+  ConsumerState<_ItemBottomSheet> createState() => _ItemBottomSheetState();
 }
 
-class _ItemBottomSheetState extends State<_ItemBottomSheet> {
+class _ItemBottomSheetState extends ConsumerState<_ItemBottomSheet> {
   late final TextEditingController _productController;
   late final TextEditingController _quantityController;
   late final TextEditingController _priceController;
+  late final FocusNode _productFocusNode;
   late String _unit;
   String? _productError;
   String? _quantityError;
@@ -733,6 +734,7 @@ class _ItemBottomSheetState extends State<_ItemBottomSheet> {
     _productController = TextEditingController(
       text: existing?.productName ?? '',
     );
+    _productFocusNode = FocusNode();
     _quantityController = TextEditingController(
       text: existing != null ? _formatQuantity(existing.quantity) : '1',
     );
@@ -745,6 +747,7 @@ class _ItemBottomSheetState extends State<_ItemBottomSheet> {
   @override
   void dispose() {
     _productController.dispose();
+    _productFocusNode.dispose();
     _quantityController.dispose();
     _priceController.dispose();
     super.dispose();
@@ -820,6 +823,9 @@ class _ItemBottomSheetState extends State<_ItemBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final recentAsync = ref.watch(recentProductNamesProvider);
+    final recentNames = recentAsync.value ?? const <String>[];
+
     return AppModalBottomSheet(
       title: _isEditing ? 'Edit item' : 'Add item',
       footer: Row(
@@ -847,15 +853,28 @@ class _ItemBottomSheetState extends State<_ItemBottomSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AppTextField(
+            _ProductAutocompleteField(
               controller: _productController,
-              label: 'Product *',
-              hint: 'Bugas',
+              focusNode: _productFocusNode,
               errorText: _productError,
+              recentNames: recentNames,
+              isLoading: recentAsync.isLoading,
               onChanged: (_) {
                 if (_productError != null) {
                   setState(() => _productError = null);
                 }
+              },
+              onSelected: (value) {
+                _productController.text = value;
+                _productController.selection = TextSelection.collapsed(
+                  offset: value.length,
+                );
+                if (_productError != null) {
+                  setState(() => _productError = null);
+                } else {
+                  setState(() {});
+                }
+                _productFocusNode.unfocus();
               },
             ),
             const SizedBox(height: AppSpacing.md),
@@ -908,6 +927,236 @@ class _ItemBottomSheetState extends State<_ItemBottomSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProductAutocompleteField extends StatelessWidget {
+  const _ProductAutocompleteField({
+    required this.controller,
+    required this.focusNode,
+    required this.recentNames,
+    required this.isLoading,
+    required this.onChanged,
+    required this.onSelected,
+    this.errorText,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final List<String> recentNames;
+  final bool isLoading;
+  final ValueChanged<String> onChanged;
+  final ValueChanged<String> onSelected;
+  final String? errorText;
+
+  static const int _maxSuggestions = 8;
+
+  Iterable<String> _optionsFor(String query, List<String> recent) {
+    if (recent.isEmpty) return const Iterable<String>.empty();
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return recent.take(_maxSuggestions);
+    }
+    final lower = trimmed.toLowerCase();
+    return recent
+        .where((e) => e.toLowerCase().contains(lower))
+        .take(_maxSuggestions);
+  }
+
+  Widget _buildHighlightedText(
+    BuildContext context,
+    String option,
+    String query,
+  ) {
+    final q = query.trim();
+    if (q.isEmpty) {
+      return Text(
+        option,
+        style: AppTextField.inputStyle(context),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    final lowerOption = option.toLowerCase();
+    final lowerQuery = q.toLowerCase();
+    final idx = lowerOption.indexOf(lowerQuery);
+    if (idx < 0) {
+      return Text(
+        option,
+        style: AppTextField.inputStyle(context),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    final before = option.substring(0, idx);
+    final match = option.substring(idx, idx + q.length);
+    final after = option.substring(idx + q.length);
+    final base = AppTextField.inputStyle(context);
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        style: base,
+        children: [
+          if (before.isNotEmpty) TextSpan(text: before),
+          TextSpan(
+            text: match,
+            style: base?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryDark,
+            ),
+          ),
+          if (after.isNotEmpty) TextSpan(text: after),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = !isLoading && recentNames.isNotEmpty;
+
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: focusNode,
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (!hasData) return const Iterable<String>.empty();
+        return _optionsFor(textEditingValue.text, recentNames);
+      },
+      displayStringForOption: (option) => option,
+      onSelected: onSelected,
+      fieldViewBuilder:
+          (context, textController, fieldFocusNode, onFieldSubmitted) {
+            return AppTextField(
+              controller: textController,
+              focusNode: fieldFocusNode,
+              label: 'Product *',
+              hint: 'Bugas',
+              errorText: errorText,
+              textInputAction: TextInputAction.next,
+              prefixIcon: hasData
+                  ? const Icon(
+                      Icons.history_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    )
+                  : null,
+              suffixIcon: hasData
+                  ? const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    )
+                  : null,
+              onChanged: onChanged,
+              onSubmitted: (_) => onFieldSubmitted(),
+            );
+          },
+      optionsViewBuilder:
+          (context, AutocompleteOnSelected<String> onSelected, options) {
+            final query = controller.text;
+            final opts = options.toList(growable: false);
+            if (opts.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            final screenWidth = MediaQuery.sizeOf(context).width;
+            final dropdownWidth = (screenWidth - (AppSpacing.pagePadding * 2))
+                .clamp(200.0, 600.0);
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 6,
+                shadowColor: AppColors.shadow,
+                color: AppColors.surfaceCard,
+                borderRadius: BorderRadius.circular(14),
+                clipBehavior: Clip.antiAlias,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: 196,
+                    maxWidth: dropdownWidth,
+                    minWidth: dropdownWidth,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.history_rounded,
+                              size: 14,
+                              color: AppColors.textMuted,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Recent',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.6,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: AppColors.outline,
+                      ),
+                      Flexible(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          shrinkWrap: true,
+                          physics: const ClampingScrollPhysics(),
+                          itemCount: opts.length,
+                          separatorBuilder: (_, _) => const Divider(
+                            height: 1,
+                            indent: 16,
+                            endIndent: 16,
+                            color: AppColors.outline,
+                          ),
+                          itemBuilder: (context, index) {
+                            final option = opts[index];
+                            return InkWell(
+                              onTap: () => onSelected(option),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.schedule_rounded,
+                                      size: 16,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _buildHighlightedText(
+                                        context,
+                                        option,
+                                        query,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
     );
   }
 }

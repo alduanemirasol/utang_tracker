@@ -14,6 +14,7 @@ import 'package:utang_tracker/features/dashboard/presentation/providers/dashboar
 import 'package:utang_tracker/features/notifications/domain/entities/debt_notification.dart';
 import 'package:utang_tracker/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:utang_tracker/features/notifications/presentation/widgets/debt_notifications_sheet.dart';
+
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
   @override
@@ -63,37 +64,7 @@ class DashboardPage extends ConsumerWidget {
                   collectedToday: summary.collectedToday,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.add_rounded,
-                        label: 'New utang',
-                        color: AppColors.accent,
-                        foregroundColor: AppColors.primaryDark,
-                        onTap: () => context.push('/debts/new'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.arrow_downward_rounded,
-                        label: 'Record bayad',
-                        color: AppColors.surfaceCard,
-                        foregroundColor: AppColors.primaryDark,
-                        onTap: () => context.push('/payments/new'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                _SectionHeader(
-                  title: 'Recent activity',
-                  actionLabel: summary.recentActivity.isEmpty
-                      ? null
-                      : 'Mga utang',
-                  onAction: () => context.go('/debts'),
-                ),
+                const _SectionHeader(title: 'Recent activity'),
                 const SizedBox(height: AppSpacing.md),
                 if (summary.recentActivity.isEmpty)
                   const _EmptyActivity()
@@ -107,6 +78,7 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 }
+
 class _NotificationAction extends StatelessWidget {
   const _NotificationAction({required this.notifications, required this.onTap});
   final AsyncValue<DebtNotificationFeed> notifications;
@@ -161,6 +133,7 @@ class _NotificationAction extends StatelessWidget {
     );
   }
 }
+
 class _LedgerBalanceCard extends StatelessWidget {
   const _LedgerBalanceCard({
     required this.balance,
@@ -264,6 +237,7 @@ class _LedgerBalanceCard extends StatelessWidget {
     );
   }
 }
+
 class _DashedRule extends StatelessWidget {
   const _DashedRule();
   @override
@@ -288,67 +262,10 @@ class _DashedRule extends StatelessWidget {
     );
   }
 }
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.foregroundColor,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final Color color;
-  final Color foregroundColor;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: color == AppColors.surfaceCard
-              ? AppColors.outline
-              : AppColors.transparent,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Row(
-            children: [
-              Icon(icon, color: foregroundColor, size: 22),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: foregroundColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    required this.actionLabel,
-    required this.onAction,
-  });
+  const _SectionHeader({required this.title});
   final String title;
-  final String? actionLabel;
-  final VoidCallback onAction;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -361,18 +278,11 @@ class _SectionHeader extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
-        if (actionLabel != null)
-          TextButton(
-            onPressed: onAction,
-            child: Text(
-              actionLabel!,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-          ),
       ],
     );
   }
 }
+
 class _ActivityLedger extends StatelessWidget {
   const _ActivityLedger({required this.items});
   final List<RecentActivityItem> items;
@@ -402,6 +312,7 @@ class _ActivityLedger extends StatelessWidget {
     );
   }
 }
+
 class _ActivityRow extends StatelessWidget {
   const _ActivityRow({required this.item, required this.onTap});
   final RecentActivityItem item;
@@ -490,6 +401,7 @@ class _ActivityRow extends StatelessWidget {
     );
   }
 }
+
 class _EmptyActivity extends StatelessWidget {
   const _EmptyActivity();
   @override

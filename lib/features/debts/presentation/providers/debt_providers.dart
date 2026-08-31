@@ -111,3 +111,9 @@ final debtDetailProvider = FutureProvider.family<DebtDetailViewData?, String>((
   final payments = await ref.watch(paymentRepositoryProvider).getByDebt(id);
   return DebtDetailViewData(detail: detail, payments: payments);
 });
+
+final recentProductNamesProvider = FutureProvider.autoDispose<List<String>>((
+  ref,
+) async {
+  return ref.watch(debtRepositoryProvider).getRecentProductNames();
+});

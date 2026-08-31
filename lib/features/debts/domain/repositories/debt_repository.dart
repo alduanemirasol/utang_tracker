@@ -28,6 +28,9 @@ abstract class DebtRepository {
     String? notes,
     required List<DebtItemInput> items,
   });
+
+  Future<List<String>> getRecentProductNames({int limit = 20});
+
   Future<int> countActive();
   Future<int> outstandingBalanceCentavos();
 }

@@ -17,6 +17,7 @@ void invalidateBusinessData(
   ref.invalidate(paymentFilterOptionsProvider);
   ref.invalidate(dashboardSummaryProvider);
   ref.invalidate(debtNotificationsProvider);
+  ref.invalidate(recentProductNamesProvider);
   if (customerId != null) {
     ref.invalidate(customerDetailProvider(customerId));
   }
