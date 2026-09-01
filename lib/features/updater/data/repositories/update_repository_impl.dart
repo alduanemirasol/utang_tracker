@@ -24,6 +24,155 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
+    final latestUri = Uri.parse(AppConstants.githubLatestReleaseUrl);
+    final String tag;
+    try {
+      final request = http.Request('GET', latestUri);
+      request.followRedirects = false;
+      final streamed = await _client.send(request);
+      final location = streamed.headers['location'];
+      if (streamed.statusCode >= 300 &&
+          streamed.statusCode < 400 &&
+          location != null) {
+        final normalizedLocation = location.startsWith('/')
+            ? 'https://github.com$location'
+            : location;
+        final locUri = Uri.parse(normalizedLocation);
+        final segments = locUri.pathSegments;
+        tag = segments.isNotEmpty ? segments.last : '';
+        await streamed.stream.drain();
+      } else if (streamed.statusCode == 200) {
+        await streamed.stream.drain();
+        return _fetchFromRawMain();
+      } else if (streamed.statusCode == 404) {
+        return null;
+      } else {
+        throw AppException(
+          'GitHub error ${streamed.statusCode}. Please try again later.',
+        );
+      }
+    } on SocketException {
+      throw const AppException('No internet connection.');
+    } on http.ClientException catch (e) {
+      throw AppException('Network error: ${e.message}');
+    }
+
+    if (tag.isEmpty || !tag.startsWith('v')) {
+      return _fetchFromRawMain();
+    }
+
+    final version = tag.startsWith('v') ? tag.substring(1) : tag;
+    if (version.isEmpty) return null;
+
+    final rawTagUri = Uri.parse(
+      'https://raw.githubusercontent.com/${AppConstants.githubOwner}/${AppConstants.githubRepo}/$tag/assets/release_notes/current.json',
+    );
+    final http.Response rawResponse;
+    try {
+      rawResponse = await _client.get(
+        rawTagUri,
+        headers: {'Accept': 'application/json'},
+      );
+    } on SocketException {
+      throw const AppException('No internet connection.');
+    } on http.ClientException catch (e) {
+      throw AppException('Network error: ${e.message}');
+    }
+
+    if (rawResponse.statusCode == 404) {
+      final tagOnlyNotes = "What's new in v$version";
+      final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
+      final assets = [
+        ReleaseAsset(
+          name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+          browserDownloadUrl:
+              '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+          sizeBytes: 0,
+        ),
+        ReleaseAsset(
+          name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+          browserDownloadUrl:
+              '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+          sizeBytes: 0,
+        ),
+      ];
+      return AppRelease(
+        version: version,
+        releaseNotes: tagOnlyNotes,
+        isDraft: false,
+        isPrerelease: false,
+        assets: assets,
+      );
+    }
+    if (rawResponse.statusCode != 200) {
+      throw AppException(
+        'GitHub error ${rawResponse.statusCode}. Please try again later.',
+      );
+    }
+
+    final decoded = jsonDecode(rawResponse.body) as Map<String, dynamic>;
+    final effectiveVersion = version;
+    final date = decoded['date'] as String? ?? '';
+    final notesRaw = decoded['notes'] as Map<String, dynamic>?;
+
+    List<String> stringList(dynamic value) {
+      if (value is List) {
+        return value.whereType<String>().where((s) => s.isNotEmpty).toList();
+      }
+      return const [];
+    }
+
+    final added = stringList(notesRaw?['added']);
+    final changed = stringList(notesRaw?['changed']);
+    final fixed = stringList(notesRaw?['fixed']);
+
+    final buffer = StringBuffer()..writeln("What's new in v$effectiveVersion");
+    buffer.writeln();
+    if (date.isNotEmpty) {
+      buffer.writeln('Release date: $date');
+      buffer.writeln();
+    }
+
+    void writeSection(String title, List<String> items) {
+      if (items.isEmpty) return;
+      buffer.writeln('## $title');
+      for (final item in items) {
+        buffer.writeln('- $item');
+      }
+    }
+
+    writeSection('Added', added);
+    writeSection('Changed', changed);
+    writeSection('Fixed', fixed);
+
+    final releaseNotes = buffer.toString().trim();
+
+    final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
+    final assets = [
+      ReleaseAsset(
+        name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        sizeBytes: 0,
+      ),
+      ReleaseAsset(
+        name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        sizeBytes: 0,
+      ),
+    ];
+
+    return AppRelease(
+      version: effectiveVersion,
+      releaseNotes: releaseNotes,
+      isDraft: false,
+      isPrerelease: false,
+      assets: assets,
+    );
+  }
+
+  Future<AppRelease?> _fetchFromRawMain() async {
     final uri = Uri.parse(AppConstants.rawReleaseNotesUrl);
 
     final http.Response response;

@@ -17,6 +17,9 @@ class AppConstants {
   static const String githubRepo = 'utang_tracker';
   static const String githubApiBaseUrl = 'https://api.github.com';
 
+  static const String githubLatestReleaseUrl =
+      'https://github.com/alduanemirasol/utang_tracker/releases/latest';
+
   static const String rawReleaseNotesUrl =
       'https://raw.githubusercontent.com/alduanemirasol/utang_tracker/main/assets/release_notes/current.json';
   static const String githubReleasesBaseUrl =
