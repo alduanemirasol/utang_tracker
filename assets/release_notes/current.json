@@ -1,9 +1,9 @@
 {
-  "version": "1.0.42",
-  "date": "2026-08-31",
+  "version": "1.0.43",
+  "date": "2026-09-01",
   "notes": {
-    "added": ["Recent Input Suggestions on product field — shows last 8 products and filters as you type in Add New Item"],
-    "changed": ["Home screen simplified — removed New utang and Record bayad quick actions and Mga utang hyperlink (use bottom tabs and FABs)"],
-    "fixed": []
+    "added": ["Google Drive backup & restore — Export to Drive and Import from Drive with file picker (replaces local device backup)"],
+    "changed": ["Minimized empty states — compact icons, smaller text, and shorter copy across lists", "Unified empty-state icons and wrapped sort/filter buttons for cleaner layout", "Backup page cleanup — removed extra icons from cards/buttons"],
+    "fixed": ["Due date guard — blocks past dates on utang form (picker starts today + save validation)"]
   }
 }
