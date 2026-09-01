@@ -259,45 +259,6 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<List<String>> getRecentProductNames({int limit = 20}) async {
-    final effectiveLimit = limit <= 0 ? 20 : limit;
-    final rows = await _db
-        .customSelect(
-          '''
-SELECT di.product_name AS product_name
-FROM debt_items di
-INNER JOIN debts d ON d.id = di.debt_id
-WHERE di.deleted_at IS NULL
-  AND d.deleted_at IS NULL
-  AND TRIM(di.product_name) != ''
-GROUP BY di.product_name
-ORDER BY MAX(d.created_at) DESC
-LIMIT ?
-''',
-          variables: [Variable<int>(effectiveLimit)],
-          readsFrom: {_db.debtItems, _db.debts},
-        )
-        .get();
-
-    final names = <String>[];
-    for (final row in rows) {
-      final raw = row.read<String>('product_name');
-      final trimmed = raw.trim();
-      if (trimmed.isNotEmpty) {
-        names.add(trimmed);
-      }
-    }
-    final seen = <String>{};
-    final distinct = <String>[];
-    for (final name in names) {
-      if (seen.add(name)) {
-        distinct.add(name);
-      }
-    }
-    return distinct;
-  }
-
-  @override
   Future<int> countActive() async {
     final count = countAll();
     final query = _db.selectOnly(_db.debts)
