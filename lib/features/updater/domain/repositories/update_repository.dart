@@ -21,4 +21,6 @@ abstract interface class UpdateRepository {
   Future<List<String>> getSupportedAbis();
 
   Future<String> loadReleaseNotes();
+
+  Future<bool> isAssetAvailable(ReleaseAsset asset);
 }

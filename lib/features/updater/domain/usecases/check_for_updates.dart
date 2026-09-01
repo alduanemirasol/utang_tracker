@@ -1,5 +1,6 @@
 import 'package:pub_semver/pub_semver.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
@@ -29,6 +30,20 @@ class CheckForUpdates {
         updateAvailable: false,
         error: 'No compatible APK found in this release.',
       );
+    }
+
+    // Verify APK is actually uploaded (avoid race where version bumped but CI not done)
+    try {
+      final available = await _repo.isAssetAvailable(asset);
+      if (!available) {
+        return const CheckResult(
+          updateAvailable: false,
+          error:
+              'Update is being prepared, please try again in a few minutes.',
+        );
+      }
+    } on AppException catch (e) {
+      return CheckResult(updateAvailable: false, error: e.message);
     }
 
     return CheckResult(

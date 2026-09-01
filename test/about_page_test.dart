@@ -88,4 +88,7 @@ class _FakeUpdateRepository implements UpdateRepository {
     ReleaseAsset asset,
     void Function(double progress) onProgress,
   ) => throw UnimplementedError();
+
+  @override
+  Future<bool> isAssetAvailable(ReleaseAsset asset) async => true;
 }

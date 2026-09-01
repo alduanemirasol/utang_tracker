@@ -562,4 +562,7 @@ class _FakeUpdateRepository implements UpdateRepository {
 
   @override
   Future<String> loadReleaseNotes() async => '{}';
+
+  @override
+  Future<bool> isAssetAvailable(ReleaseAsset asset) async => true;
 }

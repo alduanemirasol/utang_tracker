@@ -259,4 +259,17 @@ class UpdateRepositoryImpl implements UpdateRepository {
       return '{}';
     }
   }
+
+  @override
+  Future<bool> isAssetAvailable(ReleaseAsset asset) async {
+    try {
+      final uri = Uri.parse(asset.browserDownloadUrl);
+      final response = await _client.head(uri);
+      return response.statusCode == 200 || response.statusCode == 302;
+    } on SocketException {
+      throw const AppException('No internet connection.');
+    } catch (_) {
+      return false;
+    }
+  }
 }
