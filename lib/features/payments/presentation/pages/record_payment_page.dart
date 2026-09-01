@@ -544,13 +544,13 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       final searching = _query.trim().isNotEmpty;
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Text(
             searching ? 'Walay utang match your search.' : 'Wala pay utang',
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
           ),
         ),
       );

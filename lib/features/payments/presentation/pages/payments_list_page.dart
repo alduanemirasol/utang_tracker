@@ -86,8 +86,8 @@ class PaymentsListPage extends ConsumerWidget {
                         ? 'Walay bayad'
                         : 'Wala pay nibayad',
                     message: filters.hasActiveFilters
-                        ? 'I-adjust ang filter sa bayad'
-                        : 'Tap "+ Record bayad" para marecord ang bayad.',
+                        ? 'No results for filter.'
+                        : 'Tap + Record bayad to add.',
                   );
                 }
 
@@ -274,10 +274,23 @@ class _PaymentFiltersBar extends StatelessWidget {
               ),
               if (filters.hasActiveFilters) ...[
                 const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  tooltip: 'Clear filters',
-                  onPressed: onClear,
-                  icon: const Icon(Icons.filter_alt_off_outlined),
+                Container(
+                  width: AppSpacing.minTapTarget,
+                  height: AppSpacing.minTapTarget,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceCard,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.outline),
+                  ),
+                  child: IconButton(
+                    tooltip: 'Clear filters',
+                    onPressed: onClear,
+                    icon: const Icon(
+                      Icons.filter_alt_off_outlined,
+                      size: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                 ),
               ],
             ],

@@ -104,11 +104,14 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Future<void> _pickDate({required bool due}) async {
-    final initial = due ? (_dueDate ?? _transactionDate) : _transactionDate;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final initialRaw = due ? (_dueDate ?? _transactionDate) : _transactionDate;
+    final initial = due && initialRaw.isBefore(today) ? today : initialRaw;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(2020),
+      firstDate: due ? today : DateTime(2020),
       lastDate: DateTime(2100),
     );
     if (picked == null) return;
@@ -165,6 +168,15 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     if (_items.isEmpty) {
       setState(() => _error = 'Add at least one item');
       return;
+    }
+    if (_dueDate != null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final dueDay = DateTime(_dueDate!.year, _dueDate!.month, _dueDate!.day);
+      if (dueDay.isBefore(today)) {
+        setState(() => _error = 'Due date cannot be in the past');
+        return;
+      }
     }
     final items = _items.toList();
 
@@ -521,12 +533,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
             const SizedBox(height: AppSpacing.sm),
             if (_items.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Center(
                   child: Text(
                     'No items',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textMuted,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -1487,7 +1499,7 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
       final searching = _query.trim().isNotEmpty;
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Text(
             searching
                 ? 'No customers match your search.'
@@ -1495,7 +1507,7 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
           ),
         ),
       );

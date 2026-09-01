@@ -47,6 +47,7 @@ class CustomersListPage extends ConsumerWidget {
                     },
                   ),
                 ),
+                const SizedBox(width: AppSpacing.sm),
                 PopupMenuButton<CustomerSortOrder>(
                   tooltip: 'Sort customers',
                   initialValue: sort,
@@ -75,9 +76,16 @@ class CustomersListPage extends ConsumerWidget {
                       );
                     }).toList();
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    child: Icon(
+                  child: Container(
+                    width: AppSpacing.minTapTarget,
+                    height: AppSpacing.minTapTarget,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.outline),
+                    ),
+                    child: const Icon(
                       Icons.swap_vert_rounded,
                       color: AppColors.textPrimary,
                     ),
@@ -98,7 +106,7 @@ class CustomersListPage extends ConsumerWidget {
                   return EmptyState(
                     icon: Icons.people_outline,
                     title: 'Walay customer',
-                    message: 'Tap "+ Add customer" para marecord ang customer.',
+                    message: 'Tap + Add customer to add.',
                   );
                 }
 

@@ -23,37 +23,39 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 76,
-              height: 76,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, size: 34, color: AppColors.primaryDark),
+              child: Icon(icon, size: 24, color: AppColors.primaryDark),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.textPrimary,
+              ),
             ),
             if (message != null) ...[
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 message!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
               AppButton(
                 label: actionLabel!,
                 onPressed: onAction,

@@ -114,14 +114,10 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _ActionHeader(
-                  icon: Icons.cloud_download_outlined,
-                  title: 'Create a backup',
-                ),
+                const _ActionHeader(title: 'Create a backup'),
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
                   label: 'Save backup',
-                  icon: Icons.save_alt_rounded,
                   isLoading: _isExporting,
                   onPressed: _isBusy ? null : _createBackup,
                 ),
@@ -133,10 +129,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _ActionHeader(
-                  icon: Icons.restore_rounded,
-                  title: 'Restore a backup',
-                ),
+                const _ActionHeader(title: 'Restore a backup'),
                 const SizedBox(height: AppSpacing.md),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
@@ -163,7 +156,6 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
                   label: 'Choose backup to restore',
-                  icon: Icons.folder_open_rounded,
                   variant: AppButtonVariant.danger,
                   isLoading: _isRestoring,
                   onPressed: _isBusy ? null : _restoreBackup,
@@ -178,27 +170,12 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
 }
 
 class _ActionHeader extends StatelessWidget {
-  const _ActionHeader({required this.icon, required this.title});
+  const _ActionHeader({required this.title});
 
-  final IconData icon;
   final String title;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: AppColors.primaryDark, size: 28),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-            ],
-          ),
-        ),
-      ],
-    );
+    return Text(title, style: Theme.of(context).textTheme.titleMedium);
   }
 }

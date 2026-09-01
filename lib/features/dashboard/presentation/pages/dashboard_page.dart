@@ -408,17 +408,33 @@ class _EmptyActivity extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       color: AppColors.surfaceRaised,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.history_rounded, color: AppColors.textMuted),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.history_rounded,
+              size: 24,
+              color: AppColors.primaryDark,
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Walay bag-ong kalihokan',
+            'No recent activity',
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),

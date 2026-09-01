@@ -148,10 +148,13 @@ class DebtDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 if (payments.isEmpty)
                   Center(
-                    child: Text(
-                      'Wala pay bayad.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      child: Text(
+                        'No bayad yet.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   )

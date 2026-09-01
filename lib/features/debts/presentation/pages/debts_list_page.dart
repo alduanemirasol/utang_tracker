@@ -78,6 +78,7 @@ class DebtsListPage extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: AppSpacing.sm),
                 PopupMenuButton<DebtSortOrder>(
                   tooltip: 'Sort debts',
                   initialValue: sort,
@@ -106,9 +107,16 @@ class DebtsListPage extends ConsumerWidget {
                       );
                     }).toList();
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(AppSpacing.sm),
-                    child: Icon(
+                  child: Container(
+                    width: AppSpacing.minTapTarget,
+                    height: AppSpacing.minTapTarget,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.outline),
+                    ),
+                    child: const Icon(
                       Icons.swap_vert_rounded,
                       color: AppColors.textPrimary,
                     ),
@@ -130,8 +138,8 @@ class DebtsListPage extends ConsumerWidget {
                     icon: Icons.receipt_long_outlined,
                     title: 'Walay utang',
                     message: filter == DebtListFilter.all
-                        ? 'Tap "+ New utang" para marecord ang utang.'
-                        : 'Walay ${filter.label.toLowerCase()} utang.',
+                        ? 'Tap + New utang to add.'
+                        : 'No ${filter.label.toLowerCase()} utang.',
                   );
                 }
 

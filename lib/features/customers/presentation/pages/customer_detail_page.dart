@@ -263,7 +263,7 @@ class _DebtHistoryList extends StatelessWidget {
           EmptyState(
             icon: Icons.receipt_long_outlined,
             title: 'Walay utang',
-            message: 'Tap "+ New utang" para marecord ang utang.',
+            message: 'Tap + New utang to add.',
           ),
         ],
       );
@@ -333,7 +333,7 @@ class _PaymentHistoryList extends StatelessWidget {
           EmptyState(
             icon: Icons.payments_outlined,
             title: 'Walay bayad',
-            message: 'Tap "+ Record bayad" para marecord ang bayad.',
+            message: 'Tap + Record bayad to add.',
           ),
         ],
       );

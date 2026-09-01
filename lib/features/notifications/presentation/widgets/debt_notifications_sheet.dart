@@ -252,35 +252,37 @@ class _EmptyNotifications extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppColors.paidBg,
-                borderRadius: BorderRadius.circular(22),
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
                 Icons.notifications_none_rounded,
-                size: 32,
-                color: AppColors.paid,
+                size: 24,
+                color: AppColors.primaryDark,
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'No reminders',
-              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Due utang will show here.',
+              'No reminders',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'No due utang.',
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
             ),
           ],
         ),
