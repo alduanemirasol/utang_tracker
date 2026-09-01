@@ -11,6 +11,9 @@ import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/features/backup/domain/backup_models.dart';
+import 'package:utang_tracker/features/backup/domain/exceptions/drive_exception.dart';
+import 'package:utang_tracker/features/backup/presentation/providers/drive_backup_providers.dart';
+import 'package:utang_tracker/features/backup/presentation/widgets/drive_file_picker_sheet.dart';
 
 class BackupRestorePage extends ConsumerStatefulWidget {
   const BackupRestorePage({super.key});
@@ -20,42 +23,96 @@ class BackupRestorePage extends ConsumerStatefulWidget {
 }
 
 class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
-  bool _isExporting = false;
-  bool _isRestoring = false;
+  bool _isDriveExporting = false;
+  bool _isDriveImporting = false;
+  bool _isSigningIn = false;
 
-  bool get _isBusy => _isExporting || _isRestoring;
+  bool get _isAnyBusy =>
+      _isDriveExporting || _isDriveImporting || _isSigningIn;
 
-  Future<void> _createBackup() async {
-    setState(() => _isExporting = true);
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isSigningIn = true);
+    try {
+      final account =
+          await ref.read(googleAuthDataSourceProvider).signIn();
+      if (!mounted) return;
+      if (account == null) return;
+      _showMessage('Signed in as ${account.email}');
+      ref.invalidate(authenticatedClientProvider);
+      ref.invalidate(driveBackupsProvider);
+    } catch (error) {
+      final mapped = error is DriveException
+          ? error
+          : DriveErrorMapper.fromError(error);
+      if (mounted) _showMessage(mapped.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _isSigningIn = false);
+    }
+  }
+
+  Future<void> _signOut() async {
+    setState(() => _isSigningIn = true);
+    try {
+      await ref.read(googleAuthDataSourceProvider).signOut();
+      if (!mounted) return;
+      _showMessage('Signed out from Google Drive.');
+      ref.invalidate(authenticatedClientProvider);
+      ref.invalidate(driveBackupsProvider);
+    } catch (error) {
+      final mapped = error is DriveException
+          ? error
+          : DriveErrorMapper.fromError(error);
+      if (mounted) _showMessage(mapped.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _isSigningIn = false);
+    }
+  }
+
+  Future<void> _exportToDrive() async {
+    setState(() => _isDriveExporting = true);
     File? snapshot;
     try {
       snapshot = await ref
           .read(databaseBackupServiceProvider)
           .createExportSnapshot();
-      final saved = await ref
-          .read(backupFileGatewayProvider)
-          .save(snapshot, p.basename(snapshot.path));
-      if (!mounted || !saved) return;
-      _showMessage('Backup saved successfully.');
+      final fileName = p.basename(snapshot.path);
+      final repo = await ref.read(driveBackupRepositoryProvider.future);
+      if (repo == null) {
+        throw const DriveException('Not signed in to Google Drive.');
+      }
+      await repo.uploadBackup(snapshot, fileName);
+      if (!mounted) return;
+      _showMessage('Backup exported to Drive.');
+      ref.invalidate(driveBackupsProvider);
     } catch (error) {
-      if (mounted) _showMessage(error.toString(), isError: true);
+      final mapped = error is DriveException
+          ? error
+          : DriveErrorMapper.fromError(error);
+      if (mounted) _showMessage(mapped.toString(), isError: true);
     } finally {
-      if (snapshot != null && await snapshot.exists()) await snapshot.delete();
-      if (mounted) setState(() => _isExporting = false);
+      if (snapshot != null && await snapshot.exists()) {
+        await snapshot.delete();
+      }
+      if (mounted) setState(() => _isDriveExporting = false);
     }
   }
 
-  Future<void> _restoreBackup() async {
-    final selected = await ref.read(backupFileGatewayProvider).pick();
+  Future<void> _importFromDrive() async {
+    final selected = await DriveFilePickerSheet.show(context);
     if (selected == null || !mounted) return;
-    final path = selected.path;
 
-    setState(() => _isRestoring = true);
+    setState(() => _isDriveImporting = true);
+    File? downloaded;
     PreparedRestore? prepared;
     try {
+      final repo = await ref.read(driveBackupRepositoryProvider.future);
+      if (repo == null) {
+        throw const DriveException('Not signed in to Google Drive.');
+      }
+      downloaded = await repo.downloadBackup(selected);
       prepared = await ref
           .read(databaseBackupServiceProvider)
-          .prepareRestore(File(path));
+          .prepareRestore(downloaded);
       if (!mounted) return;
       final migrationNote = prepared.wasMigrated
           ? ' Its schema will be upgraded from version ${prepared.originalSchemaVersion} to ${prepared.schemaVersion}.'
@@ -64,7 +121,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
         context: context,
         title: 'Replace current data?',
         message:
-            'Restoring ${p.basename(path)} will replace all current customers, utang, items, and payments.$migrationNote A rollback backup will be created automatically.',
+            'Restoring ${selected.name} from Drive will replace all current customers, utang, items, and payments.$migrationNote A rollback backup will be created automatically.',
         confirmLabel: 'Restore backup',
         isDestructive: true,
       );
@@ -80,14 +137,25 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       refreshAfterDatabaseRestore(ref);
       _showMessage(
         result.wasMigrated
-            ? 'Backup restored and migrated successfully.'
-            : 'Backup restored successfully.',
+            ? 'Drive backup restored and migrated successfully.'
+            : 'Drive backup restored successfully.',
       );
     } catch (error) {
       refreshAfterDatabaseRestore(ref);
-      if (mounted) _showMessage(error.toString(), isError: true);
+      final mapped = error is DriveException
+          ? error
+          : DriveErrorMapper.fromError(error);
+      // Preserve BackupException messages as-is for corrupt file cases
+      final message = error.toString().contains('BackupException') ||
+              error.toString().toLowerCase().contains('backup')
+          ? error.toString()
+          : mapped.toString();
+      if (mounted) _showMessage(message, isError: true);
     } finally {
-      if (mounted) setState(() => _isRestoring = false);
+      if (downloaded != null && await downloaded.exists()) {
+        await downloaded.delete();
+      }
+      if (mounted) setState(() => _isDriveImporting = false);
     }
   }
 
@@ -105,6 +173,12 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final authAsync = ref.watch(googleAuthNotifierProvider);
+    final authDataSource = ref.watch(googleAuthDataSourceProvider);
+    // Fallback to currentUser when stream hasn't emitted yet
+    final currentUser = authAsync.value ?? authDataSource.currentUser;
+    final isSignedIn = currentUser != null;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Backup & Restore')),
       body: ListView(
@@ -114,51 +188,129 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _ActionHeader(title: 'Create a backup'),
-                const SizedBox(height: AppSpacing.lg),
-                AppButton(
-                  label: 'Save backup',
-                  isLoading: _isExporting,
-                  onPressed: _isBusy ? null : _createBackup,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _ActionHeader(title: 'Restore a backup'),
+                const _ActionHeader(title: 'Google Drive'),
                 const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.danger.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                authAsync.when(
+                  loading: () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
-                  child: const Row(
+                  error: (error, _) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: AppColors.danger,
+                      Text(
+                        error.toString(),
+                        style: const TextStyle(color: AppColors.danger),
                       ),
-                      SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          'Restore replaces current data. A rollback backup is created first.',
-                        ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppButton(
+                        label: 'Sign in with Google',
+                        icon: Icons.login,
+                        isLoading: _isSigningIn,
+                        onPressed: _isAnyBusy ? null : _signInWithGoogle,
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppButton(
-                  label: 'Choose backup to restore',
-                  variant: AppButtonVariant.danger,
-                  isLoading: _isRestoring,
-                  onPressed: _isBusy ? null : _restoreBackup,
+                  data: (_) {
+                    if (!isSignedIn) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Connect Google Drive to back up and restore your data in the cloud.',
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          AppButton(
+                            label: 'Sign in with Google',
+                            icon: Icons.login,
+                            isLoading: _isSigningIn,
+                            onPressed: _isAnyBusy ? null : _signInWithGoogle,
+                          ),
+                        ],
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: AppColors.primaryLight,
+                              backgroundImage: currentUser.photoUrl != null
+                                  ? NetworkImage(currentUser.photoUrl!)
+                                  : null,
+                              child: currentUser.photoUrl == null
+                                  ? Builder(
+                                      builder: (context) {
+                                        final raw =
+                                            currentUser.displayName ??
+                                                currentUser.email;
+                                        final initial = raw.isNotEmpty
+                                            ? raw.substring(0, 1).toUpperCase()
+                                            : '?';
+                                        return Text(
+                                          initial,
+                                          style: const TextStyle(
+                                            color: AppColors.primaryDark,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    currentUser.displayName ?? 'Google User',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    currentUser.email,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textMuted,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _isAnyBusy ? null : _signOut,
+                              child: const Text('Sign out'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        AppButton(
+                          label: 'Export to Drive',
+                          icon: Icons.cloud_upload_outlined,
+                          isLoading: _isDriveExporting,
+                          onPressed: _isAnyBusy ? null : _exportToDrive,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        AppButton(
+                          label: 'Import from Drive',
+                          icon: Icons.cloud_download_outlined,
+                          variant: AppButtonVariant.secondary,
+                          isLoading: _isDriveImporting,
+                          onPressed: _isAnyBusy ? null : _importFromDrive,
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

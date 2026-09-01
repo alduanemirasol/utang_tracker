@@ -22,4 +22,12 @@ class AppConstants {
   static const String universalAbiName = 'universal';
 
   static const String updaterChannel = 'com.example.utang_tracker/updater';
+
+  // Google Drive backup constants.
+  static const List<String> driveScopes = [
+    'https://www.googleapis.com/auth/drive.file',
+  ];
+  static const String driveBackupMimeType = 'application/x-sqlite3';
+  static const String driveQuery =
+      "mimeType = 'application/x-sqlite3' and trashed = false";
 }

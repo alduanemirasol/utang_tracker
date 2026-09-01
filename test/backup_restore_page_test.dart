@@ -5,7 +5,7 @@ import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/features/backup/presentation/pages/backup_restore_page.dart';
 
 void main() {
-  testWidgets('explains replacement and exposes both backup actions', (
+  testWidgets('shows Google Drive section without local backup actions', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -13,13 +13,14 @@ void main() {
     );
 
     expect(find.text('Backup & Restore'), findsOneWidget);
-    expect(find.text('Save backup'), findsOneWidget);
-    expect(find.text('Choose backup to restore'), findsOneWidget);
+    expect(find.text('Google Drive'), findsOneWidget);
+    expect(find.text('Save backup'), findsNothing);
+    expect(find.text('Choose backup to restore'), findsNothing);
     expect(
       find.text(
         'Restore replaces current data. A rollback backup is created first.',
       ),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.textContaining('complete local copies'), findsNothing);
     expect(find.textContaining('does not merge or duplicate'), findsNothing);
