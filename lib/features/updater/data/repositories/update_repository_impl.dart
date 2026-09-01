@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/core/constants/app_constants.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
-import 'package:utang_tracker/features/updater/data/models/github_release_dto.dart';
 import 'package:utang_tracker/features/updater/domain/entities/app_release.dart';
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
@@ -25,17 +24,13 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
   @override
   Future<AppRelease?> fetchLatestRelease() async {
-    final uri = Uri.parse(
-      '${AppConstants.githubApiBaseUrl}/repos'
-      '/${AppConstants.githubOwner}/${AppConstants.githubRepo}'
-      '/releases/latest',
-    );
+    final uri = Uri.parse(AppConstants.rawReleaseNotesUrl);
 
     final http.Response response;
     try {
       response = await _client.get(
         uri,
-        headers: {'Accept': 'application/vnd.github+json'},
+        headers: {'Accept': 'application/json'},
       );
     } on SocketException {
       throw const AppException('No internet connection.');
@@ -46,15 +41,75 @@ class UpdateRepositoryImpl implements UpdateRepository {
     if (response.statusCode == 404) return null;
     if (response.statusCode != 200) {
       throw AppException(
-        'GitHub API error ${response.statusCode}. Please try again later.',
+        'GitHub error ${response.statusCode}. Please try again later.',
       );
     }
 
-    final json = jsonDecode(response.body) as Map<String, dynamic>;
-    final release = GithubReleaseDto.fromJson(json);
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final version = decoded['version'] as String? ?? '';
+    if (version.isEmpty) {
+      throw const AppException('Invalid release data: missing version.');
+    }
 
-    if (release.isDraft || release.isPrerelease) return null;
-    return release;
+    final date = decoded['date'] as String? ?? '';
+    final notesRaw = decoded['notes'] as Map<String, dynamic>?;
+
+    List<String> stringList(dynamic value) {
+      if (value is List) {
+        return value.whereType<String>().where((s) => s.isNotEmpty).toList();
+      }
+      return const [];
+    }
+
+    final added = stringList(notesRaw?['added']);
+    final changed = stringList(notesRaw?['changed']);
+    final fixed = stringList(notesRaw?['fixed']);
+
+    final buffer = StringBuffer()..writeln("What's new in v$version");
+    buffer.writeln();
+    if (date.isNotEmpty) {
+      buffer.writeln('Release date: $date');
+      buffer.writeln();
+    }
+
+    void writeSection(String title, List<String> items) {
+      if (items.isEmpty) return;
+      buffer.writeln('## $title');
+      for (final item in items) {
+        buffer.writeln('- $item');
+      }
+    }
+
+    writeSection('Added', added);
+    writeSection('Changed', changed);
+    writeSection('Fixed', fixed);
+
+    final releaseNotes = buffer.toString().trim();
+
+    final tag = 'v$version';
+    final base = '${AppConstants.githubReleasesBaseUrl}/$tag';
+    final assets = [
+      ReleaseAsset(
+        name: '${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-arm64-v8a-$tag.apk',
+        sizeBytes: 0,
+      ),
+      ReleaseAsset(
+        name: '${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        browserDownloadUrl:
+            '$base/${AppConstants.apkAssetPrefix}-armeabi-v7a-$tag.apk',
+        sizeBytes: 0,
+      ),
+    ];
+
+    return AppRelease(
+      version: version,
+      releaseNotes: releaseNotes,
+      isDraft: false,
+      isPrerelease: false,
+      assets: assets,
+    );
   }
 
   @override
