@@ -22,8 +22,6 @@ class DatabaseBackupService {
            documentsDirectory ?? getApplicationDocumentsDirectory,
        _liveDatabaseFile = liveDatabaseFile ?? DatabaseLocation.liveFile,
        _now = now ?? DateTime.now,
-       // Public test seam maps to a private implementation detail.
-       // ignore: prefer_initializing_formals
        _afterReplacement = afterReplacement;
 
   final AppDatabase _database;

@@ -180,7 +180,6 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     }
     final items = _items.toList();
 
-    // Prepare formatted strings BEFORE showing dialog to avoid async gap context issues.
     final customerLabel = _customerName ?? 'No customer';
     final dateLabel = context.smartDate(_transactionDate);
     final dueLabel = _dueDate == null

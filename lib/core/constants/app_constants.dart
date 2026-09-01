@@ -31,7 +31,6 @@ class AppConstants {
 
   static const String updaterChannel = 'com.example.utang_tracker/updater';
 
-  // Google Drive backup constants.
   static const List<String> driveScopes = [
     'https://www.googleapis.com/auth/drive.file',
   ];

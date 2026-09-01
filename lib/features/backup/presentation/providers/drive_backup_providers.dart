@@ -16,8 +16,6 @@ final googleAuthDataSourceProvider = Provider<GoogleAuthDataSource>((ref) {
   return GoogleAuthDataSource();
 });
 
-/// Awaits silent sign-in once at startup. Errors are mapped via
-/// [DriveErrorMapper] so callers see a [DriveException].
 final googleAuthInitProvider =
     FutureProvider<GoogleSignInAccount?>((ref) async {
   final dataSource = ref.watch(googleAuthDataSourceProvider);
@@ -28,33 +26,27 @@ final googleAuthInitProvider =
   }
 });
 
-/// Emits Google sign-in state changes. No side-effects.
 final googleAuthNotifierProvider =
     StreamProvider<GoogleSignInAccount?>((ref) {
   final dataSource = ref.watch(googleAuthDataSourceProvider);
-  // Trigger one-time silent sign-in; errors are exposed via
-  // googleAuthInitProvider / authenticatedClientProvider using
-  // DriveErrorMapper, not swallowed here.
+
   ref.watch(googleAuthInitProvider);
   return dataSource.onCurrentUserChanged;
 });
 
-/// Injectable temporary directory seam for Drive download/upload.
-/// Override in tests to avoid touching the real filesystem.
 final driveTemporaryDirectoryProvider =
     Provider<Future<Directory> Function()>((ref) => getTemporaryDirectory);
 
 final authenticatedClientProvider =
     FutureProvider<auth.AuthClient?>((ref) async {
   final dataSource = ref.watch(googleAuthDataSourceProvider);
-  // Ensure silent sign-in has been attempted once before checking state.
-  // Errors are already mapped in googleAuthInitProvider; re-map just in case.
+
   try {
     await ref.watch(googleAuthInitProvider.future);
   } catch (e) {
     throw DriveErrorMapper.fromError(e);
   }
-  // Rebuild when sign-in state changes via stream.
+
   ref.watch(googleAuthNotifierProvider);
   final signedIn = await dataSource.isSignedIn();
   if (!signedIn) return null;

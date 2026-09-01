@@ -32,7 +32,6 @@ class CheckForUpdates {
       );
     }
 
-    // Verify APK is actually uploaded (avoid race where version bumped but CI not done)
     try {
       final available = await _repo.isAssetAvailable(asset);
       if (!available) {

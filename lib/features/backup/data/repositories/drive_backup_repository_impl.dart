@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_initializing_formals
-
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart' as path_provider;

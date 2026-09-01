@@ -8,7 +8,7 @@ part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Customers, Debts, DebtItems, Payments])
 class AppDatabase extends _$AppDatabase {
-  static const applicationId = 0x5554414e; // "UTAN"
+  static const applicationId = 0x5554414e;
   static const currentSchemaVersion = 5;
 
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());

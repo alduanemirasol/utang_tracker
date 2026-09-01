@@ -145,7 +145,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
       final mapped = error is DriveException
           ? error
           : DriveErrorMapper.fromError(error);
-      // Preserve BackupException messages as-is for corrupt file cases
+
       final message = error.toString().contains('BackupException') ||
               error.toString().toLowerCase().contains('backup')
           ? error.toString()
@@ -175,7 +175,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
   Widget build(BuildContext context) {
     final authAsync = ref.watch(googleAuthNotifierProvider);
     final authDataSource = ref.watch(googleAuthDataSourceProvider);
-    // Fallback to currentUser when stream hasn't emitted yet
+
     final currentUser = authAsync.value ?? authDataSource.currentUser;
     final isSignedIn = currentUser != null;
 

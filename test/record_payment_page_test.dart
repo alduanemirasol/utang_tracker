@@ -28,8 +28,7 @@ void main() {
     expect(find.byIcon(Icons.add), findsOneWidget);
     await tester.ensureVisible(confirmRow);
     await tester.pump();
-    // Notes is collapsed by default (header Row with label + IconButton);
-    // verify confirm row is below header with at least AppSpacing.lg spacing.
+
     final spacing =
         tester.getTopLeft(confirmRow).dy - tester.getBottomLeft(notesLabel).dy;
     expect(spacing, greaterThanOrEqualTo(AppSpacing.lg));

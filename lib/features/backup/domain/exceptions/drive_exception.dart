@@ -39,7 +39,6 @@ class DriveErrorMapper {
       );
     }
 
-    // Try to extract HTTP status code from message.
     final statusCode = _extractStatusCode(message);
     if (statusCode == 401 || statusCode == 403) {
       if (statusCode == 401) {

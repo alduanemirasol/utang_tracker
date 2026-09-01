@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_initializing_formals
-
 import 'dart:io';
 
 import 'package:googleapis/drive/v3.dart' as drive;
@@ -20,7 +18,6 @@ class DriveApiClient {
   final drive.DriveApi _driveApi;
   final Future<Directory> Function() _temporaryDirectory;
 
-  /// Constructor for production using authenticated HTTP client.
   factory DriveApiClient.fromAuthClient(
     auth.AuthClient client, {
     Future<Directory> Function()? temporaryDirectory,

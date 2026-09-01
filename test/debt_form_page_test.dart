@@ -36,18 +36,15 @@ void main() {
         FontWeight.w500,
       );
 
-      // Initially empty list shows No items and Add item header button
       expect(find.text('No items'), findsOneWidget);
       final headerAddItem = find.widgetWithText(TextButton, 'Add item');
       expect(headerAddItem, findsOneWidget);
 
-      // Open bottom sheet via header Add item
       await tester.tap(headerAddItem);
       await tester.pumpAndSettle();
 
       expect(find.byType(AppModalBottomSheet), findsOneWidget);
-      // Sheet title Add item appears inside bottom sheet (also header has Add item)
-      // Verify sheet contains Product * field
+
       expect(
         find.descendant(
           of: find.byType(AppModalBottomSheet),
@@ -66,7 +63,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      // Price * is the actual label in _ItemBottomSheet (not Halaga)
+
       expect(
         find.descendant(
           of: find.byType(AppModalBottomSheet),
@@ -76,10 +73,9 @@ void main() {
         ),
         findsOneWidget,
       );
-      // Unit field shows piece
+
       expect(find.text('piece'), findsOneWidget);
 
-      // Fill first item: Bugas, qty 2, price 75.50
       final productField = find.byWidgetPredicate(
         (w) => w is AppTextField && w.label == 'Product *',
       );
@@ -104,27 +100,22 @@ void main() {
       );
       await tester.pump();
 
-      // Save sheet
       await tester.tap(find.widgetWithText(FilledButton, 'Save'));
       await tester.pumpAndSettle();
 
-      // Sheet closed, list shows Bugas, 2 pieces, correct Money
       expect(find.text('Bugas'), findsOneWidget);
       expect(find.text('2 pieces'), findsOneWidget);
-      // Price appears in list row and bottom total (2 widgets)
+
       expect(find.text(Money.fromPesos(75.50).format()), findsWidgets);
       expect(find.text('No items'), findsNothing);
 
-      // Total should reflect single item (duplicate of row price)
       expect(find.text(Money.fromPesos(75.50).format()), findsNWidgets(2));
 
-      // Add second item
       await tester.tap(find.widgetWithText(TextButton, 'Add item'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AppModalBottomSheet), findsOneWidget);
 
-      // Re-find fields for second item
       final productField2 = find.byWidgetPredicate(
         (w) => w is AppTextField && w.label == 'Product *',
       );
@@ -143,7 +134,7 @@ void main() {
         find.descendant(of: quantityField2, matching: find.byType(TextField)),
         '1',
       );
-      // Change unit to sachet via picker
+
       final pieceInSheet = find.descendant(
         of: find.byType(AppModalBottomSheet),
         matching: find.text('piece'),
@@ -156,9 +147,9 @@ void main() {
       );
       await tester.tap(pieceInkWell.first);
       await tester.pumpAndSettle();
-      // Unit picker sheet appears
+
       expect(find.text('Select unit'), findsOneWidget);
-      // Scroll to ensure sachet visible and tap
+
       await tester.scrollUntilVisible(
         find.text('sachet'),
         100,
@@ -169,7 +160,7 @@ void main() {
       );
       await tester.tap(find.text('sachet'));
       await tester.pumpAndSettle();
-      // Now unit should be sachet displayed in field
+
       await tester.enterText(
         find.descendant(of: priceField2, matching: find.byType(TextField)),
         '12.00',
@@ -182,7 +173,7 @@ void main() {
       expect(find.text('Kape'), findsOneWidget);
       expect(find.text('1 sachet'), findsOneWidget);
       expect(find.text(Money.fromPesos(12.00).format()), findsOneWidget);
-      // Total updates to 87.50
+
       expect(find.text(Money.fromPesos(87.50).format()), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -198,18 +189,16 @@ void main() {
       ),
     );
 
-    // Open Add item sheet
     await tester.tap(find.widgetWithText(TextButton, 'Add item'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AppModalBottomSheet), findsOneWidget);
     expect(find.text('Add item'), findsWidgets);
 
-    // Tap unit piece inside sheet to open picker
     final unit = find.text(DebtItemUnits.displayName(DebtItemUnits.piece));
     expect(unit, findsOneWidget);
     await tester.ensureVisible(unit);
-    // _UnitField is InkWell wrapping InputDecorator containing piece text
+
     final unitInkWell = find.ancestor(
       of: unit,
       matching: find.byType(InkWell),
@@ -218,7 +207,6 @@ void main() {
     await tester.tap(unitInkWell.first);
     await tester.pumpAndSettle();
 
-    // Unit picker sheet should appear
     expect(find.text('Select unit'), findsOneWidget);
 
     await tester.scrollUntilVisible(
@@ -257,17 +245,16 @@ void main() {
 
     expect(find.text('No items'), findsOneWidget);
     expect(find.text('Bugas'), findsNothing);
-    // Header Items * is rendered via AppTextField.buildLabel with rich text
+
     expect(find.byWidgetPredicate((w) {
       if (w is Text) {
         return w.data != null && w.data!.contains('Items');
       }
       if (w is TextSpan) return false;
-      // Text.rich creates RichText? Check Text widget predicate for rich
+
       return false;
     }), findsNothing);
-    // Alternative check: AppTextField.buildLabel creates Text.rich, verify via finds Text.rich containing Items
-    // Use textContaining fallback
+
     expect(find.textContaining('Items'), findsOneWidget);
 
     final addItem = find.widgetWithText(TextButton, 'Add item');
@@ -275,7 +262,6 @@ void main() {
     await tester.tap(addItem);
     await tester.pumpAndSettle();
 
-    // Add first item via sheet
     await tester.enterText(
       find.descendant(
         of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Product *'),
@@ -303,11 +289,10 @@ void main() {
     expect(find.text('No items'), findsNothing);
     expect(find.text('Bugas'), findsOneWidget);
     expect(find.text('2 pieces'), findsOneWidget);
-    // No collapsed summary strings should exist
+
     expect(find.textContaining('No product yet'), findsNothing);
     expect(find.textContaining('collapsedSummary'), findsNothing);
 
-    // Add second item
     await tester.tap(find.widgetWithText(TextButton, 'Add item'));
     await tester.pumpAndSettle();
 
@@ -357,10 +342,9 @@ void main() {
         child: MaterialApp(theme: AppTheme.light(), home: const DebtFormPage()),
       ),
     );
-    // use variable to satisfy analyzer
+
     expect(testCustomer.name, 'Test Customer');
 
-    // Initial state: Items * header, No items empty, Add item header, Save bottom
     expect(find.text('No items'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Add item'), findsOneWidget);
     expect(find.text('Save'), findsOneWidget);
@@ -378,7 +362,7 @@ void main() {
       scrollable: scrollable,
     );
     expect(find.text('Select a customer.'), findsOneWidget);
-    // When customer missing, _save returns early; Add at least one item not yet shown
+
     expect(find.text('Add at least one item'), findsNothing);
 
     final customerDecorator = find.ancestor(
@@ -390,7 +374,6 @@ void main() {
       'Select a customer.',
     );
 
-    // Select a customer then save again to trigger items validation
     await tester.tap(find.text('Select customer'));
     await tester.pumpAndSettle();
     await tester.tap(find.text(testCustomer.name));
@@ -402,12 +385,11 @@ void main() {
     await tester.pump();
     expect(find.text('Add at least one item'), findsOneWidget);
 
-    // Now test dialog validation: add item sheet with empty product should show error
     await tester.tap(find.widgetWithText(TextButton, 'Add item'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AppModalBottomSheet), findsOneWidget);
-    // Try saving with empty product
+
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pump();
 
