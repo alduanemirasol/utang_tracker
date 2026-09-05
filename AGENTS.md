@@ -26,6 +26,6 @@
 - Data refresh is push-based: after writes call `invalidateBusinessData(ref)` / `refreshAfterDatabaseRestore(ref)` from `lib/app/coordination.dart` — NOT Drift reactive streams. Register new list/detail providers there.
 - DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
 - Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
-- Android method channels (updater, SAF backup) live in `android/.../MainActivity.kt`; backup uses deprecated `onActivityResult`
+- Android method channel (updater only, com.example.utang_tracker/updater) lives in `android/.../MainActivity.kt`; updater permission flow uses deprecated onActivityResult; backup is Google Drive via google_sign_in + googleapis (no MethodChannel)
 - `android/key.properties` + keystores are gitignored; CI signs from GH secrets
 - `.ignore` (not `.gitignore`) excludes generated `*.g.dart` from search tools

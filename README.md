@@ -9,21 +9,22 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 - **Payments** - record partial/full bayad, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
-- **Backup/Restore** - SAF file picker via Android MethodChannel
+- **Backup/Restore** - Google Drive backup & restore — Export to Drive / Import from Drive via `google_sign_in` + `googleapis` (`drive.file` scope), Drive file picker sheet, local DB snapshot via `VACUUM INTO` (`DatabaseBackupService`)
 - **Updater** - GitHub Releases check, in-app update sheet + About page
 
 ## Tech Stack
 
 | Layer | Choice |
 |---|---|
-| Framework | Flutter 3.12 (Android only, no iOS/web/desktop) |
+| Framework | Flutter 3.44.0 (stable, Dart SDK ^3.12.0, Android only) |
 | State | `flutter_riverpod` - plain `Provider`s in `lib/core/providers/core_providers.dart` |
-| DB | `drift` + `sqlite3` + `drift_flutter`, schema v5, `AppDatabase.forTesting()` for tests |
+| DB | `drift` 2.34.1 + `drift_flutter` 0.3.0 + `sqlite3` 3.5.0, schema v5, `AppDatabase.forTesting()` for tests |
 | Nav | `go_router` `StatefulShellRoute.indexedStack` (5 tabs) |
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
+| Backup | `google_sign_in` ^6.2.1 + `extension_google_sign_in_as_googleapis_auth` ^2.0.12 + `googleapis` ^13.2.0 + `googleapis_auth` (Drive `drive.file` scope, `DatabaseBackupService` via `VACUUM INTO`) |
 
-Version: `1.0.39+38` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
+Version: `1.0.43+42` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
 
 ## Project Structure
 
@@ -32,7 +33,7 @@ lib/
   main.dart / app.dart
   app/coordination.dart              # invalidateBusinessData / refreshAfterDatabaseRestore
   core/
-    database/ tables.dart / app_database.dart / mappers.dart / app_database.g.dart (generated, committed)
+    database/ tables.dart / app_database.dart / database_location.dart / mappers.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart
     providers/ core_providers.dart
     router/ app_router.dart / app_shell.dart
@@ -42,7 +43,7 @@ lib/
       domain/entities + domain/repositories (interface) + domain/usecases
       data/repositories (impl - enforces business rules)
       presentation/pages + presentation/providers + presentation/widgets
-android/app/src/main/kotlin/.../MainActivity.kt  # updater + SAF backup channels
+android/app/src/main/kotlin/.../MainActivity.kt  # updater channel only (com.example.utang_tracker/updater)
 assets/images/ + assets/release_notes/current.json
 rules/database_rules.md              # authoritative data spec
 test/                                # repo + migration tests (in-memory DB)
@@ -83,7 +84,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 - **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` (or `refreshAfterDatabaseRestore` after restore) - register new `FutureProvider`s there.
 - **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
-- **Method channels:** updater + SAF backup live in `MainActivity.kt` (`onActivityResult` deprecated).
+- **Method channels:** updater only lives in `MainActivity.kt` (install-permission flow uses deprecated `onActivityResult`, backup no longer uses MethodChannel).
 - **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
 
 ## Routes
@@ -94,12 +95,12 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 1. Bump `version` in **both** `pubspec.yaml` and `assets/release_notes/current.json`
 2. Tag `v<version>` - CI fails if `tag != pubspec != notes`
-3. Push tag -> `.github/workflows/release.yml` runs: verify versions -> `flutter analyze` -> `flutter test` -> build `apk --split-per-abi` -> GitHub Release with `RELEASE_NOTES.md`
+3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`)
 
 ```sh
 # example
-# edit pubspec.yaml: 1.0.40+39
-# edit assets/release_notes/current.json: { "version": "1.0.40", ... }
-git commit -m "release: v1.0.40"
-git tag v1.0.40 && git push origin v1.0.40
+# edit pubspec.yaml: 1.0.44+43
+# edit assets/release_notes/current.json: { "version": "1.0.44", ... }
+git commit -m "release: v1.0.44"
+git tag v1.0.44 && git push origin v1.0.44
 ```
