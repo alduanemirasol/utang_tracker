@@ -6,9 +6,12 @@ import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
+import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_history_entry.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_meta.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/presentation/providers/backup_providers.dart';
 import 'package:utang_tracker/features/backup/utils/backup_error_mapper.dart';
 
@@ -27,7 +30,9 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
@@ -61,7 +66,13 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
       final msg = BackupErrorMapper.toTaglish(e);
       if (mounted) AppSnackBar.error(context, msg);
     } finally {
-      if (mounted) setState(() {_isRestoring = false; _activeId = null; _progress = 0;});
+      if (mounted) {
+        setState(() {
+          _isRestoring = false;
+          _activeId = null;
+          _progress = 0;
+        });
+      }
     }
   }
 
@@ -80,83 +91,252 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
           children: [
-            if (_isRestoring)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(children: [
-                    Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 12), Expanded(child: Text('Restoring... ${(_progress * 100).toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodyMedium))]),
-                    const SizedBox(height: 12),
-                    LinearProgressIndicator(value: _progress == 0 ? null : _progress),
-                  ]),
-                ),
-              ),
-            list.when(
-              data: (metas) {
-                if (metas.isEmpty) {
-                  return Card(
-                    color: AppColors.surfaceCard,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.outline)),
-                    child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(children: [const Icon(Icons.cloud_off_outlined, size: 32, color: AppColors.textMuted), const SizedBox(height: 8), Text('No backups on Drive', style: Theme.of(context).textTheme.bodyMedium), const SizedBox(height: 4), Text('Create your first backup with Backup Now', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary))])),
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Google Drive backups', style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...metas.map((m) => Card(
-                          color: AppColors.surfaceCard,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: AppColors.outline)),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Row(children: [const Icon(Icons.insert_drive_file_rounded, size: 20, color: AppColors.primaryDark), const SizedBox(width: 8), Expanded(child: Text(m.name, style: Theme.of(context).textTheme.bodyMedium)), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.paidBg, borderRadius: BorderRadius.circular(8)), child: Text(m.status.name, style: const TextStyle(color: AppColors.paid)))]),
-                              const SizedBox(height: 6),
-                              Text('${DateFormatters.backupDisplay(m.createdTime)} • ${_formatBytes(m.sizeBytes)} • ${m.source.name}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
-                              const SizedBox(height: 10),
-                              AppButton(label: _activeId == m.id && _isRestoring ? 'Restoring...' : 'Restore', icon: Icons.restore_rounded, isLoading: _activeId == m.id && _isRestoring, onPressed: _isRestoring ? null : () => _restore(m)),
-                            ]),
-                          ),
-                        )),
-                  ],
-                );
-              },
-              loading: () => const Padding(padding: EdgeInsets.all(AppSpacing.lg), child: LinearProgressIndicator()),
-              error: (e, _) => Card(
-                color: AppColors.unpaidBg,
-                child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Could not load backups', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.unpaid)), const SizedBox(height: 6), Text(BackupErrorMapper.toTaglish(e), style: Theme.of(context).textTheme.bodySmall), const SizedBox(height: 12), AppButton(label: 'Try again', variant: AppButtonVariant.secondary, onPressed: () => ref.invalidate(backupListProvider)) ])),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            history.when(
-              data: (entries) {
-                if (entries.isEmpty) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Local history', style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...entries.map((e) => Card(
-                          color: AppColors.surfaceCard,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: AppColors.outline)),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            leading: Icon(e.status.name == 'success' ? Icons.history_rounded : Icons.error_outline, color: AppColors.textMuted),
-                            title: Text(e.backupName, style: Theme.of(context).textTheme.bodyMedium),
-                            subtitle: Text('${DateFormatters.backupDisplay(e.createdTime)} • ${_formatBytes(e.sizeBytes)} • ${e.source.name} • ${e.status.name}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
-                          ),
-                        )),
-                  ],
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (e, _) => const SizedBox.shrink(),
-            ),
+            if (_isRestoring) ...[
+              _buildRestoreProgress(),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+            _buildDriveBackupsList(list),
+            const SizedBox(height: AppSpacing.xl),
+            _buildLocalHistorySection(history),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRestoreProgress() {
+    return AppCard(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Restoring... ${(_progress * 100).toStringAsFixed(0)}%',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          LinearProgressIndicator(
+            value: _progress == 0 ? null : _progress,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDriveBackupsList(AsyncValue<List<BackupMeta>> list) {
+    return list.when(
+      data: (metas) {
+        if (metas.isEmpty) {
+          return AppCard(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.cloud_off_outlined,
+                    size: 36,
+                    color: AppColors.textMuted,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'No backups on Drive',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Create your first backup with Backup Now',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Google Drive backups',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ...metas.map((m) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: AppCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.insert_drive_file_rounded,
+                          size: 20,
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              m.name,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${DateFormatters.backupDisplay(m.createdTime)} • ${_formatBytes(m.sizeBytes)}',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _buildRestoreButton(m),
+                    ],
+                  ),
+                ),
+              ),
+            )),
+          ],
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: LinearProgressIndicator(),
+      ),
+      error: (e, _) => AppCard(
+        color: AppColors.unpaidBg,
+        borderColor: AppColors.unpaid.withValues(alpha: 0.3),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Could not load backups',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: AppColors.unpaid,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                BackupErrorMapper.toTaglish(e),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppButton(
+                label: 'Try again',
+                variant: AppButtonVariant.secondary,
+                onPressed: () => ref.invalidate(backupListProvider),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRestoreButton(BackupMeta m) {
+    final isActive = _activeId == m.id && _isRestoring;
+    return SizedBox(
+      height: AppSpacing.minTapTarget,
+      child: OutlinedButton(
+        onPressed: _isRestoring ? null : () => _restore(m),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          side: const BorderSide(color: AppColors.outline),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: isActive
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(
+                'Restore',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: AppColors.primaryDark,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildLocalHistorySection(
+    AsyncValue<List<BackupHistoryEntry>> history,
+  ) {
+    return history.when(
+      data: (entries) {
+        if (entries.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Local history',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ...entries.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: AppCard(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
+                  ),
+                  leading: Icon(
+                    e.status == BackupStatus.success
+                        ? Icons.check_circle_rounded
+                        : Icons.error_rounded,
+                    color: e.status == BackupStatus.success
+                        ? AppColors.paid
+                        : AppColors.unpaid,
+                    size: 22,
+                  ),
+                  title: Text(
+                    e.backupName,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  subtitle: Text(
+                    '${DateFormatters.backupDisplay(e.createdTime)} • ${_formatBytes(e.sizeBytes)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            )),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => const SizedBox.shrink(),
     );
   }
 }
