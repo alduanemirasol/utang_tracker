@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
-import 'package:utang_tracker/features/backup/data/database_backup_service.dart';
 import 'package:utang_tracker/features/customers/data/repositories/customer_repository_impl.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
 import 'package:utang_tracker/features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -16,10 +15,6 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;
-});
-
-final databaseBackupServiceProvider = Provider<DatabaseBackupService>((ref) {
-  return DatabaseBackupService(ref.watch(databaseProvider));
 });
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:utang_tracker/core/router/app_shell.dart';
-import 'package:utang_tracker/features/backup/presentation/pages/backup_restore_page.dart';
 import 'package:utang_tracker/features/settings/presentation/pages/settings_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_detail_page.dart';
 import 'package:utang_tracker/features/customers/presentation/pages/customer_form_page.dart';
@@ -130,11 +129,6 @@ GoRouter createAppRouter() {
             ],
           ),
         ],
-      ),
-      GoRoute(
-        path: '/backup-restore',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const BackupRestorePage(),
       ),
       GoRoute(
         path: '/about',

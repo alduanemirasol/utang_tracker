@@ -2,8 +2,8 @@
   "version": "1.0.43",
   "date": "2026-09-01",
   "notes": {
-    "added": ["Google Drive backup & restore — Export to Drive and Import from Drive with file picker (replaces local device backup)"],
-    "changed": ["Minimized empty states — compact icons, smaller text, and shorter copy across lists", "Unified empty-state icons and wrapped sort/filter buttons for cleaner layout", "Backup page cleanup — removed extra icons from cards/buttons"],
+    "added": [],
+    "changed": ["Minimized empty states — compact icons, smaller text, and shorter copy across lists", "Unified empty-state icons and wrapped sort/filter buttons for cleaner layout"],
     "fixed": ["Due date guard — blocks past dates on utang form (picker starts today + save validation)"]
   }
 }

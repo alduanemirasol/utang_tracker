@@ -18,13 +18,6 @@ class SettingsPage extends StatelessWidget {
         ),
         children: [
           _MenuItem(
-            icon: Icons.backup_outlined,
-            title: 'Backup & Restore',
-            subtitle: 'Export or restore your data',
-            onTap: () => context.push('/backup-restore'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _MenuItem(
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App version and updates',
