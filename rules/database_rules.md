@@ -150,3 +150,7 @@ Fresh databases create these indexes:
 - Version 3 recreated the legacy `debt_items` table without its earlier unit column.
 - Version 4 added the current `unit` column with a `piece` default.
 - Version 5 replaced the legacy `unit_price` and `subtotal` columns with `price`, preserving each existing item's former subtotal as its final custom line amount.
+
+## Backup Audit
+
+- Backup audit log and history are persisted via SharedPreferences JSON using keys `backup_audit_log` and `backup_history`. Entries are append-only and trimmed to 100 most recent. No SQLite table or migration is introduced in this foundation scaffold.
