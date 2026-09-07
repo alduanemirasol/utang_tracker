@@ -1,4 +1,4 @@
 storePassword=
 keyPassword=
-keyAlias=upload
-storeFile=app/upload-keystore.jks
+keyAlias=utang-tracker
+storeFile=app/utang-tracker.jks
