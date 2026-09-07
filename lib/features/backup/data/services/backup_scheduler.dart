@@ -39,7 +39,7 @@ void callbackDispatcher() {
           queue.add(BackupQueueEntry(type: 'auto', timestamp: DateTime.now().toUtc(), retryCount: 0));
           await prefs.setString(BackupPrefsKeys.queue, BackupQueueEntry.encodeList(queue));
         }
-        await prefs.setString(BackupPrefsKeys.lastError, 'Expired ang Google sign-in. Mag-sign in ulit.');
+        await prefs.setString(BackupPrefsKeys.lastError, 'Google sign-in expired. Please sign in again.');
         final ds = BackupLocalDatasource(prefs: prefs);
         await ds.appendAuditLog(AuditLogEntry(
           timestamp: DateTime.now(),
@@ -79,7 +79,7 @@ void callbackDispatcher() {
 
       final storedHash = prefs.getString(BackupPrefsKeys.lastBackupHash);
       if (storedHash != null && storedHash == hash) {
-        await prefs.setString(BackupPrefsKeys.lastError, 'May kaparehong backup na. Na-skip ang pag-upload.');
+        await prefs.setString(BackupPrefsKeys.lastError, 'Duplicate backup found. Upload skipped.');
         try { await tempDb.delete(); } catch (_) {}
         try { await zipFile.delete(); } catch (_) {}
         return true;
@@ -88,7 +88,7 @@ void callbackDispatcher() {
       final existing = await drive.listBackupsInFolder();
       final duplicate = existing.any((m) => m.hash.isNotEmpty && m.hash == hash);
       if (duplicate) {
-        await prefs.setString(BackupPrefsKeys.lastError, 'May kaparehong backup na. Na-skip ang pag-upload.');
+        await prefs.setString(BackupPrefsKeys.lastError, 'Duplicate backup found. Upload skipped.');
         try { await tempDb.delete(); } catch (_) {}
         try { await zipFile.delete(); } catch (_) {}
         return true;

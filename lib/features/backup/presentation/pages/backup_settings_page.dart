@@ -48,7 +48,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         await queue.enqueue('manual');
         ref.invalidate(backupQueueCountProvider);
         ref.invalidate(backupHasQueuedProvider);
-        if (mounted) AppSnackBar.info(context, 'Walang internet. Na-queue ang backup.');
+        if (mounted) AppSnackBar.info(context, 'No internet connection. Backup queued.');
         return;
       }
       int attempts = 0;
@@ -68,7 +68,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
           rethrow;
         }
       }
-      if (mounted) AppSnackBar.success(context, 'Backup natapos na!');
+      if (mounted) AppSnackBar.success(context, 'Backup completed!');
       ref.invalidate(backupLastSuccessfulProvider);
       ref.invalidate(backupNextScheduledProvider);
       ref.invalidate(backupHistoryProvider);
@@ -108,7 +108,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
     ref.invalidate(backupAutoStatusProvider);
     ref.invalidate(backupNextScheduledProvider);
     if (mounted) {
-      AppSnackBar.info(context, value == BackupInterval.off ? 'Auto backup naka-off' : 'Auto backup: ${value.label}');
+      AppSnackBar.info(context, value == BackupInterval.off ? 'Auto backup is off' : 'Auto backup: ${value.label}');
     }
   }
 
@@ -139,20 +139,20 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               final Color color;
               switch (details.status) {
                 case BackupConnectionStatus.signedIn:
-                  title = 'Naka-connect sa Google Drive';
-                  subtitle = details.email ?? 'Naka-sign in';
+                  title = 'Connected to Google Drive';
+                  subtitle = details.email ?? 'Signed in';
                   icon = Icons.cloud_done_rounded;
                   color = AppColors.paid;
                   break;
                 case BackupConnectionStatus.expired:
-                  title = 'Expired ang Google sign-in';
-                  subtitle = 'Mag-sign in ulit para mag-backup';
+                  title = 'Google sign-in expired';
+                  subtitle = 'Please sign in again to back up';
                   icon = Icons.cloud_off_rounded;
                   color = AppColors.partial;
                   break;
                 case BackupConnectionStatus.signedOut:
-                  title = 'Hindi naka-connect';
-                  subtitle = 'Mag-sign in sa Google Drive';
+                  title = 'Not connected';
+                  subtitle = 'Sign in to Google Drive';
                   icon = Icons.cloud_off_rounded;
                   color = AppColors.unpaid;
                   break;
@@ -179,15 +179,15 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                           if (details.status == BackupConnectionStatus.signedIn) {
                             await auth.signOut();
                             ref.invalidate(backupConnectionDetailsProvider);
-                            if (context.mounted) AppSnackBar.info(context, 'Nag-sign out sa Google Drive');
+                            if (context.mounted) AppSnackBar.info(context, 'Signed out of Google Drive');
                           } else {
                             final acc = await auth.signIn();
                             ref.invalidate(backupConnectionDetailsProvider);
                             if (context.mounted) {
                               if (acc != null) {
-                                AppSnackBar.success(context, 'Naka-sign in: ${acc.email}');
+                                AppSnackBar.success(context, 'Signed in: ${acc.email}');
                               } else {
-                                AppSnackBar.error(context, 'Hindi natapos ang sign-in');
+                                AppSnackBar.error(context, 'Sign-in not completed');
                               }
                             }
                           }
@@ -207,11 +207,11 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
             data: (s) {
               final String text;
               if (!s.enabled) {
-                text = 'Auto backup naka-off';
+                text = 'Auto backup is off';
               } else if (s.nextRun != null) {
-                text = 'Susunod na backup: ${DateFormatters.backupDisplay(s.nextRun!)}';
+                text = 'Next backup: ${DateFormatters.backupDisplay(s.nextRun!)}';
               } else {
-                text = 'Auto backup naka-on (${s.interval?.label ?? ''})';
+                text = 'Auto backup enabled (${s.interval?.label ?? ''})';
               }
               return Card(
                 color: AppColors.surfaceCard,
@@ -252,14 +252,14 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 lastBackup.when(
-                  data: (dt) => Row(children: [const Icon(Icons.check_circle_outline, size: 16, color: AppColors.textMuted), const SizedBox(width: 6), Expanded(child: Text(dt == null ? 'Huling backup: Wala pa' : 'Huling backup: ${DateFormatters.backupDisplay(dt)}', style: Theme.of(context).textTheme.bodySmall))]),
+                  data: (dt) => Row(children: [const Icon(Icons.check_circle_outline, size: 16, color: AppColors.textMuted), const SizedBox(width: 6), Expanded(child: Text(dt == null ? 'Last backup: No backups yet' : 'Last backup: ${DateFormatters.backupDisplay(dt)}', style: Theme.of(context).textTheme.bodySmall))]),
                   loading: () => const SizedBox.shrink(),
                   error: (e, _) => Text('Error: $e'),
                 ),
                 const SizedBox(height: 4),
                 if (interval != BackupInterval.off)
                   nextBackup.when(
-                    data: (dt) => Row(children: [const Icon(Icons.timer_outlined, size: 16, color: AppColors.textMuted), const SizedBox(width: 6), Expanded(child: Text(dt == null ? 'Susunod: --' : 'Susunod: ${DateFormatters.backupDisplay(dt)}', style: Theme.of(context).textTheme.bodySmall))]),
+                    data: (dt) => Row(children: [const Icon(Icons.timer_outlined, size: 16, color: AppColors.textMuted), const SizedBox(width: 6), Expanded(child: Text(dt == null ? 'Next: --' : 'Next: ${DateFormatters.backupDisplay(dt)}', style: Theme.of(context).textTheme.bodySmall))]),
                     loading: () => const SizedBox.shrink(),
                     error: (e, _) => Text('Error: $e'),
                   ),
@@ -303,9 +303,9 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: queueCount.when(
-                          data: (c) => Text('May $c naka-queue na backup', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.partial)),
-                          loading: () => const Text('May naka-queue'),
-                          error: (e, _) => const Text('May naka-queue'),
+                          data: (c) => Text('$c backup(s) queued', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.partial)),
+                          loading: () => const Text('Backup queued'),
+                          error: (e, _) => const Text('Backup queued'),
                         ),
                       ),
                       Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.partial, borderRadius: BorderRadius.circular(12)), child: const Text('Queued', style: TextStyle(color: AppColors.textOnPrimary))),
@@ -336,7 +336,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                     const SizedBox(height: 8),
                     Text(total == null ? '${_formatBytes(used)} used' : '${_formatBytes(used)} / ${_formatBytes(total)} used • ${_formatBytes(available ?? 0)} free', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
                     isLow.when(
-                      data: (low) => low ? Padding(padding: const EdgeInsets.only(top: 8), child: Row(children: [const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.unpaid), const SizedBox(width: 6), Expanded(child: Text('Puno na ang storage! Magbura ng lumang backup.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.unpaid))) ])) : const SizedBox.shrink(),
+                      data: (low) => low ? Padding(padding: const EdgeInsets.only(top: 8), child: Row(children: [const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.unpaid), const SizedBox(width: 6), Expanded(child: Text('Storage is full! Delete old backups to free up space.', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.unpaid))) ])) : const SizedBox.shrink(),
                       loading: () => const SizedBox.shrink(),
                       error: (e, _) => const SizedBox.shrink(),
                     ),
@@ -347,7 +347,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
             loading: () => const Card(child: Padding(padding: EdgeInsets.all(AppSpacing.lg), child: LinearProgressIndicator())),
             error: (e, _) => Card(
               color: AppColors.surfaceCard,
-              child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Text('Hindi makuha ang storage: ${BackupErrorMapper.toTaglish(e)}', style: Theme.of(context).textTheme.bodySmall)),
+              child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Text('Could not load storage: ${BackupErrorMapper.toTaglish(e)}', style: Theme.of(context).textTheme.bodySmall)),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -356,7 +356,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(children: [
-                  Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 12), Text('Nagba-backup... ${( _progress * 100).toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodyMedium)]),
+                  Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 12), Text('Backing up... ${( _progress * 100).toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodyMedium)]),
                   const SizedBox(height: 12),
                   LinearProgressIndicator(value: _progress == 0 ? null : _progress),
                 ]),
@@ -364,7 +364,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
             ),
             const SizedBox(height: AppSpacing.md),
           ],
-          AppButton(label: _isBackingUp ? 'Nagba-backup...' : 'Backup Now', icon: Icons.cloud_upload_rounded, isLoading: _isBackingUp, onPressed: _isBackingUp ? null : _doBackupNow),
+          AppButton(label: _isBackingUp ? 'Backing up...' : 'Backup Now', icon: Icons.cloud_upload_rounded, isLoading: _isBackingUp, onPressed: _isBackingUp ? null : _doBackupNow),
           const SizedBox(height: AppSpacing.sm),
           AppButton(label: 'Browse & Restore', variant: AppButtonVariant.secondary, icon: Icons.folder_open_rounded, onPressed: () => context.push('/settings/backup/browse')),
           const SizedBox(height: AppSpacing.lg),
@@ -376,7 +376,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                 return Card(
                   color: AppColors.surfaceCard,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.outline)),
-                  child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Row(children: [const Icon(Icons.history_rounded, color: AppColors.textMuted), const SizedBox(width: 12), Text('Wala pang backup history', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary))])),
+                  child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Row(children: [const Icon(Icons.history_rounded, color: AppColors.textMuted), const SizedBox(width: 12), Text('No backup history yet', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary))])),
                 );
               }
               return Column(

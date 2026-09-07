@@ -5,36 +5,36 @@ class BackupErrorMapper {
 
   static String toTaglish(Object error) {
     if (error is NetworkException) {
-      return 'Walang internet. Na-queue ang backup, susubukan ulit mamaya.';
+      return 'No internet connection. Backup has been queued and will be retried later.';
     }
     if (error is AuthExpiredException) {
-      return 'Expired ang Google sign-in. Mag-sign in ulit para mag-backup.';
+      return 'Google sign-in expired. Please sign in again to continue backup.';
     }
     if (error is QuotaExceededException) {
-      return 'Puno na ang Google Drive. Magbura ng lumang backup para magkasya.';
+      return 'Google Drive is full. Delete old backups to free up space.';
     }
     if (error is IntegrityException) {
-      return 'Sira ang backup file. Hindi ma-verify ang integridad.';
+      return 'Backup file is corrupted. Integrity could not be verified.';
     }
     if (error is DuplicateBackupException) {
-      return 'May kaparehong backup na. Na-skip ang pag-upload para iwas duplicate.';
+      return 'A duplicate backup already exists. Upload skipped to avoid duplication.';
     }
     if (error is NotFoundException) {
-      return 'Hindi makita ang backup file sa Drive.';
+      return 'Backup file not found on Drive.';
     }
     if (error is ValidationException) {
-      return 'Kailangan ng confirmation bago mag-restore.';
+      return 'Confirmation is required before restoring.';
     }
     if (error is BackupException) {
-      return 'Hindi natapos ang backup: ${error.message}';
+      return 'Backup failed: ${error.message}';
     }
     final msg = error.toString().toLowerCase();
     if (msg.contains('network') || msg.contains('socket') || msg.contains('failed host lookup')) {
-      return 'Walang internet. Na-queue ang backup, susubukan ulit mamaya.';
+      return 'No internet connection. Backup has been queued and will be retried later.';
     }
     if (msg.contains('401') || msg.contains('auth') && msg.contains('expired')) {
-      return 'Expired ang Google sign-in. Mag-sign in ulit para mag-backup.';
+      return 'Google sign-in expired. Please sign in again to continue backup.';
     }
-    return 'Hindi natapos ang backup. Pakisubukan ulit: $error';
+    return 'Backup failed. Please try again: $error';
   }
 }

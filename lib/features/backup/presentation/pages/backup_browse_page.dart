@@ -34,10 +34,10 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
   Future<void> _restore(BackupMeta meta) async {
     final confirmed = await showConfirmationDialog(
       context: context,
-      title: 'I-restore ang backup?',
-      message: 'Mao-overwrite ang kasalukuyang data. Sigurado ka? Gagawa ng pre-restore backup bago mag-restore.',
-      confirmLabel: 'I-restore',
-      cancelLabel: 'Kansela',
+      title: 'Restore backup?',
+      message: 'This will overwrite your current data. Are you sure? A pre-restore backup will be created before restoring.',
+      confirmLabel: 'Restore',
+      cancelLabel: 'Cancel',
       isDestructive: true,
     );
     if (!confirmed) return;
@@ -55,7 +55,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         invalidateBusinessData(ref);
         ref.invalidate(backupHistoryProvider);
         ref.invalidate(backupAuditLogProvider);
-        AppSnackBar.success(context, 'Na-restore na ang backup!');
+        AppSnackBar.success(context, 'Backup restored successfully!');
       }
     } catch (e) {
       final msg = BackupErrorMapper.toTaglish(e);
@@ -85,7 +85,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(children: [
-                    Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 12), Expanded(child: Text('Nagre-restore... ${(_progress * 100).toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodyMedium))]),
+                    Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 12), Expanded(child: Text('Restoring... ${(_progress * 100).toStringAsFixed(0)}%', style: Theme.of(context).textTheme.bodyMedium))]),
                     const SizedBox(height: 12),
                     LinearProgressIndicator(value: _progress == 0 ? null : _progress),
                   ]),
@@ -97,7 +97,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                   return Card(
                     color: AppColors.surfaceCard,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.outline)),
-                    child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(children: [const Icon(Icons.cloud_off_outlined, size: 32, color: AppColors.textMuted), const SizedBox(height: 8), Text('Walang backup sa Drive', style: Theme.of(context).textTheme.bodyMedium), const SizedBox(height: 4), Text('Gumawa ng unang backup gamit ang Backup Now', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary))])),
+                    child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(children: [const Icon(Icons.cloud_off_outlined, size: 32, color: AppColors.textMuted), const SizedBox(height: 8), Text('No backups on Drive', style: Theme.of(context).textTheme.bodyMedium), const SizedBox(height: 4), Text('Create your first backup with Backup Now', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary))])),
                   );
                 }
                 return Column(
@@ -116,7 +116,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                               const SizedBox(height: 6),
                               Text('${DateFormatters.backupDisplay(m.createdTime)} • ${_formatBytes(m.sizeBytes)} • ${m.source.name}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
                               const SizedBox(height: 10),
-                              AppButton(label: _activeId == m.id && _isRestoring ? 'Nagre-restore...' : 'I-restore', icon: Icons.restore_rounded, isLoading: _activeId == m.id && _isRestoring, onPressed: _isRestoring ? null : () => _restore(m)),
+                              AppButton(label: _activeId == m.id && _isRestoring ? 'Restoring...' : 'Restore', icon: Icons.restore_rounded, isLoading: _activeId == m.id && _isRestoring, onPressed: _isRestoring ? null : () => _restore(m)),
                             ]),
                           ),
                         )),
@@ -126,7 +126,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               loading: () => const Padding(padding: EdgeInsets.all(AppSpacing.lg), child: LinearProgressIndicator()),
               error: (e, _) => Card(
                 color: AppColors.unpaidBg,
-                child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Hindi makuha ang backups', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.unpaid)), const SizedBox(height: 6), Text(BackupErrorMapper.toTaglish(e), style: Theme.of(context).textTheme.bodySmall), const SizedBox(height: 12), AppButton(label: 'Subukan ulit', variant: AppButtonVariant.secondary, onPressed: () => ref.invalidate(backupListProvider)) ])),
+                child: Padding(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Could not load backups', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.unpaid)), const SizedBox(height: 6), Text(BackupErrorMapper.toTaglish(e), style: Theme.of(context).textTheme.bodySmall), const SizedBox(height: 12), AppButton(label: 'Try again', variant: AppButtonVariant.secondary, onPressed: () => ref.invalidate(backupListProvider)) ])),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -136,7 +136,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Lokal na history', style: Theme.of(context).textTheme.titleSmall),
+                    Text('Local history', style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: AppSpacing.sm),
                     ...entries.map((e) => Card(
                           color: AppColors.surfaceCard,

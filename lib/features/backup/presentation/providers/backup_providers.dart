@@ -124,7 +124,7 @@ final backupConnectionDetailsProvider = FutureProvider<BackupConnectionDetails>(
   }
   try {
     await auth.getAuthHeaders();
-    final email = auth.currentUser?.email ?? 'Naka-sign in';
+    final email = auth.currentUser?.email ?? 'Signed in';
     return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: email);
   } catch (e) {
     final msg = e.toString().toLowerCase();

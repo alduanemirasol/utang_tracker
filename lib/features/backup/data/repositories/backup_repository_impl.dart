@@ -522,7 +522,7 @@ class BackupRepositoryImpl implements BackupRepository {
         await prefs.setString(BackupPrefsKeys.queue, BackupQueueEntry.encodeList(queue));
       }
     }
-    await prefs.setString(BackupPrefsKeys.lastError, 'Walang internet. Na-queue ang backup, susubukan ulit mamaya.');
+    await prefs.setString(BackupPrefsKeys.lastError, 'No internet connection. Backup queued and will be retried later.');
     await _localDatasource.appendAuditLog(
       AuditLogEntry(
         timestamp: DateTime.now(),
