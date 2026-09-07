@@ -43,7 +43,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
         await streamed.stream.drain();
       } else if (streamed.statusCode == 200) {
         await streamed.stream.drain();
-        return _fetchFromRawMain();
+        return await _fetchFromRawMain();
       } else if (streamed.statusCode == 404) {
         return null;
       } else {
