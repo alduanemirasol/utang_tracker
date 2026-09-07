@@ -244,18 +244,16 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                   if (details.status == BackupConnectionStatus.signedIn) {
                     await auth.signOut();
                     ref.invalidate(backupConnectionDetailsProvider);
-                    if (context.mounted) {
-                      AppSnackBar.info(context, 'Signed out of Google Drive');
-                    }
+                    if (!mounted) return;
+                    AppSnackBar.info(context, 'Signed out of Google Drive');
                   } else {
                     final acc = await auth.signIn();
                     ref.invalidate(backupConnectionDetailsProvider);
-                    if (context.mounted) {
-                      if (acc != null) {
-                        AppSnackBar.success(context, 'Signed in: ${acc.email}');
-                      } else {
-                        AppSnackBar.error(context, 'Sign-in not completed');
-                      }
+                    if (!mounted) return;
+                    if (acc != null) {
+                      AppSnackBar.success(context, 'Signed in: ${acc.email}');
+                    } else {
+                      AppSnackBar.error(context, 'Sign-in not completed');
                     }
                   }
                 },
