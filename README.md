@@ -9,6 +9,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 - **Payments** - record partial/full bayad, balance/status derived atomically
 - **Dashboard** - outstanding balance, active debt count, collected amount, recent activity
 - **Overdue & notifications** - due-date aware
+- **Backup & Restore (Google Drive)** - Drive folder `utang_tracker_backup`, DB zipped via `archive` + SHA256 (`crypto`), auto intervals Off/Daily/3days/Weekly, Backup Now / Browse & Restore, audit log + history, offline queue, background `workmanager` periodic
 - **Updater** - GitHub Releases check, in-app update sheet + About page
 
 ## Tech Stack
@@ -21,6 +22,7 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 | Nav | `go_router` `StatefulShellRoute.indexedStack` (5 tabs) |
 | Money | `Money` (`lib/core/domain/money.dart`) - integer centavos, never `double` |
 | Fonts | Poppins, Material 3 theme |
+| Backup | `shared_preferences` ^2.5.3, `connectivity_plus` ^6.1.5, `google_sign_in` ^6.3.0, `googleapis` ^14.0.0, `googleapis_auth` ^2.0.0, `archive` ^4.0.7, `crypto` ^3.0.7, `workmanager` ^0.10.9, `path_provider` ^2.1.5, `package_info_plus` ^8.3.0, `path` ^1.9.1, `http` ^1.4.0 |
 
 Version: `1.0.43+42` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
 
@@ -28,23 +30,24 @@ Version: `1.0.43+42` (`pubspec.yaml` + `assets/release_notes/current.json` must 
 
 ```
 lib/
-  main.dart / app.dart
-  app/coordination.dart              # invalidateBusinessData
+  main.dart / app.dart                 # Workmanager + connectivity queue init (backup)
+  app/coordination.dart                # invalidateBusinessData + invalidateBackupData (31-42)
   core/
     database/ tables.dart / app_database.dart / database_location.dart / mappers.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart
-    providers/ core_providers.dart
+    providers/ core_providers.dart     # + backup providers (56-103)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
-    customers|debts|payments|dashboard|notifications|updater|settings
+    customers|debts|payments|dashboard|notifications|updater|settings|backup  # 8 feature dirs
       domain/entities + domain/repositories (interface) + domain/usecases
-      data/repositories (impl - enforces business rules)
+      data/repositories (impl - enforces business rules) + data/datasources + data/services
       presentation/pages + presentation/providers + presentation/widgets
-android/app/src/main/kotlin/.../MainActivity.kt  # updater channel only (com.example.utang_tracker/updater)
-assets/images/ + assets/release_notes/current.json
-rules/database_rules.md              # authoritative data spec
-test/                                # repo + migration tests (in-memory DB)
+    backup specific: entities (audit_action/audit_log_entry/backup_history_entry/backup_interval/backup_meta/backup_source/backup_status/storage_quota), 3 repos+impls, 5 datasources (backup_prefs_keys/google_auth_datasource/google_drive_service/backup_local_datasource/backup_queue_entry), 3 services (backup_prefs_service/backup_queue_service/backup_scheduler), 2 pages (backup_settings_page/backup_browse_page)
+  android/app/src/main/kotlin/.../MainActivity.kt  # updater channel only (com.example.utang_tracker/updater)
+  assets/images/ + assets/release_notes/current.json
+  rules/database_rules.md              # authoritative data spec (schema v5)
+  test/                                # repo + migration tests (in-memory DB)
 ```
 
 ## Data Rules
@@ -79,15 +82,16 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 
 ## Architecture Notes
 
-- **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` - register new `FutureProvider`s there.
-- **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`.
-- **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL.
+- **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` and for backup `invalidateBackupData(ref)` from `lib/app/coordination.dart` (31-42) — register new `FutureProvider`s there (business + backup providers).
+- **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`. Backup providers live in `core_providers.dart:56-103` (`backupLocalDatasourceProvider`, `auditLogRepositoryProvider`, `backupHistoryRepositoryProvider`, `googleAuthDatasourceProvider`, `googleDriveServiceProvider`, `backupRepositoryProvider`, `backupConnectionStatusProvider`, `backupQuotaProvider`, `backupSchedulerProvider`, `connectivityProvider`, `backupQueueServiceProvider`).
+- **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL. Backup persistence is SharedPreferences JSON (no SQLite migration).
 - **Method channels:** updater only lives in `MainActivity.kt` (install-permission flow uses deprecated `onActivityResult`).
 - **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
+- **Backup bg work:** `lib/main.dart:19-44` initializes `Workmanager` and listens to `connectivity_plus` to drain the offline queue.
 
 ## Routes
 
-- `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`, `/about`.
+- `/dashboard`, `/customers` (`/new`, `/:id`, `/:id/edit`), `/debts` (`/new?customerId`, `/:id`, `/:id/edit`), `/payments` (`/new?debtId`), `/settings`, `/about`, `/settings/backup`, `/settings/backup/browse`.
 
 ## Release
 
