@@ -75,16 +75,16 @@ List<Customer> applyCustomerSort(
   switch (sort) {
     case CustomerSortOrder.nameAsc:
       sorted.sort(
-        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        (first, second) => first.name.toLowerCase().compareTo(second.name.toLowerCase()),
       );
     case CustomerSortOrder.nameDesc:
       sorted.sort(
-        (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        (first, second) => second.name.toLowerCase().compareTo(first.name.toLowerCase()),
       );
     case CustomerSortOrder.newest:
-      sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      sorted.sort((first, second) => second.createdAt.compareTo(first.createdAt));
     case CustomerSortOrder.oldest:
-      sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      sorted.sort((first, second) => first.createdAt.compareTo(second.createdAt));
   }
   return sorted;
 }
@@ -98,6 +98,6 @@ final getCustomerDetailProvider = Provider((ref) {
 });
 
 final customerDetailProvider =
-    FutureProvider.family<CustomerDetailData?, String>((ref, id) async {
-      return ref.watch(getCustomerDetailProvider)(id);
+    FutureProvider.family<CustomerDetailData?, String>((ref, customerId) async {
+      return ref.watch(getCustomerDetailProvider)(customerId);
     });

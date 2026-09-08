@@ -38,8 +38,8 @@ class DashboardPage extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const LoadingIndicator(message: 'Opening your ledger'),
-        error: (e, _) => ErrorView(
-          message: e.toString(),
+        error: (error, stackTrace) => ErrorView(
+          message: error.toString(),
           onRetry: () => ref.invalidate(dashboardSummaryProvider),
         ),
         data: (summary) {
@@ -294,12 +294,12 @@ class _ActivityLedger extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Column(
           children: [
-            for (var i = 0; i < items.length; i++) ...[
+            for (var index = 0; index < items.length; index++) ...[
               _ActivityRow(
-                item: items[i],
-                onTap: () => context.push('/debts/${items[i].debtId}'),
+                item: items[index],
+                onTap: () => context.push('/debts/${items[index].debtId}'),
               ),
-              if (i != items.length - 1)
+              if (index != items.length - 1)
                 const Divider(
                   height: AppSpacing.md,
                   indent: 66,

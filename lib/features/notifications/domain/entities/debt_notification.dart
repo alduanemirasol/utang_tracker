@@ -53,14 +53,14 @@ class DebtNotificationFeed extends Equatable {
       );
     }
 
-    items.sort((a, b) {
-      final kindOrder = a.kind.index.compareTo(b.kind.index);
+    items.sort((first, second) {
+      final kindOrder = first.kind.index.compareTo(second.kind.index);
       if (kindOrder != 0) return kindOrder;
 
-      final dueOrder = a.dueDate.compareTo(b.dueDate);
+      final dueOrder = first.dueDate.compareTo(second.dueDate);
       if (dueOrder != 0) return dueOrder;
 
-      return b.debt.balance.centavos.compareTo(a.debt.balance.centavos);
+      return second.debt.balance.centavos.compareTo(first.debt.balance.centavos);
     });
     return DebtNotificationFeed(items: List.unmodifiable(items));
   }

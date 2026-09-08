@@ -64,11 +64,11 @@ class AppTextField extends StatelessWidget {
 
     final children = <InlineSpan>[];
     final parts = label.split('*');
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].isNotEmpty) {
-        children.add(TextSpan(text: parts[i]));
+    for (var index = 0; index < parts.length; index++) {
+      if (parts[index].isNotEmpty) {
+        children.add(TextSpan(text: parts[index]));
       }
-      if (i < parts.length - 1) {
+      if (index < parts.length - 1) {
         children.add(
           const TextSpan(
             text: '*',

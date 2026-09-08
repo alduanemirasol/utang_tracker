@@ -8,13 +8,13 @@ import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 
 void main() {
   testWidgets('app shell shows dashboard title', (tester) async {
-    final db = AppDatabase.forTesting();
-    addTearDown(db.close);
+    final appDatabase = AppDatabase.forTesting();
+    addTearDown(appDatabase.close);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          databaseProvider.overrideWithValue(db),
+          databaseProvider.overrideWithValue(appDatabase),
           updateRepositoryProvider.overrideWith(
             (_) => throw StateError(
               'The update repository must not be read during app startup.',

@@ -41,8 +41,8 @@ class CheckForUpdates {
               'Update is being prepared, please try again in a few minutes.',
         );
       }
-    } on AppException catch (e) {
-      return CheckResult(updateAvailable: false, error: e.message);
+    } on AppException catch (appException) {
+      return CheckResult(updateAvailable: false, error: appException.message);
     }
 
     return CheckResult(
@@ -79,18 +79,18 @@ ReleaseAsset? selectApkAsset(
   for (final abi in abis) {
     final match = assets
         .where(
-          (a) =>
-              a.name.startsWith('$prefix-$abi-') &&
-              a.name.toLowerCase().endsWith('.apk'),
+          (asset) =>
+              asset.name.startsWith('$prefix-$abi-') &&
+              asset.name.toLowerCase().endsWith('.apk'),
         )
         .firstOrNull;
     if (match != null) return match;
   }
   return assets
       .where(
-        (a) =>
-            a.name.startsWith('$prefix-$universalAbi-') &&
-            a.name.toLowerCase().endsWith('.apk'),
+        (asset) =>
+            asset.name.startsWith('$prefix-$universalAbi-') &&
+            asset.name.toLowerCase().endsWith('.apk'),
       )
       .firstOrNull;
 }
@@ -104,8 +104,8 @@ bool isNewerVersion(String currentVersion, String latestVersion) {
   }
 }
 
-String _pad(String v) {
-  final parts = v.split('.');
+String _pad(String value) {
+  final parts = value.split('.');
   while (parts.length < 3) {
     parts.add('0');
   }

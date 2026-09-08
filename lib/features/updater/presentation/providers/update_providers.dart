@@ -117,12 +117,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
         asset: result.asset!,
         currentVersion: result.currentVersion!,
       );
-    } on AppException catch (e) {
+    } on AppException catch (appException) {
       final isNetwork =
-          e.message.contains('internet') || e.message.contains('Network error');
-      state = UpdateError(message: e.message, isNetworkError: isNetwork);
-    } catch (e) {
-      state = UpdateError(message: 'Unexpected error: $e');
+          appException.message.contains('internet') || appException.message.contains('Network error');
+      state = UpdateError(message: appException.message, isNetworkError: isNetwork);
+    } catch (caughtError) {
+      state = UpdateError(message: 'Unexpected error: $caughtError');
     } finally {
       _busy = false;
     }
@@ -142,12 +142,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
         state = UpdateDownloading(release: current.release, progress: p);
       });
       state = UpdateDownloaded(release: current.release, apkPath: path);
-    } on AppException catch (e) {
+    } on AppException catch (appException) {
       final isNetwork =
-          e.message.contains('internet') || e.message.contains('interrupted');
-      state = UpdateError(message: e.message, isNetworkError: isNetwork);
-    } catch (e) {
-      state = UpdateError(message: 'Download failed: $e');
+          appException.message.contains('internet') || appException.message.contains('interrupted');
+      state = UpdateError(message: appException.message, isNetworkError: isNetwork);
+    } catch (caughtError) {
+      state = UpdateError(message: 'Download failed: $caughtError');
     } finally {
       _busy = false;
     }
@@ -178,8 +178,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
       state = const UpdateInstalling();
       await _channel.invokeMethod<void>('installApk', {'path': apkPath});
       state = const UpdateIdle();
-    } on PlatformException catch (e) {
-      state = UpdateError(message: e.message ?? 'Installation failed.');
+    } on PlatformException catch (platformException) {
+      state = UpdateError(message: platformException.message ?? 'Installation failed.');
     }
   }
 
@@ -189,8 +189,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
     try {
       await _channel.invokeMethod<void>('openInstallSettings');
       await install();
-    } on PlatformException catch (e) {
-      state = UpdateError(message: e.message ?? 'Could not open settings.');
+    } on PlatformException catch (platformException) {
+      state = UpdateError(message: platformException.message ?? 'Could not open settings.');
     } finally {
       _openingInstallSettings = false;
     }

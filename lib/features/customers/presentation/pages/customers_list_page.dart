@@ -97,8 +97,8 @@ class CustomersListPage extends ConsumerWidget {
           Expanded(
             child: customersAsync.when(
               loading: () => const LoadingIndicator(),
-              error: (e, _) => ErrorView(
-                message: e.toString(),
+              error: (error, stackTrace) => ErrorView(
+                message: error.toString(),
                 onRetry: () => ref.invalidate(customersListProvider),
               ),
               data: (customers) {

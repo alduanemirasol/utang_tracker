@@ -49,16 +49,16 @@ GoRouter createAppRouter() {
                     path: ':id',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
-                      final id = state.pathParameters['id']!;
-                      return CustomerDetailPage(customerId: id);
+                      final routeId = state.pathParameters['id']!;
+                      return CustomerDetailPage(customerId: routeId);
                     },
                     routes: [
                       GoRoute(
                         path: 'edit',
                         parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
-                          final id = state.pathParameters['id']!;
-                          return CustomerFormPage(customerId: id);
+                          final routeId = state.pathParameters['id']!;
+                          return CustomerFormPage(customerId: routeId);
                         },
                       ),
                     ],
@@ -86,16 +86,16 @@ GoRouter createAppRouter() {
                     path: ':id',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
-                      final id = state.pathParameters['id']!;
-                      return DebtDetailPage(debtId: id);
+                      final routeId = state.pathParameters['id']!;
+                      return DebtDetailPage(debtId: routeId);
                     },
                     routes: [
                       GoRoute(
                         path: 'edit',
                         parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
-                          final id = state.pathParameters['id']!;
-                          return DebtFormPage(debtId: id);
+                          final routeId = state.pathParameters['id']!;
+                          return DebtFormPage(debtId: routeId);
                         },
                       ),
                     ],

@@ -20,30 +20,30 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<List<Customer>> getAll() async {
     final rows =
         await (_db.select(_db.customers)
-              ..where((t) => t.deletedAt.isNull())
-              ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+              ..where((table) => table.deletedAt.isNull())
+              ..orderBy([(table) => OrderingTerm.asc(table.name)]))
             .get();
     return rows.map(mapCustomer).toList();
   }
 
   @override
   Future<List<Customer>> search(String query) async {
-    final q = query.trim().toLowerCase();
-    if (q.isEmpty) return getAll();
+    final searchQuery = query.trim().toLowerCase();
+    if (searchQuery.isEmpty) return getAll();
 
     final rows =
         await (_db.select(_db.customers)
-              ..where((t) => t.deletedAt.isNull() & t.name.lower().like('%$q%'))
-              ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+              ..where((table) => table.deletedAt.isNull() & table.name.lower().like('%$searchQuery%'))
+              ..orderBy([(table) => OrderingTerm.asc(table.name)]))
             .get();
     return rows.map(mapCustomer).toList();
   }
 
   @override
-  Future<Customer?> getById(String id) async {
+  Future<Customer?> getById(String customerId) async {
     final row = await (_db.select(
       _db.customers,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
+    )..where((table) => table.id.equals(customerId) & table.deletedAt.isNull())).getSingleOrNull();
     return row == null ? null : mapCustomer(row);
   }
 
@@ -60,12 +60,12 @@ class CustomerRepositoryImpl implements CustomerRepository {
     await _ensureUniqueName(trimmed);
 
     final now = DateTime.now().toUtc();
-    final id = _uuid.v4();
+    final customerId = _uuid.v4();
     await _db
         .into(_db.customers)
         .insert(
           CustomersCompanion.insert(
-            id: id,
+            id: customerId,
             name: trimmed,
             phone: Value(emptyToNull(phone)),
             notes: Value(emptyToNull(notes)),
@@ -73,7 +73,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
             updatedAt: now,
           ),
         );
-    final created = await getById(id);
+    final created = await getById(customerId);
     return created!;
   }
 
@@ -89,7 +89,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final updated =
         await (_db.update(
           _db.customers,
-        )..where((t) => t.id.equals(customer.id) & t.deletedAt.isNull())).write(
+        )..where((table) => table.id.equals(customer.id) & table.deletedAt.isNull())).write(
           CustomersCompanion(
             name: Value(trimmed),
             phone: Value(emptyToNull(customer.phone)),
@@ -105,12 +105,12 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
 
   @override
-  Future<void> delete(String id) async {
-    final existing = await getById(id);
+  Future<void> delete(String customerId) async {
+    final existing = await getById(customerId);
     if (existing == null) {
       throw const NotFoundException('Customer not found.');
     }
-    if (await hasDebts(id)) {
+    if (await hasDebts(customerId)) {
       throw const ConflictException(
         'Cannot delete a customer who still has unpaid debts.',
       );
@@ -120,7 +120,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final updated =
         await (_db.update(
           _db.customers,
-        )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
+        )..where((table) => table.id.equals(customerId) & table.deletedAt.isNull())).write(
           CustomersCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
     if (updated == 0) {
@@ -143,10 +143,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final row =
         await (_db.select(_db.debts)
               ..where(
-                (t) =>
-                    t.customerId.equals(customerId) &
-                    t.deletedAt.isNull() &
-                    t.status.equals(DebtStatus.paid.value).not(),
+                (table) =>
+                    table.customerId.equals(customerId) &
+                    table.deletedAt.isNull() &
+                    table.status.equals(DebtStatus.paid.value).not(),
               )
               ..limit(1))
             .getSingleOrNull();
@@ -156,12 +156,12 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Future<void> _ensureUniqueName(String name, {String? excludeId}) async {
     final existing =
         await (_db.select(_db.customers)
-              ..where((t) {
+              ..where((table) {
                 var expr =
-                    t.deletedAt.isNull() &
-                    t.name.lower().equals(name.toLowerCase());
+                    table.deletedAt.isNull() &
+                    table.name.lower().equals(name.toLowerCase());
                 if (excludeId != null) {
-                  expr = expr & t.id.equals(excludeId).not();
+                  expr = expr & table.id.equals(excludeId).not();
                 }
                 return expr;
               })

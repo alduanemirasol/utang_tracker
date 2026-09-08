@@ -30,10 +30,10 @@ class DebtDetailPage extends ConsumerWidget {
         appBar: AppBar(title: const Text('Debt')),
         body: const LoadingIndicator(),
       ),
-      error: (e, _) => Scaffold(
+      error: (error, stackTrace) => Scaffold(
         appBar: AppBar(title: const Text('Debt')),
         body: ErrorView(
-          message: e.toString(),
+          message: error.toString(),
           onRetry: () => ref.invalidate(debtDetailProvider(debtId)),
         ),
       ),
@@ -160,7 +160,7 @@ class DebtDetailPage extends ConsumerWidget {
                   )
                 else
                   ...payments.map(
-                    (p) => Padding(
+                    (payment) => Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: AppCard(
                         child: Row(
@@ -170,12 +170,12 @@ class DebtDetailPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    context.smartTimestamp(p.paymentDate),
+                                    context.smartTimestamp(payment.paymentDate),
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(fontWeight: FontWeight.w500),
                                   ),
                                   Text(
-                                    p.paymentMethod,
+                                    payment.paymentMethod,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: AppColors.textSecondary,
@@ -185,7 +185,7 @@ class DebtDetailPage extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            MoneyText(p.amount, color: AppColors.paid),
+                            MoneyText(payment.amount, color: AppColors.paid),
                           ],
                         ),
                       ),
@@ -201,8 +201,8 @@ class DebtDetailPage extends ConsumerWidget {
 
   Widget _kv(
     BuildContext context,
-    String k,
-    String v, {
+    String label,
+    String value, {
     bool valueAlignRight = false,
   }) {
     return Padding(
@@ -212,7 +212,7 @@ class DebtDetailPage extends ConsumerWidget {
           SizedBox(
             width: 100,
             child: Text(
-              k,
+              label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
@@ -221,7 +221,7 @@ class DebtDetailPage extends ConsumerWidget {
           ),
           Expanded(
             child: Text(
-              v,
+              value,
               textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,

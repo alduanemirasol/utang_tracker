@@ -66,13 +66,13 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<DebtDetail?> getById(String id) async {
+  Future<DebtDetail?> getById(String debtId) async {
     final query = _db.select(_db.debts).join([
       innerJoin(
         _db.customers,
         _db.customers.id.equalsExp(_db.debts.customerId),
       ),
-    ])..where(_db.debts.id.equals(id) & _activeDebt);
+    ])..where(_db.debts.id.equals(debtId) & _activeDebt);
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -81,7 +81,7 @@ class DebtRepositoryImpl implements DebtRepository {
     final customer = row.readTable(_db.customers);
     final items = await (_db.select(
       _db.debtItems,
-    )..where((t) => t.debtId.equals(id) & t.deletedAt.isNull())).get();
+    )..where((table) => table.debtId.equals(debtId) & table.deletedAt.isNull())).get();
 
     return DebtDetail(
       debt: mapDebt(debtRow, customerName: customer.name),
@@ -124,14 +124,14 @@ class DebtRepositoryImpl implements DebtRepository {
 
     final customer =
         await (_db.select(_db.customers)
-              ..where((t) => t.id.equals(customerId) & t.deletedAt.isNull()))
+              ..where((table) => table.id.equals(customerId) & table.deletedAt.isNull()))
             .getSingleOrNull();
     if (customer == null) {
       throw const NotFoundException('Customer not found.');
     }
 
     final prepared = _prepareItems(items);
-    final total = computeTotal(prepared.map((e) => e.price));
+    final total = computeTotal(prepared.map((debtItem) => debtItem.price));
     final paid = Money.zero();
     final balance = total - paid;
     final status = deriveStatus(totalAmount: total, paidAmount: paid);
@@ -185,13 +185,13 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<Debt> update({
-    required String id,
+    required String debtId,
     required DateTime transactionDate,
     DateTime? dueDate,
     String? notes,
     required List<DebtItemInput> items,
   }) async {
-    final existing = await getById(id);
+    final existing = await getById(debtId);
     if (existing == null) {
       throw const NotFoundException('Debt not found.');
     }
@@ -203,7 +203,7 @@ class DebtRepositoryImpl implements DebtRepository {
 
     _validateItems(items);
     final prepared = _prepareItems(items);
-    final total = computeTotal(prepared.map((e) => e.price));
+    final total = computeTotal(prepared.map((debtItem) => debtItem.price));
     final paid = Money.zero();
     final balance = total - paid;
     final status = deriveStatus(totalAmount: total, paidAmount: paid);
@@ -216,13 +216,13 @@ class DebtRepositoryImpl implements DebtRepository {
 
     await _db.transaction(() async {
       await (_db.update(_db.debtItems)
-            ..where((t) => t.debtId.equals(id) & t.deletedAt.isNull()))
+            ..where((table) => table.debtId.equals(debtId) & table.deletedAt.isNull()))
           .write(DebtItemsCompanion(deletedAt: Value(now)));
 
       final updated =
           await (_db.update(
             _db.debts,
-          )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
+          )..where((table) => table.id.equals(debtId) & table.deletedAt.isNull())).write(
             DebtsCompanion(
               totalAmount: Value(total.centavos),
               paidAmount: Value(paid.centavos),
@@ -244,7 +244,7 @@ class DebtRepositoryImpl implements DebtRepository {
             .insert(
               DebtItemsCompanion.insert(
                 id: _uuid.v4(),
-                debtId: id,
+                debtId: debtId,
                 productName: item.productName,
                 quantity: item.quantity,
                 unit: Value(item.unit),
@@ -254,7 +254,7 @@ class DebtRepositoryImpl implements DebtRepository {
       }
     });
 
-    final detail = await getById(id);
+    final detail = await getById(debtId);
     return detail!.debt;
   }
 

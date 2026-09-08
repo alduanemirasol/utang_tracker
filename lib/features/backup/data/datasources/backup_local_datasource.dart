@@ -17,13 +17,13 @@ class BackupLocalDatasource {
     final raw = prefs.getString(BackupPrefsKeys.auditLog);
     if (raw == null || raw.isEmpty) return [];
     final decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded.map((e) => AuditLogEntry.fromJson(e as Map<String, dynamic>)).toList();
+    return decoded.map((auditEntry) => AuditLogEntry.fromJson(auditEntry as Map<String, dynamic>)).toList();
   }
 
   Future<void> saveAuditLog(List<AuditLogEntry> entries) async {
     final prefs = await _getPrefs();
     final trimmed = entries.length > maxEntries ? entries.sublist(entries.length - maxEntries) : entries;
-    final encoded = jsonEncode(trimmed.map((e) => e.toJson()).toList());
+    final encoded = jsonEncode(trimmed.map((entry) => entry.toJson()).toList());
     await prefs.setString(BackupPrefsKeys.auditLog, encoded);
   }
 
@@ -38,13 +38,13 @@ class BackupLocalDatasource {
     final raw = prefs.getString(BackupPrefsKeys.history);
     if (raw == null || raw.isEmpty) return [];
     final decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded.map((e) => BackupHistoryEntry.fromJson(e as Map<String, dynamic>)).toList();
+    return decoded.map((historyEntry) => BackupHistoryEntry.fromJson(historyEntry as Map<String, dynamic>)).toList();
   }
 
   Future<void> saveHistory(List<BackupHistoryEntry> entries) async {
     final prefs = await _getPrefs();
     final trimmed = entries.length > maxEntries ? entries.sublist(entries.length - maxEntries) : entries;
-    final encoded = jsonEncode(trimmed.map((e) => e.toJson()).toList());
+    final encoded = jsonEncode(trimmed.map((entry) => entry.toJson()).toList());
     await prefs.setString(BackupPrefsKeys.history, encoded);
   }
 

@@ -14,7 +14,7 @@ void main() {
       older,
     ], CustomerSortOrder.nameAsc);
 
-    expect(sorted.map((c) => c.name), ['Ana', 'bert', 'Cara']);
+    expect(sorted.map((customer) => customer.name), ['Ana', 'bert', 'Cara']);
   });
 
   test('sorts customers by name Z-A', () {
@@ -24,7 +24,7 @@ void main() {
       newer,
     ], CustomerSortOrder.nameDesc);
 
-    expect(sorted.map((c) => c.name), ['Cara', 'bert', 'Ana']);
+    expect(sorted.map((customer) => customer.name), ['Cara', 'bert', 'Ana']);
   });
 
   test('sorts customers by newest', () {
@@ -34,7 +34,7 @@ void main() {
       middle,
     ], CustomerSortOrder.newest);
 
-    expect(sorted.map((c) => c.id), ['3', '2', '1']);
+    expect(sorted.map((customer) => customer.id), ['3', '2', '1']);
   });
 
   test('sorts customers by oldest', () {
@@ -44,13 +44,13 @@ void main() {
       middle,
     ], CustomerSortOrder.oldest);
 
-    expect(sorted.map((c) => c.id), ['1', '2', '3']);
+    expect(sorted.map((customer) => customer.id), ['1', '2', '3']);
   });
 }
 
-Customer _customer(String id, String name, DateTime createdAt) {
+Customer _customer(String customerId, String name, DateTime createdAt) {
   return Customer(
-    id: id,
+    id: customerId,
     name: name,
     createdAt: createdAt,
     updatedAt: createdAt,

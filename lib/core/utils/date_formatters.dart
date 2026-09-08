@@ -75,20 +75,20 @@ class DateFormatters {
     return DateFormat.yMMMd().add_jm().format(local);
   }
 
-  static bool isSameLocalDay(DateTime a, DateTime b) {
-    final la = a.toLocal();
-    final lb = b.toLocal();
-    return la.year == lb.year && la.month == lb.month && la.day == lb.day;
+  static bool isSameLocalDay(DateTime first, DateTime second) {
+    final localA = first.toLocal();
+    final localB = second.toLocal();
+    return localA.year == localB.year && localA.month == localB.month && localA.day == localB.day;
   }
 
   static DateTime startOfLocalDay(DateTime date) {
-    final l = date.toLocal();
-    return DateTime(l.year, l.month, l.day);
+    final localDate = date.toLocal();
+    return DateTime(localDate.year, localDate.month, localDate.day);
   }
 
   static DateTime endOfLocalDay(DateTime date) {
-    final l = date.toLocal();
-    return DateTime(l.year, l.month, l.day, 23, 59, 59, 999);
+    final localDate = date.toLocal();
+    return DateTime(localDate.year, localDate.month, localDate.day, 23, 59, 59, 999);
   }
 
   static String _smartDateLabel(

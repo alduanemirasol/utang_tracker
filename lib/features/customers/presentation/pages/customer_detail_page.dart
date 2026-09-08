@@ -34,10 +34,10 @@ class CustomerDetailPage extends ConsumerWidget {
         appBar: AppBar(title: const Text('Customer')),
         body: const LoadingIndicator(),
       ),
-      error: (e, _) => Scaffold(
+      error: (error, stackTrace) => Scaffold(
         appBar: AppBar(title: const Text('Customer')),
         body: ErrorView(
-          message: e.toString(),
+          message: error.toString(),
           onRetry: () => ref.invalidate(customerDetailProvider(customerId)),
         ),
       ),
@@ -83,9 +83,9 @@ class CustomerDetailPage extends ConsumerWidget {
                       if (!context.mounted) return;
                       AppSnackBar.success(context, 'Customer deleted');
                       context.pop();
-                    } on AppException catch (e) {
+                    } on AppException catch (appException) {
                       if (!context.mounted) return;
-                      AppSnackBar.error(context, e.message);
+                      AppSnackBar.error(context, appException.message);
                     }
                   },
                 ),

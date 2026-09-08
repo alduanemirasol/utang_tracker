@@ -5,11 +5,11 @@ List<Debt> applySort(List<Debt> debts, DebtSortOrder sort) {
   final sorted = List<Debt>.from(debts);
   switch (sort) {
     case DebtSortOrder.newest:
-      sorted.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+      sorted.sort((first, second) => second.transactionDate.compareTo(first.transactionDate));
     case DebtSortOrder.highestBalance:
-      sorted.sort((a, b) => b.balance.centavos.compareTo(a.balance.centavos));
+      sorted.sort((first, second) => second.balance.centavos.compareTo(first.balance.centavos));
     case DebtSortOrder.lowestBalance:
-      sorted.sort((a, b) => a.balance.centavos.compareTo(b.balance.centavos));
+      sorted.sort((first, second) => first.balance.centavos.compareTo(second.balance.centavos));
   }
   return sorted;
 }

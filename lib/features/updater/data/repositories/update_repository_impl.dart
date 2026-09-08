@@ -53,8 +53,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       }
     } on SocketException {
       throw const AppException('No internet connection.');
-    } on http.ClientException catch (e) {
-      throw AppException('Network error: ${e.message}');
+    } on http.ClientException catch (clientException) {
+      throw AppException('Network error: ${clientException.message}');
     }
 
     if (tag.isEmpty || !tag.startsWith('v')) {
@@ -75,8 +75,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       );
     } on SocketException {
       throw const AppException('No internet connection.');
-    } on http.ClientException catch (e) {
-      throw AppException('Network error: ${e.message}');
+    } on http.ClientException catch (clientException) {
+      throw AppException('Network error: ${clientException.message}');
     }
 
     if (rawResponse.statusCode == 404) {
@@ -117,7 +117,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
     List<String> stringList(dynamic value) {
       if (value is List) {
-        return value.whereType<String>().where((s) => s.isNotEmpty).toList();
+        return value.whereType<String>().where((item) => item.isNotEmpty).toList();
       }
       return const [];
     }
@@ -183,8 +183,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       );
     } on SocketException {
       throw const AppException('No internet connection.');
-    } on http.ClientException catch (e) {
-      throw AppException('Network error: ${e.message}');
+    } on http.ClientException catch (clientException) {
+      throw AppException('Network error: ${clientException.message}');
     }
 
     if (response.statusCode == 404) return null;
@@ -205,7 +205,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
 
     List<String> stringList(dynamic value) {
       if (value is List) {
-        return value.whereType<String>().where((s) => s.isNotEmpty).toList();
+        return value.whereType<String>().where((item) => item.isNotEmpty).toList();
       }
       return const [];
     }
@@ -285,8 +285,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
       response = await _client.send(http.Request('GET', uri));
     } on SocketException {
       throw const AppException('No internet connection.');
-    } on http.ClientException catch (e) {
-      throw AppException('Download failed: ${e.message}');
+    } on http.ClientException catch (clientException) {
+      throw AppException('Download failed: ${clientException.message}');
     }
 
     if (response.statusCode != 200) {
@@ -303,10 +303,10 @@ class UpdateRepositoryImpl implements UpdateRepository {
         received += chunk.length;
         if (totalBytes > 0) onProgress(received / totalBytes);
       }
-    } catch (e) {
+    } catch (caughtError) {
       await sink.close();
       if (await file.exists()) await file.delete();
-      throw AppException('Download interrupted: $e');
+      throw AppException('Download interrupted: $caughtError');
     }
 
     await sink.close();
@@ -324,8 +324,8 @@ class UpdateRepositoryImpl implements UpdateRepository {
   @override
   Future<DateTime?> loadLastCheckTime() async {
     final prefs = await SharedPreferences.getInstance();
-    final ms = prefs.getInt(_keyLastCheck);
-    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+    final milliseconds = prefs.getInt(_keyLastCheck);
+    return milliseconds == null ? null : DateTime.fromMillisecondsSinceEpoch(milliseconds);
   }
 
   @override
@@ -369,7 +369,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
     if (!file.path.endsWith('.apk')) {
       throw const AppException('Downloaded file is not a valid APK.');
     }
-    final bytes = await file.openRead(0, 4).expand((b) => b).toList();
+    final bytes = await file.openRead(0, 4).expand((byte) => byte).toList();
     if (bytes.length < 4 ||
         bytes[0] != 0x50 ||
         bytes[1] != 0x4B ||
@@ -393,9 +393,9 @@ class UpdateRepositoryImpl implements UpdateRepository {
     try {
       return await _channel.invokeListMethod<String>('getSupportedAbis') ??
           const [];
-    } on PlatformException catch (e) {
+    } on PlatformException catch (platformException) {
       throw AppException(
-        e.message ?? 'Could not determine device compatibility.',
+        platformException.message ?? 'Could not determine device compatibility.',
       );
     }
   }

@@ -36,7 +36,7 @@ extension BackupIntervalX on BackupInterval {
     if (name == null) return BackupInterval.off;
     if (name == 'monthly') return BackupInterval.weekly;
     return BackupInterval.values.firstWhere(
-      (e) => e.name == name,
+      (interval) => interval.name == name,
       orElse: () => BackupInterval.off,
     );
   }

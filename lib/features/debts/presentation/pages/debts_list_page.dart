@@ -61,16 +61,16 @@ class DebtsListPage extends ConsumerWidget {
                         ...DebtListFilter.values
                             .skip(1)
                             .map(
-                              (f) => Padding(
+                              (filterValue) => Padding(
                                 padding: const EdgeInsets.only(
                                   right: AppSpacing.sm,
                                 ),
                                 child: AppFilterChip(
-                                  label: f.label,
-                                  selected: filter == f,
+                                  label: filterValue.label,
+                                  selected: filter == filterValue,
                                   onSelected: () => ref
                                       .read(debtStatusFilterProvider.notifier)
-                                      .setFilter(f),
+                                      .setFilter(filterValue),
                                 ),
                               ),
                             ),
@@ -128,8 +128,8 @@ class DebtsListPage extends ConsumerWidget {
           Expanded(
             child: debtsAsync.when(
               loading: () => const LoadingIndicator(),
-              error: (e, _) => ErrorView(
-                message: e.toString(),
+              error: (error, stackTrace) => ErrorView(
+                message: error.toString(),
                 onRetry: () => ref.invalidate(debtsListProvider),
               ),
               data: (debts) {

@@ -69,8 +69,8 @@ class PaymentsListPage extends ConsumerWidget {
           Expanded(
             child: async.when(
               loading: () => const LoadingIndicator(),
-              error: (e, _) => ErrorView(
-                message: e.toString(),
+              error: (error, stackTrace) => ErrorView(
+                message: error.toString(),
                 onRetry: () {
                   ref.invalidate(paymentFilterOptionsProvider);
                   ref.invalidate(paymentsListProvider);

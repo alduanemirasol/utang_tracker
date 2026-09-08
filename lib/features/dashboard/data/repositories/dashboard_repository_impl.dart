@@ -41,27 +41,27 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
     final recentActivity = <RecentActivityItem>[
       ...recentDebts.map(
-        (d) => RecentActivityItem(
+        (debt) => RecentActivityItem(
           type: RecentActivityType.debt,
-          id: d.id,
-          debtId: d.id,
-          customerName: d.customerName ?? 'Customer',
-          amount: d.totalAmount,
-          date: d.createdAt,
+          id: debt.id,
+          debtId: debt.id,
+          customerName: debt.customerName ?? 'Customer',
+          amount: debt.totalAmount,
+          date: debt.createdAt,
         ),
       ),
       ...recentPayments.map(
-        (p) => RecentActivityItem(
+        (payment) => RecentActivityItem(
           type: RecentActivityType.payment,
-          id: p.id,
-          debtId: p.debtId,
-          customerName: p.customerName ?? 'Customer',
-          amount: p.amount,
-          date: p.createdAt,
-          paymentMethod: p.paymentMethod,
+          id: payment.id,
+          debtId: payment.debtId,
+          customerName: payment.customerName ?? 'Customer',
+          amount: payment.amount,
+          date: payment.createdAt,
+          paymentMethod: payment.paymentMethod,
         ),
       ),
-    ]..sort((a, b) => b.date.compareTo(a.date));
+    ]..sort((first, second) => second.date.compareTo(first.date));
 
     return DashboardSummary(
       outstandingBalance: Money.fromCentavos(outstandingCentavos),

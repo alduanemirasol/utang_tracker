@@ -10,20 +10,20 @@ import 'package:utang_tracker/core/domain/debt_status.dart';
 import 'package:utang_tracker/features/payments/data/repositories/payment_repository_impl.dart';
 
 void main() {
-  late AppDatabase db;
+  late AppDatabase appDatabase;
   late CustomerRepositoryImpl customers;
   late DebtRepositoryImpl debts;
   late PaymentRepositoryImpl payments;
 
   setUp(() {
-    db = AppDatabase.forTesting();
-    customers = CustomerRepositoryImpl(db);
-    debts = DebtRepositoryImpl(db);
-    payments = PaymentRepositoryImpl(db);
+    appDatabase = AppDatabase.forTesting();
+    customers = CustomerRepositoryImpl(appDatabase);
+    debts = DebtRepositoryImpl(appDatabase);
+    payments = PaymentRepositoryImpl(appDatabase);
   });
 
   tearDown(() async {
-    await db.close();
+    await appDatabase.close();
   });
 
   test('create debt and record partial then full payment', () async {
@@ -91,7 +91,7 @@ void main() {
 
   test('debt saves use the selected day and current save time', () async {
     var savedAt = DateTime(2026, 7, 19, 14, 25, 36);
-    debts = DebtRepositoryImpl(db, now: () => savedAt);
+    debts = DebtRepositoryImpl(appDatabase, now: () => savedAt);
     final customer = await customers.create(name: 'Timestamp debt');
     final dueDate = DateTime(2026, 5, 10);
 
@@ -115,7 +115,7 @@ void main() {
 
     savedAt = DateTime(2026, 7, 20, 9, 8, 7);
     final updated = await debts.update(
-      id: created.id,
+      debtId: created.id,
       transactionDate: DateTime(2026, 6, 4),
       dueDate: dueDate,
       items: [
@@ -135,8 +135,8 @@ void main() {
 
   test('payment saves use the selected day and current save time', () async {
     var savedAt = DateTime(2026, 7, 19, 10, 11, 12);
-    debts = DebtRepositoryImpl(db, now: () => savedAt);
-    payments = PaymentRepositoryImpl(db, now: () => savedAt);
+    debts = DebtRepositoryImpl(appDatabase, now: () => savedAt);
+    payments = PaymentRepositoryImpl(appDatabase, now: () => savedAt);
     final customer = await customers.create(name: 'Timestamp payment');
     final debt = await debts.create(
       customerId: customer.id,
@@ -298,12 +298,12 @@ void main() {
     await customers.delete(customer.id);
 
     final listed = await customers.getAll();
-    expect(listed.where((c) => c.id == customer.id), isEmpty);
+    expect(listed.where((customerEntry) => customerEntry.id == customer.id), isEmpty);
     expect(await customers.getById(customer.id), isNull);
 
-    final row = await (db.select(
-      db.customers,
-    )..where((t) => t.id.equals(customer.id))).getSingleOrNull();
+    final row = await (appDatabase.select(
+      appDatabase.customers,
+    )..where((table) => table.id.equals(customer.id))).getSingleOrNull();
     expect(row, isNotNull);
     expect(row!.deletedAt, isNotNull);
   });
@@ -333,6 +333,6 @@ void main() {
     await customers.delete(customer.id);
 
     final listed = await customers.getAll();
-    expect(listed.where((c) => c.id == customer.id), isEmpty);
+    expect(listed.where((customerEntry) => customerEntry.id == customer.id), isEmpty);
   });
 }

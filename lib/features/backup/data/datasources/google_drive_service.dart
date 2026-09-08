@@ -49,16 +49,16 @@ class GoogleDriveService {
     if (stored != null && stored.isNotEmpty) {
       try {
         final api = await _getDriveApi();
-        final f = await api.files.get(
+        final fetchedFile = await api.files.get(
           stored,
           $fields: 'id,name,mimeType,trashed',
         ) as drive.File;
-        if (f.id != null && f.trashed != true) {
+        if (fetchedFile.id != null && fetchedFile.trashed != true) {
           return stored;
         }
-      } catch (e) {
-        if (!_isNotFound(e)) {
-          _handleDriveError(e);
+      } catch (caughtError) {
+        if (!_isNotFound(caughtError)) {
+          _handleDriveError(caughtError);
         }
       }
       await prefs.remove(BackupPrefsKeys.driveFolderId);
@@ -75,20 +75,20 @@ class GoogleDriveService {
         $fields: 'files(id,name,mimeType,owners,trashed)',
       );
       final files = result.files ?? [];
-      for (final f in files) {
-        if (f.id == null) continue;
-        if (f.trashed == true) continue;
-        final owners = f.owners;
+      for (final file in files) {
+        if (file.id == null) continue;
+        if (file.trashed == true) continue;
+        final owners = file.owners;
         if (owners != null && owners.isNotEmpty) {
-          final me = owners.any((o) => o.me == true);
-          if (!me) continue;
+          final ownerMatch = owners.any((owner) => owner.me == true);
+          if (!ownerMatch) continue;
         }
         final prefs = await _getPrefs();
-        await prefs.setString(BackupPrefsKeys.driveFolderId, f.id!);
-        return f.id!;
+        await prefs.setString(BackupPrefsKeys.driveFolderId, file.id!);
+        return file.id!;
       }
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
     }
     try {
       final folder = drive.File()
@@ -98,15 +98,15 @@ class GoogleDriveService {
         folder,
         $fields: 'id',
       ) as drive.File;
-      final id = created.id;
-      if (id == null || id.isEmpty) {
+      final createdId = created.id;
+      if (createdId == null || createdId.isEmpty) {
         throw const BackupException('Failed to create Drive folder.');
       }
       final prefs = await _getPrefs();
-      await prefs.setString(BackupPrefsKeys.driveFolderId, id);
-      return id;
-    } catch (e) {
-      _handleDriveError(e);
+      await prefs.setString(BackupPrefsKeys.driveFolderId, createdId);
+      return createdId;
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
@@ -122,13 +122,13 @@ class GoogleDriveService {
         $fields: 'files(id,name,size,createdTime,appProperties)',
       );
       final files = result.files ?? [];
-      return files.where((f) => f.id != null).map((f) {
-        final size = f.size == null ? 0 : int.tryParse(f.size!) ?? 0;
-        final created = f.createdTime ?? DateTime.now();
-        final hash = f.appProperties?['sha256'] ?? '';
+      return files.where((file) => file.id != null).map((file) {
+        final size = file.size == null ? 0 : int.tryParse(file.size!) ?? 0;
+        final created = file.createdTime ?? DateTime.now();
+        final hash = file.appProperties?['sha256'] ?? '';
         return BackupMeta(
-          id: f.id!,
-          name: f.name ?? 'backup.zip',
+          id: file.id!,
+          name: file.name ?? 'backup.zip',
           createdTime: created,
           sizeBytes: size,
           status: BackupStatus.success,
@@ -136,8 +136,8 @@ class GoogleDriveService {
           hash: hash,
         );
       }).toList();
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
@@ -161,8 +161,8 @@ class GoogleDriveService {
         $fields: 'id,name,size,createdTime,appProperties',
       ) as drive.File;
       return created;
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
@@ -193,8 +193,8 @@ class GoogleDriveService {
         await sink.close();
       }
       if (onProgress != null) onProgress(1.0);
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
@@ -211,8 +211,8 @@ class GoogleDriveService {
         bytes.addAll(chunk);
       }
       return Uint8List.fromList(bytes);
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
@@ -223,9 +223,9 @@ class GoogleDriveService {
       final about = await api.about.get(
         $fields: 'storageQuota',
       ) as drive.About;
-      final q = about.storageQuota;
-      final used = q?.usage == null ? 0 : int.tryParse(q!.usage!) ?? 0;
-      final limit = q?.limit == null ? null : int.tryParse(q!.limit!);
+      final storageQuota = about.storageQuota;
+      final used = storageQuota?.usage == null ? 0 : int.tryParse(storageQuota!.usage!) ?? 0;
+      final limit = storageQuota?.limit == null ? null : int.tryParse(storageQuota!.limit!);
       final available =
           limit == null ? null : (limit - used).clamp(0, limit);
       return StorageQuota(
@@ -233,41 +233,41 @@ class GoogleDriveService {
         totalBytes: limit,
         availableBytes: available,
       );
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
 
   Future<int> sumFolderSizes() async {
     final metas = await listBackupsInFolder();
-    return metas.fold<int>(0, (sum, m) => sum + m.sizeBytes);
+    return metas.fold<int>(0, (sum, backupMeta) => sum + backupMeta.sizeBytes);
   }
 
   Future<void> deleteFile(String fileId) async {
     final api = await _getDriveApi();
     try {
       await api.files.delete(fileId);
-    } catch (e) {
-      _handleDriveError(e);
+    } catch (caughtError) {
+      _handleDriveError(caughtError);
       rethrow;
     }
   }
 
-  bool _isNotFound(Object e) {
-    final msg = e.toString().toLowerCase();
+  bool _isNotFound(Object error) {
+    final msg = error.toString().toLowerCase();
     return msg.contains('404') || msg.contains('not found');
   }
 
-  void _handleDriveError(Object e) {
-    final msg = e.toString().toLowerCase();
+  void _handleDriveError(Object error) {
+    final msg = error.toString().toLowerCase();
     if (msg.contains('401') ||
         msg.contains('invalid_grant') ||
         msg.contains('unauthenticated')) {
-      throw AuthExpiredException('Authentication expired, please sign in again. $e');
+      throw AuthExpiredException('Authentication expired, please sign in again. $error');
     }
     if (msg.contains('404') && msg.contains('file not found')) {
-      throw NotFoundException('Drive file not found. $e');
+      throw NotFoundException('Drive file not found. $error');
     }
   }
 }

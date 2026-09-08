@@ -62,10 +62,10 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
     }
   }
 
-  Future<void> _resolveCustomerName(String id) async {
-    final customer = await ref.read(customerRepositoryProvider).getById(id);
+  Future<void> _resolveCustomerName(String customerId) async {
+    final customer = await ref.read(customerRepositoryProvider).getById(customerId);
     if (!mounted || customer == null) return;
-    if (_customerId != id) return;
+    if (_customerId != customerId) return;
     setState(() => _customerName = customer.name);
   }
 
@@ -100,7 +100,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
   }
 
   Money get _total {
-    return computeTotal(_items.map((e) => e.price));
+    return computeTotal(_items.map((debtItem) => debtItem.price));
   }
 
   Future<void> _pickDate({required bool due}) async {
@@ -220,21 +220,21 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               ...confirmedItems.map(
-                (e) => Padding(
+                (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Text(
-                          '${e.productName} \u00b7 ${_formatQuantity(e.quantity)} ${DebtItemUnits.displayNameForQuantity(e.unit, e.quantity)}',
+                          '${entry.productName} \u00b7 ${_formatQuantity(entry.quantity)} ${DebtItemUnits.displayNameForQuantity(entry.unit, entry.quantity)}',
                           style: Theme.of(dialogContext).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textPrimary),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        e.price.format(),
+                        entry.price.format(),
                         style: Theme.of(dialogContext).textTheme.bodySmall
                             ?.copyWith(
                               color: AppColors.textPrimary,
@@ -304,7 +304,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
       final repo = ref.read(debtRepositoryProvider);
       if (widget.isEditing) {
         await repo.update(
-          id: widget.debtId!,
+          debtId: widget.debtId!,
           transactionDate: _transactionDate,
           dueDate: _dueDate,
           notes: _notesController.text,
@@ -333,12 +333,12 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
         widget.isEditing ? 'Utang updated' : 'Utang recorded',
       );
       context.pop();
-    } on AppException catch (e) {
+    } on AppException catch (appException) {
       if (!mounted) return;
-      setState(() => _error = e.message);
-    } catch (e) {
+      setState(() => _error = appException.message);
+    } catch (caughtError) {
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(() => _error = caughtError.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -427,9 +427,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
           appBar: AppBar(title: const Text('Edit debt')),
           body: const LoadingIndicator(),
         ),
-        error: (e, _) => Scaffold(
+        error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit debt')),
-          body: Center(child: Text(e.toString())),
+          body: Center(child: Text(error.toString())),
         ),
         data: (data) {
           if (data == null) {
@@ -548,9 +548,9 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    for (var i = 0; i < _items.length; i++) ...[
+                    for (var index = 0; index < _items.length; index++) ...[
                       InkWell(
-                        onTap: () => _showItemDialog(index: i),
+                        onTap: () => _showItemDialog(index: index),
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -565,7 +565,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _items[i].productName,
+                                      _items[index].productName,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -575,7 +575,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                     ),
                                     const SizedBox(height: AppSpacing.xs),
                                     Text(
-                                      '${_formatQuantity(_items[i].quantity)} ${DebtItemUnits.displayNameForQuantity(_items[i].unit, _items[i].quantity)}',
+                                      '${_formatQuantity(_items[index].quantity)} ${DebtItemUnits.displayNameForQuantity(_items[index].unit, _items[index].quantity)}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
@@ -592,7 +592,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   MoneyText(
-                                    _items[i].price,
+                                    _items[index].price,
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodyLarge,
@@ -604,7 +604,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                                       size: 20,
                                       color: AppColors.textMuted,
                                     ),
-                                    onPressed: () => _showItemDialog(index: i),
+                                    onPressed: () => _showItemDialog(index: index),
                                     padding: const EdgeInsets.all(12),
                                     constraints: const BoxConstraints(
                                       minWidth: 44,
@@ -619,7 +619,7 @@ class _DebtFormPageState extends ConsumerState<DebtFormPage> {
                           ),
                         ),
                       ),
-                      if (i < _items.length - 1)
+                      if (index < _items.length - 1)
                         const Divider(
                           height: 1,
                           indent: AppSpacing.cardPadding,
@@ -1192,10 +1192,10 @@ class _CustomerPickerSheetState extends ConsumerState<_CustomerPickerSheet> {
         _customers = results;
         _loading = false;
       });
-    } catch (e) {
+    } catch (caughtError) {
       if (!mounted) return;
       setState(() {
-        _error = e;
+        _error = caughtError;
         _loading = false;
       });
     }

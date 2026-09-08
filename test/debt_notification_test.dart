@@ -46,15 +46,15 @@ void main() {
 }
 
 Debt _debt(
-  String id, {
+  String debtId, {
   DateTime? dueDate,
   DebtStatus status = DebtStatus.unpaid,
   Money? balance,
 }) {
   final date = DateTime(2026, 7, 1);
   return Debt(
-    id: id,
-    customerId: 'customer-$id',
+    id: debtId,
+    customerId: 'customer-$debtId',
     totalAmount: Money.fromPesos(100),
     paidAmount: Money.zero(),
     balance: balance ?? Money.fromPesos(100),
@@ -63,6 +63,6 @@ Debt _debt(
     dueDate: dueDate,
     createdAt: date,
     updatedAt: date,
-    customerName: 'Customer $id',
+    customerName: 'Customer $debtId',
   );
 }

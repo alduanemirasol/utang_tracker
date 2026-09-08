@@ -5,8 +5,8 @@ abstract class BackupRepository {
   Future<List<BackupMeta>> listBackups();
   Future<List<BackupMeta>> browseBackups();
   Future<BackupMeta> createBackup();
-  Future<void> restoreBackup(String id, {bool confirmed = false, void Function(double)? onProgress});
-  Future<void> deleteBackup(String id);
+  Future<void> restoreBackup(String backupId, {bool confirmed = false, void Function(double)? onProgress});
+  Future<void> deleteBackup(String backupId);
   Future<StorageQuota> getQuota();
   Future<bool> isLowStorage();
 }

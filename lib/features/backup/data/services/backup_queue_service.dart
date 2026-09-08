@@ -53,7 +53,7 @@ class BackupQueueService {
         return;
       }
     }
-    if (queue.any((e) => e.type == type && e.retryCount == 0)) {
+    if (queue.any((queueEntry) => queueEntry.type == type && queueEntry.retryCount == 0)) {
       return;
     }
     queue.add(BackupQueueEntry(type: type, timestamp: now, retryCount: 0));
@@ -73,35 +73,35 @@ class BackupQueueService {
   List<BackupQueueEntry> _deduplicate(List<BackupQueueEntry> entries) {
     final seen = <String>{};
     final result = <BackupQueueEntry>[];
-    for (final e in entries) {
-      final key = '${e.type}_${e.timestamp.millisecondsSinceEpoch}';
+    for (final entry in entries) {
+      final key = '${entry.type}_${entry.timestamp.millisecondsSinceEpoch}';
       if (seen.contains(key)) continue;
       seen.add(key);
-      result.add(e);
+      result.add(entry);
     }
     if (result.length > 20) return result.sublist(result.length - 20);
     return result;
   }
 
   Future<BackupQueueEntry?> peek() async {
-    final q = await loadQueue();
-    return q.isEmpty ? null : q.first;
+    final queue = await loadQueue();
+    return queue.isEmpty ? null : queue.first;
   }
 
   Future<void> dequeue() async {
-    final q = await loadQueue();
-    if (q.isEmpty) return;
-    q.removeAt(0);
-    await saveQueue(q);
+    final queue = await loadQueue();
+    if (queue.isEmpty) return;
+    queue.removeAt(0);
+    await saveQueue(queue);
   }
 
   Future<void> incrementRetry() async {
-    final q = await loadQueue();
-    if (q.isEmpty) return;
-    final entry = q.first;
+    final queue = await loadQueue();
+    if (queue.isEmpty) return;
+    final entry = queue.first;
     final nextCount = entry.retryCount + 1;
     if (nextCount >= 3) {
-      q.removeAt(0);
+      queue.removeAt(0);
       await _localDatasource.appendAuditLog(
         AuditLogEntry(
           timestamp: DateTime.now(),
@@ -112,9 +112,9 @@ class BackupQueueService {
         ),
       );
     } else {
-      q[0] = entry.copyWith(retryCount: nextCount);
+      queue[0] = entry.copyWith(retryCount: nextCount);
     }
-    await saveQueue(q);
+    await saveQueue(queue);
   }
 
   Duration backoffFor(int retryCount) {
@@ -153,12 +153,12 @@ class BackupQueueService {
   }
 
   Future<bool> hasQueued() async {
-    final q = await loadQueue();
-    return q.isNotEmpty;
+    final queue = await loadQueue();
+    return queue.isNotEmpty;
   }
 
   Future<int> queuedCount() async {
-    final q = await loadQueue();
-    return q.length;
+    final queue = await loadQueue();
+    return queue.length;
   }
 }

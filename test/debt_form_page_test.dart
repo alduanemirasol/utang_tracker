@@ -49,7 +49,7 @@ void main() {
         find.descendant(
           of: find.byType(AppModalBottomSheet),
           matching: find.byWidgetPredicate(
-            (w) => w is AppTextField && w.label == 'Product *',
+            (widget) => widget is AppTextField && widget.label == 'Product *',
           ),
         ),
         findsOneWidget,
@@ -58,7 +58,7 @@ void main() {
         find.descendant(
           of: find.byType(AppModalBottomSheet),
           matching: find.byWidgetPredicate(
-            (w) => w is AppTextField && w.label == 'Quantity *',
+            (widget) => widget is AppTextField && widget.label == 'Quantity *',
           ),
         ),
         findsOneWidget,
@@ -68,7 +68,7 @@ void main() {
         find.descendant(
           of: find.byType(AppModalBottomSheet),
           matching: find.byWidgetPredicate(
-            (w) => w is AppTextField && w.label == 'Price *',
+            (widget) => widget is AppTextField && widget.label == 'Price *',
           ),
         ),
         findsOneWidget,
@@ -77,13 +77,13 @@ void main() {
       expect(find.text('piece'), findsOneWidget);
 
       final productField = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Product *',
+        (widget) => widget is AppTextField && widget.label == 'Product *',
       );
       final quantityField = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Quantity *',
+        (widget) => widget is AppTextField && widget.label == 'Quantity *',
       );
       final priceField = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Price *',
+        (widget) => widget is AppTextField && widget.label == 'Price *',
       );
 
       await tester.enterText(
@@ -117,13 +117,13 @@ void main() {
       expect(find.byType(AppModalBottomSheet), findsOneWidget);
 
       final productField2 = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Product *',
+        (widget) => widget is AppTextField && widget.label == 'Product *',
       );
       final quantityField2 = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Quantity *',
+        (widget) => widget is AppTextField && widget.label == 'Quantity *',
       );
       final priceField2 = find.byWidgetPredicate(
-        (w) => w is AppTextField && w.label == 'Price *',
+        (widget) => widget is AppTextField && widget.label == 'Price *',
       );
 
       await tester.enterText(
@@ -224,7 +224,7 @@ void main() {
     final dialog = find.descendant(
       of: find.byType(AlertDialog),
       matching: find.byWidgetPredicate(
-        (widget) => widget is Material && widget.type == MaterialType.card,
+        (candidateWidget) => candidateWidget is Material && candidateWidget.type == MaterialType.card,
       ),
     );
     final dialogSize = tester.getSize(dialog);
@@ -246,11 +246,11 @@ void main() {
     expect(find.text('No items'), findsOneWidget);
     expect(find.text('Bugas'), findsNothing);
 
-    expect(find.byWidgetPredicate((w) {
-      if (w is Text) {
-        return w.data != null && w.data!.contains('Items');
+    expect(find.byWidgetPredicate((candidateWidget) {
+      if (candidateWidget is Text) {
+        return candidateWidget.data != null && candidateWidget.data!.contains('Items');
       }
-      if (w is TextSpan) return false;
+      if (candidateWidget is TextSpan) return false;
 
       return false;
     }), findsNothing);
@@ -264,21 +264,21 @@ void main() {
 
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Product *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Product *'),
         matching: find.byType(TextField),
       ),
       'Bugas',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Quantity *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Quantity *'),
         matching: find.byType(TextField),
       ),
       '2',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Price *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Price *'),
         matching: find.byType(TextField),
       ),
       '10.00',
@@ -298,21 +298,21 @@ void main() {
 
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Product *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Product *'),
         matching: find.byType(TextField),
       ),
       'Kape',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Quantity *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Quantity *'),
         matching: find.byType(TextField),
       ),
       '1',
     );
     await tester.enterText(
       find.descendant(
-        of: find.byWidgetPredicate((w) => w is AppTextField && w.label == 'Price *'),
+        of: find.byWidgetPredicate((widget) => widget is AppTextField && widget.label == 'Price *'),
         matching: find.byType(TextField),
       ),
       '5.00',

@@ -53,8 +53,8 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
     });
     try {
       final repo = ref.read(backupRepositoryProvider);
-      await repo.restoreBackup(meta.id, confirmed: true, onProgress: (p) {
-        if (mounted) setState(() => _progress = p);
+      await repo.restoreBackup(meta.id, confirmed: true, onProgress: (progress) {
+        if (mounted) setState(() => _progress = progress);
       });
       if (mounted) {
         invalidateBusinessData(ref);
@@ -62,8 +62,8 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         ref.invalidate(backupAuditLogProvider);
         AppSnackBar.success(context, 'Backup restored successfully!');
       }
-    } catch (e) {
-      final msg = BackupErrorMapper.toTaglish(e);
+    } catch (caughtError) {
+      final msg = BackupErrorMapper.toTaglish(caughtError);
       if (mounted) AppSnackBar.error(context, msg);
     } finally {
       if (mounted) {
@@ -172,7 +172,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...metas.map((m) => Padding(
+            ...metas.map((backupMeta) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: AppCard(
                 child: Padding(
@@ -198,14 +198,14 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              m.name,
+                              backupMeta.name,
                               style: Theme.of(context).textTheme.bodyMedium,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${DateFormatters.backupDisplay(m.createdTime)} • ${_formatBytes(m.sizeBytes)}',
+                              '${DateFormatters.backupDisplay(backupMeta.createdTime)} • ${_formatBytes(backupMeta.sizeBytes)}',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -214,7 +214,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      _buildRestoreButton(m),
+                      _buildRestoreButton(backupMeta),
                     ],
                   ),
                 ),
@@ -227,7 +227,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         padding: EdgeInsets.all(AppSpacing.lg),
         child: LinearProgressIndicator(),
       ),
-      error: (e, _) => AppCard(
+      error: (error, stackTrace) => AppCard(
         color: AppColors.unpaidBg,
         borderColor: AppColors.unpaid.withValues(alpha: 0.3),
         child: Padding(
@@ -243,7 +243,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                BackupErrorMapper.toTaglish(e),
+                BackupErrorMapper.toTaglish(error),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -259,12 +259,12 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
     );
   }
 
-  Widget _buildRestoreButton(BackupMeta m) {
-    final isActive = _activeId == m.id && _isRestoring;
+  Widget _buildRestoreButton(BackupMeta backupMeta) {
+    final isActive = _activeId == backupMeta.id && _isRestoring;
     return SizedBox(
       height: AppSpacing.minTapTarget,
       child: OutlinedButton(
-        onPressed: _isRestoring ? null : () => _restore(m),
+        onPressed: _isRestoring ? null : () => _restore(backupMeta),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           side: const BorderSide(color: AppColors.outline),
@@ -302,7 +302,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...entries.map((e) => Padding(
+            ...entries.map((backupEntry) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: AppCard(
                 child: ListTile(
@@ -311,20 +311,20 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                     vertical: AppSpacing.xs,
                   ),
                   leading: Icon(
-                    e.status == BackupStatus.success
+                    backupEntry.status == BackupStatus.success
                         ? Icons.check_circle_rounded
                         : Icons.error_rounded,
-                    color: e.status == BackupStatus.success
+                    color: backupEntry.status == BackupStatus.success
                         ? AppColors.paid
                         : AppColors.unpaid,
                     size: 22,
                   ),
                   title: Text(
-                    e.backupName,
+                    backupEntry.backupName,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
-                    '${DateFormatters.backupDisplay(e.createdTime)} • ${_formatBytes(e.sizeBytes)}',
+                    '${DateFormatters.backupDisplay(backupEntry.createdTime)} • ${_formatBytes(backupEntry.sizeBytes)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -336,7 +336,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (e, _) => const SizedBox.shrink(),
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 }

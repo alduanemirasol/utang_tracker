@@ -55,15 +55,15 @@ void main() {
 }
 
 Debt _debt(
-  String id, {
+  String debtId, {
   DateTime? dueDate,
   DebtStatus status = DebtStatus.unpaid,
   Money? balance,
 }) {
   final date = DateTime(2026, 7, 1);
   return Debt(
-    id: id,
-    customerId: 'customer-$id',
+    id: debtId,
+    customerId: 'customer-$debtId',
     totalAmount: Money.fromPesos(100),
     paidAmount: Money.zero(),
     balance: balance ?? Money.fromPesos(100),
@@ -90,7 +90,7 @@ class _FakeDebtRepository implements DebtRepository {
       throw UnimplementedError();
 
   @override
-  Future<DebtDetail?> getById(String id) async => throw UnimplementedError();
+  Future<DebtDetail?> getById(String debtId) async => throw UnimplementedError();
 
   @override
   Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status}) async =>
@@ -107,7 +107,7 @@ class _FakeDebtRepository implements DebtRepository {
 
   @override
   Future<Debt> update({
-    required String id,
+    required String debtId,
     required DateTime transactionDate,
     DateTime? dueDate,
     String? notes,

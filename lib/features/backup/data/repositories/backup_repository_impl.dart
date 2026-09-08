@@ -72,9 +72,9 @@ class BackupRepositoryImpl implements BackupRepository {
   Future<List<BackupMeta>> browseBackups() async {
     try {
       return await _driveOrCreate.listBackupsInFolder();
-    } catch (e) {
-      if (e is AppException) rethrow;
-      throw BackupException('Failed to list backups: $e');
+    } catch (caughtError) {
+      if (caughtError is AppException) rethrow;
+      throw BackupException('Failed to list backups: $caughtError');
     }
   }
 
@@ -125,11 +125,11 @@ class BackupRepositoryImpl implements BackupRepository {
     final hash = sha256.convert(zipBytes).toString();
 
     final existing = await _driveOrCreate.listBackupsInFolder();
-    for (final m in existing) {
-      if (m.name == name) {
+    for (final existingMeta in existing) {
+      if (existingMeta.name == name) {
         throw DuplicateBackupException('Backup with same name already exists: $name');
       }
-      if (m.hash.isNotEmpty && m.hash == hash) {
+      if (existingMeta.hash.isNotEmpty && existingMeta.hash == hash) {
         throw DuplicateBackupException('Backup with same content already exists.');
       }
     }
@@ -137,7 +137,7 @@ class BackupRepositoryImpl implements BackupRepository {
     final prefs = await _getPrefs();
     final lastHash = prefs.getString(BackupPrefsKeys.lastBackupHash);
     if (lastHash != null && lastHash == hash) {
-      final existingHashMatch = existing.any((e) => e.hash == hash);
+      final existingHashMatch = existing.any((entry) => entry.hash == hash);
       if (existingHashMatch) {
         throw DuplicateBackupException('Duplicate backup detected by hash.');
       }
@@ -149,10 +149,10 @@ class BackupRepositoryImpl implements BackupRepository {
       try {
         uploaded = await _driveOrCreate.uploadFile(zipFile, name, folderId, hash);
         break;
-      } catch (e) {
-        final msg = e.toString().toLowerCase();
+      } catch (caughtError) {
+        final msg = caughtError.toString().toLowerCase();
         if (msg.contains('401') || msg.contains('invalid_grant')) {
-          throw AuthExpiredException('Authentication expired, please sign in again. $e');
+          throw AuthExpiredException('Authentication expired, please sign in again. $caughtError');
         }
         attempts++;
         if (attempts >= 3) rethrow;
@@ -218,7 +218,7 @@ class BackupRepositoryImpl implements BackupRepository {
   }
 
   @override
-  Future<void> restoreBackup(String id,
+  Future<void> restoreBackup(String backupId,
       {bool confirmed = false, void Function(double)? onProgress}) async {
     if (!confirmed) {
       throw const ValidationException('Restore requires confirmation.');
@@ -234,10 +234,10 @@ class BackupRepositoryImpl implements BackupRepository {
 
     final tmpDir = await _tempDir();
     await tmpDir.create(recursive: true);
-    final zipDest = File(p.join(tmpDir.path, 'restore_$id.zip'));
+    final zipDest = File(p.join(tmpDir.path, 'restore_$backupId.zip'));
     if (await zipDest.exists()) await zipDest.delete();
 
-    await _driveOrCreate.downloadFile(id, zipDest, onProgress: onProgress);
+    await _driveOrCreate.downloadFile(backupId, zipDest, onProgress: onProgress);
 
     final zipBytes = await zipDest.readAsBytes();
     if (zipBytes.isEmpty) {
@@ -246,7 +246,7 @@ class BackupRepositoryImpl implements BackupRepository {
     final downloadedHash = sha256.convert(zipBytes).toString();
 
     final metas = await _driveOrCreate.listBackupsInFolder();
-    final meta = metas.where((m) => m.id == id).firstOrNull;
+    final meta = metas.where((backupMeta) => backupMeta.id == backupId).firstOrNull;
     if (meta != null && meta.hash.isNotEmpty && meta.hash != downloadedHash) {
       throw IntegrityException('Hash mismatch: expected ${meta.hash} got $downloadedHash');
     }
@@ -256,7 +256,7 @@ class BackupRepositoryImpl implements BackupRepository {
       throw const IntegrityException('Backup zip is empty.');
     }
     final entry = archive.files.firstWhere(
-      (f) => f.name.endsWith('.sqlite') || f.name.contains('utang'),
+      (archiveFile) => archiveFile.name.endsWith('.sqlite') || archiveFile.name.contains('utang'),
       orElse: () => archive.files.first,
     );
     final sqliteBytes = entry.content as List<int>;
@@ -267,7 +267,7 @@ class BackupRepositoryImpl implements BackupRepository {
       throw const IntegrityException('Invalid SQLite header.');
     }
 
-    final extracted = File(p.join(tmpDir.path, 'restored_$id.sqlite'));
+    final extracted = File(p.join(tmpDir.path, 'restored_$backupId.sqlite'));
     await extracted.writeAsBytes(sqliteBytes);
     if (await extracted.length() == 0) {
       throw const IntegrityException('Extracted file size is 0.');
@@ -296,13 +296,13 @@ class BackupRepositoryImpl implements BackupRepository {
       await _deleteSidecars(live);
       await _pragmaIntegrityCheck(live);
       await _verifyDriftCanOpen(live);
-    } catch (e) {
+    } catch (caughtError) {
       try {
         if (await live.exists()) await live.delete();
         await preRestore.copy(live.path);
         await _deleteSidecars(live);
       } catch (_) {}
-      throw BackupException('Restore failed and rolled back: $e');
+      throw BackupException('Restore failed and rolled back: $caughtError');
     } finally {
       try {
         await zipDest.delete();
@@ -320,14 +320,14 @@ class BackupRepositoryImpl implements BackupRepository {
       AuditLogEntry(
         timestamp: now,
         action: AuditAction.restore,
-        backupName: meta?.name ?? id,
+        backupName: meta?.name ?? backupId,
         status: BackupStatus.success,
       ),
     );
     await _localDatasource.appendHistory(
       BackupHistoryEntry(
-        id: id,
-        backupName: meta?.name ?? id,
+        id: backupId,
+        backupName: meta?.name ?? backupId,
         createdTime: now,
         sizeBytes: sqliteBytes.length,
         status: BackupStatus.success,
@@ -338,27 +338,27 @@ class BackupRepositoryImpl implements BackupRepository {
   }
 
   @override
-  Future<void> deleteBackup(String id) async {
+  Future<void> deleteBackup(String backupId) async {
     await _authOrCreate.getAuthHeaders();
     await _driveOrCreate.ensureFolderId();
     try {
-      await _driveOrCreate.deleteFile(id);
+      await _driveOrCreate.deleteFile(backupId);
       await _localDatasource.appendAuditLog(
         AuditLogEntry(
           timestamp: DateTime.now(),
           action: AuditAction.deletion,
-          backupName: id,
+          backupName: backupId,
           status: BackupStatus.success,
         ),
       );
-    } catch (e) {
+    } catch (caughtError) {
       await _localDatasource.appendAuditLog(
         AuditLogEntry(
           timestamp: DateTime.now(),
           action: AuditAction.failure,
-          backupName: id,
+          backupName: backupId,
           status: BackupStatus.failed,
-          error: e.toString(),
+          error: caughtError.toString(),
         ),
       );
       rethrow;
@@ -430,8 +430,8 @@ class BackupRepositoryImpl implements BackupRepository {
     if (bytes.length < 16) return false;
     const header = 'SQLite format 3\x00';
     final headerBytes = utf8.encode(header);
-    for (int i = 0; i < headerBytes.length; i++) {
-      if (bytes[i] != headerBytes[i]) return false;
+    for (int byteIndex = 0; byteIndex < headerBytes.length; byteIndex++) {
+      if (bytes[byteIndex] != headerBytes[byteIndex]) return false;
     }
     return true;
   }
@@ -447,27 +447,27 @@ class BackupRepositoryImpl implements BackupRepository {
       if (raw.select('PRAGMA foreign_key_check').isNotEmpty) {
         throw const IntegrityException('Foreign key check failed.');
       }
-    } catch (e) {
-      if (e is IntegrityException) rethrow;
-      throw IntegrityException('Integrity check failed: $e');
+    } catch (caughtError) {
+      if (caughtError is IntegrityException) rethrow;
+      throw IntegrityException('Integrity check failed: $caughtError');
     } finally {
       // ignore: deprecated_member_use
       raw?.dispose();
     }
-    final db = AppDatabase(NativeDatabase(file));
+    final appDatabase = AppDatabase(NativeDatabase(file));
     try {
-      await db.customSelect('SELECT 1').get();
+      await appDatabase.customSelect('SELECT 1').get();
     } finally {
-      await db.close();
+      await appDatabase.close();
     }
   }
 
   Future<void> _verifyDriftCanOpen(File file) async {
-    final db = AppDatabase(NativeDatabase(file));
+    final appDatabase = AppDatabase(NativeDatabase(file));
     try {
-      await db.customSelect('SELECT 1').get();
+      await appDatabase.customSelect('SELECT 1').get();
     } finally {
-      await db.close();
+      await appDatabase.close();
     }
   }
 
@@ -478,7 +478,7 @@ class BackupRepositoryImpl implements BackupRepository {
         if (await dst.exists()) await dst.delete();
         await src.copy(dst.path);
         return;
-      } catch (e) {
+      } catch (caughtError) {
         attempts++;
         if (attempts >= 3) rethrow;
         await Future.delayed(Duration(milliseconds: 200 * attempts));
@@ -488,10 +488,10 @@ class BackupRepositoryImpl implements BackupRepository {
 
   Future<void> _deleteSidecars(File db) async {
     for (final suffix in ['-wal', '-shm']) {
-      final f = File('${db.path}$suffix');
-      if (await f.exists()) {
+      final sidecarFile = File('${db.path}$suffix');
+      if (await sidecarFile.exists()) {
         try {
-          await f.delete();
+          await sidecarFile.delete();
         } catch (_) {}
       }
     }
@@ -516,7 +516,7 @@ class BackupRepositoryImpl implements BackupRepository {
     final raw = prefs.getString(BackupPrefsKeys.queue);
     final queue = raw == null || raw.isEmpty ? <BackupQueueEntry>[] : BackupQueueEntry.decodeList(raw);
     if (queue.length < 20) {
-      final exists = queue.any((e) => e.type == 'manual' && e.retryCount == 0);
+      final exists = queue.any((queueEntry) => queueEntry.type == 'manual' && queueEntry.retryCount == 0);
       if (!exists) {
         queue.add(BackupQueueEntry(type: 'manual', timestamp: DateTime.now().toUtc(), retryCount: 0));
         await prefs.setString(BackupPrefsKeys.queue, BackupQueueEntry.encodeList(queue));

@@ -22,8 +22,8 @@ class GoogleAuthDatasource {
   Future<GoogleSignInAccount?> silentSignIn() async {
     try {
       return await _googleSignIn.signInSilently();
-    } catch (e) {
-      _handleAuthError(e);
+    } catch (caughtError) {
+      _handleAuthError(caughtError);
       rethrow;
     }
   }
@@ -31,8 +31,8 @@ class GoogleAuthDatasource {
   Future<GoogleSignInAccount?> signIn() async {
     try {
       return await _googleSignIn.signIn();
-    } catch (e) {
-      _handleAuthError(e);
+    } catch (caughtError) {
+      _handleAuthError(caughtError);
       rethrow;
     }
   }
@@ -40,8 +40,8 @@ class GoogleAuthDatasource {
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();
-    } catch (e) {
-      _handleAuthError(e);
+    } catch (caughtError) {
+      _handleAuthError(caughtError);
       rethrow;
     }
   }
@@ -59,8 +59,8 @@ class GoogleAuthDatasource {
             'Authentication expired, please sign in again.');
       }
       return headers;
-    } catch (e) {
-      _handleAuthError(e);
+    } catch (caughtError) {
+      _handleAuthError(caughtError);
       rethrow;
     }
   }

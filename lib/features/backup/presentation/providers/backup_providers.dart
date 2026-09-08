@@ -72,16 +72,16 @@ final backupAutoEnabledProvider = Provider<bool>((ref) {
 
 final backupLastSuccessfulProvider = FutureProvider<DateTime?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
-  final ms = prefs.getInt(BackupPrefsKeys.lastBackupTime);
-  if (ms == null) return null;
-  return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+  final milliseconds = prefs.getInt(BackupPrefsKeys.lastBackupTime);
+  if (milliseconds == null) return null;
+  return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
 });
 
 final backupNextScheduledProvider = FutureProvider<DateTime?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
-  final ms = prefs.getInt(BackupPrefsKeys.nextScheduledTime);
-  if (ms != null) {
-    return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+  final milliseconds = prefs.getInt(BackupPrefsKeys.nextScheduledTime);
+  if (milliseconds != null) {
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
   }
   final lastMs = prefs.getInt(BackupPrefsKeys.lastBackupTime);
   final interval = BackupIntervalX.fromName(prefs.getString(BackupPrefsKeys.interval));
@@ -126,8 +126,8 @@ final backupConnectionDetailsProvider = FutureProvider<BackupConnectionDetails>(
     await auth.getAuthHeaders();
     final email = auth.currentUser?.email ?? 'Signed in';
     return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: email);
-  } catch (e) {
-    final msg = e.toString().toLowerCase();
+  } catch (caughtError) {
+    final msg = caughtError.toString().toLowerCase();
     if (msg.contains('auth') || msg.contains('401')) {
       return const BackupConnectionDetails(status: BackupConnectionStatus.expired);
     }
@@ -171,15 +171,15 @@ class BackupAutoStatus {
 }
 
 final formattedLastBackupProvider = FutureProvider<String?>((ref) async {
-  final dt = await ref.watch(backupLastSuccessfulProvider.future);
-  if (dt == null) return null;
-  return DateFormatters.backupDisplay(dt);
+  final selectedDate = await ref.watch(backupLastSuccessfulProvider.future);
+  if (selectedDate == null) return null;
+  return DateFormatters.backupDisplay(selectedDate);
 });
 
 final formattedNextBackupProvider = FutureProvider<String?>((ref) async {
-  final dt = await ref.watch(backupNextScheduledProvider.future);
-  if (dt == null) return null;
-  return DateFormatters.backupDisplay(dt);
+  final selectedDate = await ref.watch(backupNextScheduledProvider.future);
+  if (selectedDate == null) return null;
+  return DateFormatters.backupDisplay(selectedDate);
 });
 
 final connectivityStatusProvider = StreamProvider<List<ConnectivityResult>>((ref) {

@@ -40,8 +40,8 @@ void callbackDispatcher() {
           await prefs.setString(BackupPrefsKeys.queue, BackupQueueEntry.encodeList(queue));
         }
         await prefs.setString(BackupPrefsKeys.lastError, 'Google sign-in expired. Please sign in again.');
-        final ds = BackupLocalDatasource(prefs: prefs);
-        await ds.appendAuditLog(AuditLogEntry(
+        final dataSource = BackupLocalDatasource(prefs: prefs);
+        await dataSource.appendAuditLog(AuditLogEntry(
           timestamp: DateTime.now(),
           action: AuditAction.failure,
           backupName: 'auto',
@@ -86,7 +86,7 @@ void callbackDispatcher() {
       }
 
       final existing = await drive.listBackupsInFolder();
-      final duplicate = existing.any((m) => m.hash.isNotEmpty && m.hash == hash);
+      final duplicate = existing.any((backupMeta) => backupMeta.hash.isNotEmpty && backupMeta.hash == hash);
       if (duplicate) {
         await prefs.setString(BackupPrefsKeys.lastError, 'Duplicate backup found. Upload skipped.');
         try { await tempDb.delete(); } catch (_) {}
@@ -106,8 +106,8 @@ void callbackDispatcher() {
       await prefs.remove(BackupPrefsKeys.lastError);
       await prefs.remove(BackupPrefsKeys.queuedBackup);
 
-      final ds = BackupLocalDatasource(prefs: prefs);
-      await ds.appendHistory(BackupHistoryEntry(
+      final dataSource = BackupLocalDatasource(prefs: prefs);
+      await dataSource.appendHistory(BackupHistoryEntry(
         id: uploaded.id ?? name,
         backupName: name,
         createdTime: now,
@@ -116,7 +116,7 @@ void callbackDispatcher() {
         source: BackupSource.auto,
         hash: hash,
       ));
-      await ds.appendAuditLog(AuditLogEntry(
+      await dataSource.appendAuditLog(AuditLogEntry(
         timestamp: now,
         action: AuditAction.backup,
         backupName: name,
@@ -126,13 +126,13 @@ void callbackDispatcher() {
       try { await tempDb.delete(); } catch (_) {}
       try { await zipFile.delete(); } catch (_) {}
       return true;
-    } catch (e) {
+    } catch (caughtError) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final msg = e.toString();
+        final msg = caughtError.toString();
         await prefs.setString(BackupPrefsKeys.lastError, msg);
-        final ds = BackupLocalDatasource(prefs: prefs);
-        await ds.appendAuditLog(AuditLogEntry(
+        final dataSource = BackupLocalDatasource(prefs: prefs);
+        await dataSource.appendAuditLog(AuditLogEntry(
           timestamp: DateTime.now(),
           action: AuditAction.failure,
           backupName: 'auto',

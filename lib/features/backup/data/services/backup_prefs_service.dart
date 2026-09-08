@@ -18,20 +18,20 @@ class BackupPrefsService {
   bool get autoBackupEnabled => interval != BackupInterval.off;
 
   DateTime? get lastSuccessfulUtc {
-    final ms = _prefs.getInt(BackupPrefsKeys.lastBackupTime);
-    if (ms == null) return null;
-    return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+    final milliseconds = _prefs.getInt(BackupPrefsKeys.lastBackupTime);
+    if (milliseconds == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
   }
 
   DateTime? get nextScheduledUtc {
-    final ms = _prefs.getInt(BackupPrefsKeys.nextScheduledTime);
-    if (ms == null) {
+    final milliseconds = _prefs.getInt(BackupPrefsKeys.nextScheduledTime);
+    if (milliseconds == null) {
       final last = lastSuccessfulUtc;
       final dur = interval.duration;
       if (last == null || dur == null) return null;
       return last.add(dur);
     }
-    return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+    return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
   }
 
   Future<void> updateLastSuccessful(DateTime utcNow) async {

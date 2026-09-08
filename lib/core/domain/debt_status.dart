@@ -9,7 +9,7 @@ enum DebtStatus {
 
   static DebtStatus fromValue(String value) {
     return DebtStatus.values.firstWhere(
-      (s) => s.value == value,
+      (status) => status.value == value,
       orElse: () => DebtStatus.unpaid,
     );
   }

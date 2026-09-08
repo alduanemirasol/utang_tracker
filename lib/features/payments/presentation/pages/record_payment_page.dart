@@ -78,10 +78,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
     if (await confirmDiscardChanges(context) && mounted) context.pop();
   }
 
-  Future<void> _resolveInitialDebt(String id) async {
+  Future<void> _resolveInitialDebt(String debtId) async {
     setState(() => _resolvingInitial = true);
     try {
-      final detail = await ref.read(debtRepositoryProvider).getById(id);
+      final detail = await ref.read(debtRepositoryProvider).getById(debtId);
       if (!mounted || detail == null) return;
       final debt = detail.debt;
       if (debt.status == DebtStatus.paid) {
@@ -191,12 +191,12 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
       _isDirty = false;
       AppSnackBar.success(context, 'Bayad recorded');
       context.pop();
-    } on AppException catch (e) {
+    } on AppException catch (appException) {
       if (!mounted) return;
-      setState(() => _error = e.message);
-    } catch (e) {
+      setState(() => _error = appException.message);
+    } catch (caughtError) {
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(() => _error = caughtError.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -300,11 +300,11 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               initialValue: _method,
               style: AppTextField.inputStyle(context),
               items: AppConstants.paymentMethods
-                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .map((method) => DropdownMenuItem(value: method, child: Text(method)))
                   .toList(),
-              onChanged: (v) {
-                if (v != null) {
-                  setState(() => _method = v);
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _method = value);
                   _markDirty();
                 }
               },
@@ -384,7 +384,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               children: [
                 Checkbox(
                   value: _confirmed,
-                  onChanged: (v) => setState(() => _confirmed = v ?? false),
+                  onChanged: (value) => setState(() => _confirmed = value ?? false),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -480,14 +480,14 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
       final unpaid = await repo.getAll(status: DebtStatus.unpaid);
       final partial = await repo.getAll(status: DebtStatus.partial);
       final open = [...unpaid, ...partial]
-        ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+        ..sort((first, second) => second.transactionDate.compareTo(first.transactionDate));
 
       final trimmed = query.trim().toLowerCase();
       final filtered = trimmed.isEmpty
           ? open
           : open
                 .where(
-                  (d) => (d.customerName ?? '').toLowerCase().contains(trimmed),
+                  (debt) => (debt.customerName ?? '').toLowerCase().contains(trimmed),
                 )
                 .toList();
 
@@ -496,10 +496,10 @@ class _DebtPickerSheetState extends ConsumerState<_DebtPickerSheet> {
         _debts = filtered;
         _loading = false;
       });
-    } catch (e) {
+    } catch (caughtError) {
       if (!mounted) return;
       setState(() {
-        _error = e;
+        _error = caughtError;
         _loading = false;
       });
     }

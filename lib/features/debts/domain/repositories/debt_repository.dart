@@ -12,7 +12,7 @@ class DebtDetail {
 abstract class DebtRepository {
   Future<List<Debt>> getAll({DebtStatus? status});
   Future<List<Debt>> getByCustomer(String customerId);
-  Future<DebtDetail?> getById(String id);
+  Future<DebtDetail?> getById(String debtId);
   Future<List<Debt>> getRecent({int limit = 5, DebtStatus? status});
   Future<Debt> create({
     required String customerId,
@@ -22,7 +22,7 @@ abstract class DebtRepository {
     required List<DebtItemInput> items,
   });
   Future<Debt> update({
-    required String id,
+    required String debtId,
     required DateTime transactionDate,
     DateTime? dueDate,
     String? notes,

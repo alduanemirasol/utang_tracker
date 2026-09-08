@@ -108,15 +108,15 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         widget.isEditing ? 'Customer updated' : 'Customer added',
       );
       context.pop();
-    } on ConflictException catch (e) {
+    } on ConflictException catch (conflictException) {
       if (!mounted) return;
-      setState(() => _nameError = e.message);
-    } on AppException catch (e) {
+      setState(() => _nameError = conflictException.message);
+    } on AppException catch (appException) {
       if (!mounted) return;
-      AppSnackBar.error(context, e.message);
-    } catch (e) {
+      AppSnackBar.error(context, appException.message);
+    } catch (caughtError) {
       if (!mounted) return;
-      AppSnackBar.error(context, e.toString());
+      AppSnackBar.error(context, caughtError.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -131,9 +131,9 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
           appBar: AppBar(title: const Text('Edit customer')),
           body: const LoadingIndicator(),
         ),
-        error: (e, _) => Scaffold(
+        error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: const Text('Edit customer')),
-          body: Center(child: Text(e.toString())),
+          body: Center(child: Text(error.toString())),
         ),
         data: (data) {
           if (data == null) {

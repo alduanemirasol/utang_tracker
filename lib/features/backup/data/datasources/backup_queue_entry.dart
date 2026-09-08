@@ -34,13 +34,13 @@ class BackupQueueEntry {
       );
 
   static String encodeList(List<BackupQueueEntry> entries) =>
-      jsonEncode(entries.map((e) => e.toJson()).toList());
+      jsonEncode(entries.map((queueEntry) => queueEntry.toJson()).toList());
 
   static List<BackupQueueEntry> decodeList(String raw) {
     if (raw.isEmpty) return [];
     final decoded = jsonDecode(raw) as List<dynamic>;
     return decoded
-        .map((e) => BackupQueueEntry.fromJson(e as Map<String, dynamic>))
+        .map((jsonEntry) => BackupQueueEntry.fromJson(jsonEntry as Map<String, dynamic>))
         .toList();
   }
 }

@@ -64,8 +64,8 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         try {
           await repo.createBackup();
           break;
-        } catch (e) {
-          final msg = e.toString().toLowerCase();
+        } catch (caughtError) {
+          final msg = caughtError.toString().toLowerCase();
           if (msg.contains('network') || msg.contains('socket')) {
             attempts++;
             if (attempts >= 3) rethrow;
@@ -88,17 +88,17 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       ref.invalidate(backupLastErrorProvider);
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(BackupPrefsKeys.lastError);
-    } catch (e) {
-      final msg = BackupErrorMapper.toTaglish(e);
+    } catch (caughtError) {
+      final msg = BackupErrorMapper.toTaglish(caughtError);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(BackupPrefsKeys.lastError, e.toString());
+      await prefs.setString(BackupPrefsKeys.lastError, caughtError.toString());
       ref.invalidate(backupLastErrorProvider);
-      if (e.toString().toLowerCase().contains('duplicate')) {
+      if (caughtError.toString().toLowerCase().contains('duplicate')) {
         if (mounted) AppSnackBar.info(context, msg);
       } else {
         if (mounted) AppSnackBar.error(context, msg);
       }
-      if (e.toString().toLowerCase().contains('network')) {
+      if (caughtError.toString().toLowerCase().contains('network')) {
         final queue = BackupQueueService();
         await queue.enqueue('manual');
         ref.invalidate(backupQueueCountProvider);
@@ -268,7 +268,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         );
       },
       loading: () => const LinearProgressIndicator(),
-      error: (e, _) => Text('Error: $e'),
+      error: (error, stackTrace) => Text('Error: $error'),
     );
   }
 
@@ -306,10 +306,10 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               ),
             ),
             items: BackupInterval.values
-                .map((e) => DropdownMenuItem(value: e, child: Text(e.label)))
+                .map((interval) => DropdownMenuItem(value: interval, child: Text(interval.label)))
                 .toList(),
-            onChanged: (v) {
-              if (v != null) _handleIntervalChange(v);
+            onChanged: (value) {
+              if (value != null) _handleIntervalChange(value);
             },
           ),
           if (interval != BackupInterval.off) ...[
@@ -317,21 +317,21 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
             const Divider(),
             const SizedBox(height: AppSpacing.sm),
             lastBackup.when(
-              data: (dt) => _buildInfoRow(
+              data: (selectedDate) => _buildInfoRow(
                 'Last backup',
-                dt == null ? 'No backups yet' : DateFormatters.backupDisplay(dt),
+                selectedDate == null ? 'No backups yet' : DateFormatters.backupDisplay(selectedDate),
               ),
               loading: () => const SizedBox.shrink(),
-              error: (e, _) => Text('Error: $e'),
+              error: (error, stackTrace) => Text('Error: $error'),
             ),
             const SizedBox(height: AppSpacing.xs),
             nextBackup.when(
-              data: (dt) => _buildInfoRow(
+              data: (selectedDate) => _buildInfoRow(
                 'Next backup',
-                dt == null ? '--' : DateFormatters.backupDisplay(dt),
+                selectedDate == null ? '--' : DateFormatters.backupDisplay(selectedDate),
               ),
               loading: () => const SizedBox.shrink(),
-              error: (e, _) => Text('Error: $e'),
+              error: (error, stackTrace) => Text('Error: $error'),
             ),
           ],
         ],
@@ -395,7 +395,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (e, _) => const SizedBox.shrink(),
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 
@@ -421,14 +421,14 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: queueCount.when(
-                    data: (c) => Text(
-                      '$c backup(s) queued',
+                    data: (count) => Text(
+                      '$count backup(s) queued',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.partial,
                       ),
                     ),
                     loading: () => const Text('Backup queued'),
-                    error: (e, _) => const Text('Backup queued'),
+                    error: (error, stackTrace) => const Text('Backup queued'),
                   ),
                 ),
               ],
@@ -437,7 +437,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (e, _) => const SizedBox.shrink(),
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 
@@ -446,10 +446,10 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
     AsyncValue<bool> isLow,
   ) {
     return quota.when(
-      data: (q) {
-        final used = q.usedBytes;
-        final total = q.totalBytes;
-        final available = q.availableBytes;
+      data: (storageQuota) {
+        final used = storageQuota.usedBytes;
+        final total = storageQuota.totalBytes;
+        final available = storageQuota.availableBytes;
         final double pct =
             total != null && total > 0 ? (used / total).clamp(0, 1).toDouble() : 0;
         return AppCard(
@@ -524,7 +524,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                       )
                     : const SizedBox.shrink(),
                 loading: () => const SizedBox.shrink(),
-                error: (e, _) => const SizedBox.shrink(),
+                error: (error, stackTrace) => const SizedBox.shrink(),
               ),
             ],
           ),
@@ -533,9 +533,9 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       loading: () => const AppCard(
         child: LinearProgressIndicator(),
       ),
-      error: (e, _) => AppCard(
+      error: (error, stackTrace) => AppCard(
         child: Text(
-          'Could not load storage: ${BackupErrorMapper.toTaglish(e)}',
+          'Could not load storage: ${BackupErrorMapper.toTaglish(error)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),
@@ -595,7 +595,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...entries.map((e) => Padding(
+            ...entries.map((historyEntry) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: AppCard(
                 child: ListTile(
@@ -604,20 +604,20 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                     vertical: AppSpacing.xs,
                   ),
                   leading: Icon(
-                    e.status == BackupStatus.success
+                    historyEntry.status == BackupStatus.success
                         ? Icons.check_circle_rounded
                         : Icons.error_rounded,
-                    color: e.status == BackupStatus.success
+                    color: historyEntry.status == BackupStatus.success
                         ? AppColors.paid
                         : AppColors.unpaid,
                     size: 22,
                   ),
                   title: Text(
-                    e.backupName,
+                    historyEntry.backupName,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
-                    '${DateFormatters.backupDisplay(e.createdTime)} • ${_formatBytes(e.sizeBytes)}',
+                    '${DateFormatters.backupDisplay(historyEntry.createdTime)} • ${_formatBytes(historyEntry.sizeBytes)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -629,7 +629,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         );
       },
       loading: () => const LinearProgressIndicator(),
-      error: (e, _) => Text('Error: $e'),
+      error: (error, stackTrace) => Text('Error: $error'),
     );
   }
 
@@ -645,7 +645,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...logs.reversed.take(20).map((l) => Padding(
+            ...logs.reversed.take(20).map((auditEntry) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: AppCard(
                 child: ListTile(
@@ -655,11 +655,11 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                     vertical: AppSpacing.xs,
                   ),
                   title: Text(
-                    '${l.action.name} • ${l.status.name}',
+                    '${auditEntry.action.name} • ${auditEntry.status.name}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   subtitle: Text(
-                    '${DateFormatters.backupDisplay(l.timestamp)}${l.error != null ? " • ${l.error}" : ""}',
+                    '${DateFormatters.backupDisplay(auditEntry.timestamp)}${auditEntry.error != null ? " • ${auditEntry.error}" : ""}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -671,7 +671,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (e, _) => const SizedBox.shrink(),
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 }

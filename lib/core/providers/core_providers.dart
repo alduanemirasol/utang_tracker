@@ -24,9 +24,9 @@ import 'package:utang_tracker/features/updater/data/repositories/update_reposito
 import 'package:utang_tracker/features/updater/domain/repositories/update_repository.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(db.close);
-  return db;
+  final appDatabase = AppDatabase();
+  ref.onDispose(appDatabase.close);
+  return appDatabase;
 });
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) {

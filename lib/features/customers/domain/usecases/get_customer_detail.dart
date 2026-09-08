@@ -31,16 +31,16 @@ class GetCustomerDetail {
   final DebtRepository debts;
   final PaymentRepository payments;
 
-  Future<CustomerDetailData?> call(String id) async {
-    final customer = await customers.getById(id);
+  Future<CustomerDetailData?> call(String customerId) async {
+    final customer = await customers.getById(customerId);
     if (customer == null) return null;
 
-    final debtList = await debts.getByCustomer(id);
-    final paymentList = await payments.getByCustomer(id);
+    final debtList = await debts.getByCustomer(customerId);
+    final paymentList = await payments.getByCustomer(customerId);
 
     var outstanding = Money.zero();
-    for (final d in debtList) {
-      outstanding = outstanding + d.balance;
+    for (final debt in debtList) {
+      outstanding = outstanding + debt.balance;
     }
 
     return CustomerDetailData(

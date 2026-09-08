@@ -28,9 +28,9 @@ void main() async {
     Connectivity().onConnectivityChanged.listen((results) async {
       final isOffline = results.contains(ConnectivityResult.none) || results.isEmpty;
       if (!isOffline) {
-        final q = await queue.loadQueue();
-        if (q.isEmpty) return;
-        for (final entry in List.from(q)) {
+        final queuedEntries = await queue.loadQueue();
+        if (queuedEntries.isEmpty) return;
+        for (final entry in List.from(queuedEntries)) {
           if (entry.retryCount >= 3) {
             await queue.dequeue();
             continue;
