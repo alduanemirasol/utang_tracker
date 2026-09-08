@@ -3,7 +3,7 @@ import 'package:utang_tracker/core/error/app_exception.dart';
 class BackupErrorMapper {
   BackupErrorMapper._();
 
-  static String toTaglish(Object error) {
+  static String toEnglish(Object error) {
     if (error is NetworkException) {
       return 'No internet connection. Backup has been queued and will be retried later.';
     }
@@ -37,4 +37,7 @@ class BackupErrorMapper {
     }
     return 'Backup failed. Please try again: $error';
   }
+
+  @Deprecated('Use toEnglish instead')
+  static String toTaglish(Object error) => toEnglish(error);
 }

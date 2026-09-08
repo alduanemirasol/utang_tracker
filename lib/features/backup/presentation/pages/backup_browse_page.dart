@@ -63,7 +63,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
         AppSnackBar.success(context, 'Backup restored successfully!');
       }
     } catch (caughtError) {
-      final msg = BackupErrorMapper.toTaglish(caughtError);
+      final msg = BackupErrorMapper.toEnglish(caughtError);
       if (mounted) AppSnackBar.error(context, msg);
     } finally {
       if (mounted) {
@@ -125,7 +125,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Mag-sign in muna para makita ang Google Drive backups',
+              'Sign in to view your Google Drive backups',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -133,7 +133,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
             ),
             const SizedBox(height: AppSpacing.lg),
             AppButton(
-              label: 'Mag-sign in',
+              label: 'Sign in',
               variant: AppButtonVariant.secondary,
               icon: Icons.login_rounded,
               onPressed: () async {
@@ -293,7 +293,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                BackupErrorMapper.toTaglish(error),
+                BackupErrorMapper.toEnglish(error),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: AppSpacing.md),

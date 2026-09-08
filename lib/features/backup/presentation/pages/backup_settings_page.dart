@@ -9,6 +9,7 @@ import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
+import 'package:utang_tracker/core/widgets/app_dropdown.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/features/backup/data/datasources/backup_prefs_keys.dart';
 import 'package:utang_tracker/features/backup/data/services/backup_queue_service.dart';
@@ -89,7 +90,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(BackupPrefsKeys.lastError);
     } catch (caughtError) {
-      final msg = BackupErrorMapper.toTaglish(caughtError);
+      final msg = BackupErrorMapper.toEnglish(caughtError);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(BackupPrefsKeys.lastError, caughtError.toString());
       ref.invalidate(backupLastErrorProvider);
@@ -195,7 +196,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Center(
         child: Text(
-          'Mag-sign in para magamit ang backup',
+          'Sign in to use backup',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -319,15 +320,8 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<BackupInterval>(
+          AppDropdown<BackupInterval>(
             initialValue: interval,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: 14,
-              ),
-            ),
             items: BackupInterval.values
                 .map((interval) => DropdownMenuItem(value: interval, child: Text(interval.label)))
                 .toList(),
@@ -558,7 +552,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       ),
       error: (error, stackTrace) => AppCard(
         child: Text(
-          'Could not load storage: ${BackupErrorMapper.toTaglish(error)}',
+          'Could not load storage: ${BackupErrorMapper.toEnglish(error)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),

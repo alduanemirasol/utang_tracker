@@ -94,7 +94,7 @@ final backupLastErrorProvider = FutureProvider<String?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final raw = prefs.getString(BackupPrefsKeys.lastError);
   if (raw == null || raw.isEmpty) return null;
-  return BackupErrorMapper.toTaglish(raw);
+  return BackupErrorMapper.toEnglish(raw);
 });
 
 final backupQueueCountProvider = FutureProvider<int>((ref) async {

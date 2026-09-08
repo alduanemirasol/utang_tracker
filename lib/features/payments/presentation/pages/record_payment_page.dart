@@ -10,6 +10,7 @@ import 'package:utang_tracker/core/utils/date_time_display.dart';
 import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/domain/money.dart';
 import 'package:utang_tracker/core/widgets/app_button.dart';
+import 'package:utang_tracker/core/widgets/app_dropdown.dart';
 import 'package:utang_tracker/core/widgets/app_modal_bottom_sheet.dart';
 import 'package:utang_tracker/core/widgets/app_search_bar.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
@@ -296,9 +297,8 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
             const SizedBox(height: AppSpacing.lg),
             AppTextField.buildLabel(context, 'Payment method *'),
             const SizedBox(height: AppSpacing.sm),
-            DropdownButtonFormField<String>(
+            AppDropdown<String>(
               initialValue: _method,
-              style: AppTextField.inputStyle(context),
               items: AppConstants.paymentMethods
                   .map((method) => DropdownMenuItem(value: method, child: Text(method)))
                   .toList(),
@@ -308,7 +308,6 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                   _markDirty();
                 }
               },
-              decoration: const InputDecoration(),
             ),
             const SizedBox(height: AppSpacing.lg),
             Row(
