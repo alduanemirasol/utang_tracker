@@ -1,19 +1,14 @@
 {
-  "version": "1.0.45",
+  "version": "1.0.46",
   "date": "2026-09-08",
   "notes": {
     "added": [
-      "Canonical setup docs docs/SETUP.md — prerequisites, Drive OAuth + SHA via signingReport, 12 SharedPreferences keys, workmanager, Drift, signing and triple-lock release",
-      "Gitignore secrets — google-services.json added to .gitignore, android/.gitignore and .ignore so signing and debug secrets stay untracked"
+      "CI Google Services credential handling — .github/scripts/configure_google_services.py materializes android/app/google-services.json from GOOGLE_SERVICES_JSON_BASE64/GOOGLE_SERVICES_JSON secrets"
     ],
     "changed": [
-      "Drive wiring — com.google.gms.google-services 4.4.2 in settings.gradle.kts and app build, Android 11+ <queries> for com.google.android.gms and com.android.vending package visibility",
-      "Segregation docs fix — mappers corrected to features/customer|debt|payment *_mappers and backup provider range 56-103 -> 66-141 in README and docs/SETUP"
+      "CI release workflow — insert Configure Google Services step between signing and build in .github/workflows/release.yml",
+      "Docs — docs/SETUP 4.4.1 and README document base64 secret generation (base64 -w 0 / PowerShell) and CI failure handling for google-services.json"
     ],
-    "fixed": [
-      "Drive sign-in error handling — wrap sign-in/out in try/catch via BackupErrorMapper with typed AuthExpired/Network/Backup exceptions and _handleAuthError catch-all",
-      "Dead code cleanup — remove duplicate CreateBackup and unwired BackupFacade, remove formatLocal leak from BackupPrefsRepository",
-      "Backup & Restore — remove signed-out hint _buildSignedOutHint so signed-out state shows only the connection card"
-    ]
+    "fixed": []
   }
 }
