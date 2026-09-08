@@ -81,5 +81,9 @@ class GoogleAuthDatasource {
         msg.contains('failed host lookup')) {
       throw NetworkException('No internet connection. $error');
     }
+    // Catch-all: wrap unknown errors so callers always get a typed exception
+    // instead of a raw PlatformException that may indicate missing config
+    // (e.g. google-services.json absent) or other unrecoverable issues.
+    throw BackupException('Sign-in failed: $error');
   }
 }

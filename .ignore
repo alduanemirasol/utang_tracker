@@ -16,3 +16,7 @@ android/.kotlin/
 .idea/
 *.iml
 *.log
+
+# Secrets / local config (never search)
+android/app/google-services.json
+android/key.properties

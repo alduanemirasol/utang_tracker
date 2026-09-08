@@ -56,5 +56,8 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Required for Google Sign-In / Credential Manager on Android 11+ -->
+        <package android:name="com.google.android.gms" />
+        <package android:name="com.android.vending" />
     </queries>
 </manifest>

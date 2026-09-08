@@ -1,3 +1,4 @@
+import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/features/backup/data/datasources/google_auth_datasource.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_connection_details.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/backup_auth_repository.dart';
@@ -18,11 +19,15 @@ class BackupAuthRepositoryImpl implements BackupAuthRepository {
       final email = _auth.currentUser?.email ?? 'Signed in';
       return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: email);
     } catch (caughtError) {
-      final msg = caughtError.toString().toLowerCase();
-      if (msg.contains('auth') || msg.contains('401')) {
+      if (caughtError is AuthExpiredException) {
         return const BackupConnectionDetails(status: BackupConnectionStatus.expired);
       }
-      return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: _auth.currentUser?.email);
+      // For network or other errors, we know the user was signed in from
+      // isSignedIn() above — return signedIn with whatever email is available.
+      return BackupConnectionDetails(
+        status: BackupConnectionStatus.signedIn,
+        email: _auth.currentUser?.email,
+      );
     }
   }
 

@@ -2,6 +2,8 @@
 
 Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers, debts (with line items), and payments. UI strings are hardcoded Taglish/Cebuano (no i18n, intentional).
 
+> **New dev?** Start with [`docs/SETUP.md`](docs/SETUP.md) — single canonical setup doc (prerequisites, Drive backup, all subsystems, troubleshooting).
+
 ## Features
 
 - **Customers** - create/edit/soft-delete, unique name (case-insensitive), search, sort by name/date
@@ -24,7 +26,20 @@ Sari-sari store utang/bayad ledger - Android-only Flutter app. Tracks customers,
 | Fonts | Poppins, Material 3 theme |
 | Backup | `shared_preferences` ^2.5.3, `connectivity_plus` ^6.1.5, `google_sign_in` ^6.3.0, `googleapis` ^14.0.0, `googleapis_auth` ^2.0.0, `archive` ^4.0.7, `crypto` ^3.0.7, `workmanager` ^0.10.9, `path_provider` ^2.1.5, `package_info_plus` ^8.3.0, `path` ^1.9.1, `http` ^1.4.0 |
 
-Version: `1.0.43+42` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
+Version: `1.0.44+43` (`pubspec.yaml` + `assets/release_notes/current.json` must match tag `v<version>`).
+
+## Prerequisites
+
+| Requirement | Version |
+|---|---|
+| Flutter | `3.44.0` stable (Dart `^3.12.0`) |
+| AGP | `9.0.1` |
+| Kotlin | `2.3.20` |
+| JDK | `17` |
+| compileSdk | `36` |
+| Platform | Android only (`com.example.utang_tracker`) |
+
+Full details, env setup, and subsystem docs → [`docs/SETUP.md`](docs/SETUP.md).
 
 ## Project Structure
 
@@ -70,6 +85,8 @@ Migrations: v2 soft-delete, v3 recreate `debt_items`, v4 add `unit` (default `pi
 
 ## Setup & Commands
 
+> Exhaustive steps → [`docs/SETUP.md`](docs/SETUP.md) (canonical). Summary below.
+
 ```sh
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs  # after editing drift tables (app_database.g.dart is committed)
@@ -88,6 +105,50 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 - **Method channels:** updater only lives in `MainActivity.kt` (install-permission flow uses deprecated `onActivityResult`).
 - **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
 - **Backup bg work:** `lib/main.dart:19-44` initializes `Workmanager` and listens to `connectivity_plus` to drain the offline queue.
+
+## Google Drive Backup Setup
+
+> Full walkthrough (Firebase project, Drive API, OAuth consent screen with `drive.file` + test users, SHA-1/SHA-256 via `.\gradlew signingReport` / `keytool`, placing `google-services.json`, Gradle plugins, `<queries>`, re-download check for populated `oauth_client`) → [`docs/SETUP.md` §4](docs/SETUP.md#4-google-drive-backup-setup-full). Summary below.
+
+Google Drive backup requires Android-side OAuth configuration. Without it, sign-in will fail with a clear error message instead of crashing.
+
+### Required files (NOT committed — contain secrets)
+
+1. **`android/app/google-services.json`** — Download from [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Android OAuth 2.0 client. The file must match `applicationId = com.example.utang_tracker`. Gitignored (`android/app/google-services.json` in `.gitignore:52`). After adding SHA fingerprints, re-download — `oauth_client[]` must be populated or auth fails with `DEVELOPER_ERROR 10`.
+
+2. **SHA-1 and SHA-256 certificate fingerprints** — Register both debug and release fingerprints in the Cloud Console OAuth client:
+    ```sh
+    # Debug — fastest (Windows: .\gradlew, macOS/Linux: ./gradlew)
+    .\gradlew signingReport
+    # or direct
+    keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android
+    # Release
+    keytool -list -v -keystore <release-keystore.jks> -alias <key-alias>
+    ```
+
+3. **Google Services Gradle plugin** — Already wired in this repo; verify in `android/app/build.gradle.kts` (`id("com.google.gms.google-services")`) and `android/settings.gradle.kts` (`id("com.google.gms.google-services") version "4.4.2" apply false`).
+
+### Required OAuth scopes
+
+The app uses `https://www.googleapis.com/auth/drive.file` (file-level access only — no full Drive access). Consent screen: **External**, add `drive.file` scope, add test users while in Testing.
+
+### AndroidManifest queries
+
+`android/app/src/main/AndroidManifest.xml` already contains for Android 11+ package visibility:
+```xml
+<queries>
+    <package android:name="com.google.android.gms" />
+    <package android:name="com.android.vending" />
+</queries>
+```
+
+### Troubleshooting
+
+- **Sign-in returns null:** User cancelled the Google account picker. This is normal.
+- **"Sign-in failed" error:** Check that `google-services.json` exists and matches the `applicationId`. Check SHA-1/SHA-256 fingerprints in Cloud Console.
+- **"Authentication expired":** Token refresh failed. Sign out and sign in again.
+- **"No internet connection":** Network unavailable. Backup will be queued for retry.
+- **Full troubleshooting** (DEVELOPER_ERROR 10, empty `oauth_client`, queued reconnect, `adb logcat`) → [`docs/SETUP.md` §7](docs/SETUP.md#7-troubleshooting).
 
 ## Routes
 
