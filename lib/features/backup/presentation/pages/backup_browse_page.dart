@@ -78,8 +78,10 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
 
   @override
   Widget build(BuildContext context) {
+    final connection = ref.watch(backupConnectionDetailsProvider);
     final list = ref.watch(backupListProvider);
     final history = ref.watch(backupHistoryProvider);
+    final isSignedIn = connection.value?.status == BackupConnectionStatus.signedIn;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Browse Backups')),
@@ -95,9 +97,57 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               _buildRestoreProgress(),
               const SizedBox(height: AppSpacing.lg),
             ],
-            _buildDriveBackupsList(list),
+            if (isSignedIn)
+              _buildDriveBackupsList(list)
+            else
+              _buildSignedOutPlaceholder(),
             const SizedBox(height: AppSpacing.xl),
             _buildLocalHistorySection(history),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignedOutPlaceholder() {
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xl,
+          horizontal: AppSpacing.lg,
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              size: 36,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Mag-sign in muna para makita ang Google Drive backups',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppButton(
+              label: 'Mag-sign in',
+              variant: AppButtonVariant.secondary,
+              icon: Icons.login_rounded,
+              onPressed: () async {
+                final auth = ref.read(googleAuthDatasourceProvider);
+                final acc = await auth.signIn();
+                ref.invalidate(backupConnectionDetailsProvider);
+                if (!mounted) return;
+                if (acc != null) {
+                  AppSnackBar.success(context, 'Signed in: ${acc.email}');
+                } else {
+                  AppSnackBar.info(context, 'Sign-in not completed');
+                }
+              },
+            ),
           ],
         ),
       ),

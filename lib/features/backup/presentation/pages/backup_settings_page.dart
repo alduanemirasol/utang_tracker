@@ -141,6 +141,7 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
     final quota = ref.watch(backupQuotaProvider);
     final isLow = ref.watch(backupIsLowStorageProvider);
     final history = ref.watch(backupHistoryProvider);
+    final isSignedIn = connection.value?.status == BackupConnectionStatus.signedIn;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Backup & Restore')),
@@ -149,35 +150,57 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
         children: [
           _buildConnectionCard(connection),
           const SizedBox(height: AppSpacing.lg),
-          _buildAutoBackupCard(interval, lastBackup, nextBackup),
-          const SizedBox(height: AppSpacing.lg),
+          if (isSignedIn) ...[
+            _buildAutoBackupCard(interval, lastBackup, nextBackup),
+            const SizedBox(height: AppSpacing.lg),
+          ] else ...[
+            _buildSignedOutHint(),
+            const SizedBox(height: AppSpacing.lg),
+          ],
           _buildLastErrorBanner(lastError),
           _buildQueuedBanner(hasQueued, queueCount),
           const SizedBox(height: AppSpacing.lg),
-          _buildStorageCard(quota, isLow),
-          const SizedBox(height: AppSpacing.lg),
-          if (_isBackingUp) ...[
-            _buildBackupProgress(),
+          if (isSignedIn) ...[
+            _buildStorageCard(quota, isLow),
             const SizedBox(height: AppSpacing.lg),
+            if (_isBackingUp) ...[
+              _buildBackupProgress(),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+            AppButton(
+              label: _isBackingUp ? 'Backing up...' : 'Backup Now',
+              icon: Icons.cloud_upload_rounded,
+              isLoading: _isBackingUp,
+              onPressed: _isBackingUp ? null : _doBackupNow,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: 'Browse & Restore',
+              variant: AppButtonVariant.secondary,
+              icon: Icons.folder_open_rounded,
+              onPressed: () => context.push('/settings/backup/browse'),
+            ),
           ],
-          AppButton(
-            label: _isBackingUp ? 'Backing up...' : 'Backup Now',
-            icon: Icons.cloud_upload_rounded,
-            isLoading: _isBackingUp,
-            onPressed: _isBackingUp ? null : _doBackupNow,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          AppButton(
-            label: 'Browse & Restore',
-            variant: AppButtonVariant.secondary,
-            icon: Icons.folder_open_rounded,
-            onPressed: () => context.push('/settings/backup/browse'),
-          ),
           const SizedBox(height: AppSpacing.xl),
           _buildHistorySection(history),
           const SizedBox(height: AppSpacing.xl),
           _buildAuditSection(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSignedOutHint() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: Center(
+        child: Text(
+          'Mag-sign in para magamit ang backup',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: AppColors.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
