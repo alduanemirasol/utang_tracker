@@ -105,9 +105,6 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
           if (isSignedIn) ...[
             _buildAutoBackupCard(interval, lastBackup, nextBackup),
             const SizedBox(height: AppSpacing.lg),
-          ] else ...[
-            _buildSignedOutHint(),
-            const SizedBox(height: AppSpacing.lg),
           ],
           _buildLastErrorBanner(lastError),
           _buildQueuedBanner(hasQueued, queueCount),
@@ -138,21 +135,6 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
           const SizedBox(height: AppSpacing.xl),
           _buildAuditSection(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSignedOutHint() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      child: Center(
-        child: Text(
-          'Sign in to use backup',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.textSecondary,
-          ),
-          textAlign: TextAlign.center,
-        ),
       ),
     );
   }
