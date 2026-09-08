@@ -1,14 +1,19 @@
 {
-  "version": "1.0.44",
+  "version": "1.0.45",
   "date": "2026-09-08",
   "notes": {
-    "added": [],
-    "changed": [
-      "Backup & Restore fully in English with uniform dropdowns via AppDropdown",
-      "Customer delete moved into edit form — removed list long-press delete",
-      "Shortened all dialogs — Delete customer 77 chars, Restore backup 55 chars, Discard 24 chars",
-      "Codebase segregation — core/database mappers split, backup_error_mapper moved to core/error, domain repos/usecases facade, presentation decontaminated"
+    "added": [
+      "Canonical setup docs docs/SETUP.md — prerequisites, Drive OAuth + SHA via signingReport, 12 SharedPreferences keys, workmanager, Drift, signing and triple-lock release",
+      "Gitignore secrets — google-services.json added to .gitignore, android/.gitignore and .ignore so signing and debug secrets stay untracked"
     ],
-    "fixed": []
+    "changed": [
+      "Drive wiring — com.google.gms.google-services 4.4.2 in settings.gradle.kts and app build, Android 11+ <queries> for com.google.android.gms and com.android.vending package visibility",
+      "Segregation docs fix — mappers corrected to features/customer|debt|payment *_mappers and backup provider range 56-103 -> 66-141 in README and docs/SETUP"
+    ],
+    "fixed": [
+      "Drive sign-in error handling — wrap sign-in/out in try/catch via BackupErrorMapper with typed AuthExpired/Network/Backup exceptions and _handleAuthError catch-all",
+      "Dead code cleanup — remove duplicate CreateBackup and unwired BackupFacade, remove formatLocal leak from BackupPrefsRepository",
+      "Backup & Restore — remove signed-out hint _buildSignedOutHint so signed-out state shows only the connection card"
+    ]
   }
 }
