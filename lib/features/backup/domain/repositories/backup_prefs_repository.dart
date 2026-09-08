@@ -9,5 +9,4 @@ abstract class BackupPrefsRepository {
   Future<void> setLastError(String? message);
   Future<void> clearLastError();
   Future<void> updateLastSuccessful(DateTime utcNow);
-  String formatLocal(DateTime utcTime);
 }

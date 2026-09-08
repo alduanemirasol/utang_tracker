@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/features/backup/data/services/backup_prefs_service.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/backup_prefs_repository.dart';
@@ -36,7 +35,4 @@ class BackupPrefsRepositoryImpl implements BackupPrefsRepository {
 
   @override
   Future<void> updateLastSuccessful(DateTime utcNow) async => (await _service()).updateLastSuccessful(utcNow);
-
-  @override
-  String formatLocal(DateTime utcTime) => DateFormatters.backupDisplay(utcTime);
 }

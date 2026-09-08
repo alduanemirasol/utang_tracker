@@ -130,5 +130,5 @@ final formattedNextBackupProvider = FutureProvider<String?>((ref) async {
 });
 
 final connectivityStatusProvider = StreamProvider<List<ConnectivityResult>>((ref) {
-  return Connectivity().onConnectivityChanged;
+  return ref.watch(connectivityProvider).onConnectivityChanged;
 });

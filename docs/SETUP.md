@@ -72,9 +72,10 @@ flutter doctor      # Android toolchain must be green
 lib/
   main.dart / app.dart                 # Workmanager + connectivity_plus init (main.dart:19-44)
   app/coordination.dart                # invalidateBusinessData + invalidateBackupData (31-42)
-  core/database/ tables.dart / app_database.dart / database_location.dart / mappers.dart / app_database.g.dart
+  core/database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart
   core/domain/ money.dart / debt_status.dart
-  core/providers/ core_providers.dart  # plain Riverpod Providers; backup providers 56-103+
+  core/providers/ core_providers.dart  # plain Riverpod Providers; backup providers 66-141
+  mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
   core/router/ app_router.dart / app_shell.dart   # go_router StatefulShellRoute.indexedStack (5 tabs)
   core/theme/ core/widgets/ core/utils/ core/error/ core/constants/
   features/customers|debts|payments|dashboard|notifications|updater|settings|backup  # 8 dirs
@@ -223,7 +224,7 @@ The downloaded JSON is a snapshot. If you add a SHA fingerprint after downloadin
 
 ### 5.1 Drift SQLite — schema v5
 
-- **Files:** `lib/core/database/tables.dart`, `lib/core/database/app_database.dart`, `lib/core/database/database_location.dart`, `lib/core/database/mappers.dart`, `lib/core/database/app_database.g.dart` (generated).
+- **Files:** `lib/core/database/tables.dart`, `lib/core/database/app_database.dart`, `lib/core/database/database_location.dart`, `lib/core/database/app_database.g.dart` (generated) + `lib/features/customers/data/repositories/customer_mappers.dart`, `lib/features/debts/data/repositories/debt_mappers.dart`, `lib/features/payments/data/repositories/payment_mappers.dart` (`features/*/data/repositories/*_mappers.dart`).
 - **Schema version:** `5` (`AppDatabase.schemaVersion`). No SQL `CHECK`/`UNIQUE`/cascade — rules enforced in repository impls.
 - **Tables:** `customers`, `debts`, `debt_items`, `payments` — see `rules/database_rules.md` for columns, indexes, and business rules.
 - **Migrations:** v2 soft-delete (`deleted_at`), v3 recreate `debt_items`, v4 add `unit` default `piece`, v5 `unit_price+subtotal -> price` (custom line amount, quantity does NOT multiply price).

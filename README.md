@@ -48,9 +48,10 @@ lib/
   main.dart / app.dart                 # Workmanager + connectivity queue init (backup)
   app/coordination.dart                # invalidateBusinessData + invalidateBackupData (31-42)
   core/
-    database/ tables.dart / app_database.dart / database_location.dart / mappers.dart / app_database.g.dart (generated, committed)
+    database/ tables.dart / app_database.dart / database_location.dart / app_database.g.dart (generated, committed)
     domain/ money.dart / debt_status.dart
-    providers/ core_providers.dart     # + backup providers (56-103)
+    providers/ core_providers.dart     # + backup providers (66-141)
+    mappers: features/customers|debts|payments/data/repositories/*_mappers.dart (customer_mappers.dart / debt_mappers.dart / payment_mappers.dart)
     router/ app_router.dart / app_shell.dart
     theme/ widgets/ utils/ constants/ error/
   features/
@@ -100,7 +101,7 @@ Search ignores `*.g.dart` via `.ignore` (not `.gitignore`).
 ## Architecture Notes
 
 - **Push refresh, not streams:** after writes call `invalidateBusinessData(ref)` and for backup `invalidateBackupData(ref)` from `lib/app/coordination.dart` (31-42) — register new `FutureProvider`s there (business + backup providers).
-- **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`. Backup providers live in `core_providers.dart:56-103` (`backupLocalDatasourceProvider`, `auditLogRepositoryProvider`, `backupHistoryRepositoryProvider`, `googleAuthDatasourceProvider`, `googleDriveServiceProvider`, `backupRepositoryProvider`, `backupConnectionStatusProvider`, `backupQuotaProvider`, `backupSchedulerProvider`, `connectivityProvider`, `backupQueueServiceProvider`).
+- **DI:** plain Riverpod `Provider`s in `core_providers.dart`; repo interfaces `features/<f>/domain/repositories`, impls `features/<f>/data/repositories`. Backup providers live in `core_providers.dart:66-141` (`backupLocalDatasourceProvider`, `auditLogRepositoryProvider`, `backupHistoryRepositoryProvider`, `googleAuthDatasourceProvider`, `googleDriveServiceProvider`, `backupRepositoryProvider`, `backupConnectionStatusProvider`, `backupQuotaProvider`, `backupSchedulerProvider`, `connectivityProvider`, `backupQueueServiceProvider`, `backupPrefsRepositoryProvider`, `backupQueueRepositoryProvider`, `backupAuthRepositoryProvider`, `getBackupStatusProvider`, `handleBackupQueueProvider`, `getConnectionDetailsProvider`, `performBackupProvider`).
 - **Testing:** `AppDatabase.forTesting()` (in-memory); migration tests seed legacy schemas via raw SQL. Backup persistence is SharedPreferences JSON (no SQLite migration).
 - **Method channels:** updater only lives in `MainActivity.kt` (install-permission flow uses deprecated `onActivityResult`).
 - **Signing:** `android/key.properties` + keystores gitignored; CI signs from `SIGNING_*` secrets.
