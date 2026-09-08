@@ -1,9 +1,14 @@
 {
-  "version": "1.0.43",
-  "date": "2026-09-01",
+  "version": "1.0.44",
+  "date": "2026-09-08",
   "notes": {
     "added": [],
-    "changed": ["Minimized empty states — compact icons, smaller text, and shorter copy across lists", "Unified empty-state icons and wrapped sort/filter buttons for cleaner layout"],
-    "fixed": ["Due date guard — blocks past dates on utang form (picker starts today + save validation)"]
+    "changed": [
+      "Backup & Restore fully in English with uniform dropdowns via AppDropdown",
+      "Customer delete moved into edit form — removed list long-press delete",
+      "Shortened all dialogs — Delete customer 77 chars, Restore backup 55 chars, Discard 24 chars",
+      "Codebase segregation — core/database mappers split, backup_error_mapper moved to core/error, domain repos/usecases facade, presentation decontaminated"
+    ],
+    "fixed": []
   }
 }
