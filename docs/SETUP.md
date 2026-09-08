@@ -158,6 +158,31 @@ Register the release SHA-1 and SHA-256 in the same Cloud Console Android OAuth c
    - `package_name` / `client[].client_info.android_client_info.package_name` contains `com.example.utang_tracker`.
    - `oauth_client[]` is **non-empty** after you re-download post-fingerprint (see §4.7).
 
+### 4.4.1 CI — GitHub Secret for release builds
+
+Release CI (`.github/workflows/release.yml`) materializes this file before `flutter build apk`. The workflow step **Configure Google Services** runs `.github/scripts/configure_google_services.py` after signing and before the Build APK step. It requires one GitHub Secret:
+
+- **`GOOGLE_SERVICES_JSON_BASE64`** (preferred) — base64 of `android/app/google-services.json`, or
+- **`GOOGLE_SERVICES_JSON`** — raw JSON content (fallback).
+
+If neither is set, the workflow fails with a clear message: `Missing Google Services credential: set GOOGLE_SERVICES_JSON_BASE64 ...` and the release build is aborted. No placeholder is committed; the file remains gitignored (`.gitignore:52`, `android/.gitignore:16-17`).
+
+**Generate the secret value:**
+
+```sh
+# Linux / macOS
+base64 -w 0 android/app/google-services.json
+# then copy the single-line output into GitHub → Settings → Secrets and variables → Actions → New repository secret → GOOGLE_SERVICES_JSON_BASE64
+
+# Windows PowerShell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("android/app/google-services.json"))
+
+# Windows certutil (writes BEGIN/END CERTIFICATE headers — strip them, join remaining lines)
+certutil -encode android/app/google-services.json google-services.b64
+```
+
+The script decodes the secret and writes `android/app/google-services.json` verbatim. Local dev does not need the secret — `flutter analyze` and `flutter test` pass without the file (the `com.google.gms.google-services` plugin is only required at APK build time).
+
 ### 4.5 Gradle plugin wiring
 
 Already configured in this repo — verify you have not removed these:
@@ -287,7 +312,7 @@ Source of truth: `lib/features/backup/data/datasources/backup_prefs_keys.dart`.
   storeFile=../app/<your>.jks   # or absolute path; resolved via rootProject.file()
   ```
   `android/app/build.gradle.kts:10-70` validates this at `taskGraph.whenReady` and throws `Release signing is not configured` if any of the four keys is missing when any `*Release*` task runs.
-- **CI:** `.github/workflows/release.yml` runs `.github/scripts/configure_signing.py` which materializes the keystore from `SIGNING_*` GitHub Secrets. No local `key.properties` needed in CI.
+- **CI:** `.github/workflows/release.yml` runs `.github/scripts/configure_signing.py` which materializes the keystore from `SIGNING_*` GitHub Secrets and `.github/scripts/configure_google_services.py` which materializes `android/app/google-services.json` from `GOOGLE_SERVICES_JSON_BASE64` (or `GOOGLE_SERVICES_JSON`). No local `key.properties` or committed `google-services.json` needed in CI. If the Google Services secret is missing, the workflow fails before the build with `Missing Google Services credential: set GOOGLE_SERVICES_JSON_BASE64 ...`.
 
 ### 5.8 Navigation (go_router)
 
@@ -319,7 +344,7 @@ Version is triple-locked — CI fails if any drift:
    git push origin v1.0.44
    ```
 4. Push tag triggers `.github/workflows/release.yml`:
-   `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`).
+   `verify_version.py` (tag == pubspec == notes) → `test_release_scripts.py` → `flutter analyze` → `flutter test` → `configure_signing.py` → `configure_google_services.py` (requires `GOOGLE_SERVICES_JSON_BASE64` secret, see §4.4.1) → `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` → `prepare_release.py` + `generate_release_notes.py` → GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`).
 
 ---
 
@@ -348,6 +373,8 @@ flutter clean && flutter pub get   # after changing google-services.json or Grad
 | **`DEVELOPER_ERROR 10` / `ApiException: 10`** | SHA fingerprint not registered for this `applicationId`, or `google-services.json` downloaded before fingerprint was added. | Re-check Cloud Console → Credentials → Android OAuth client lists correct SHA-1/SHA-256 for `com.example.utang_tracker`. Re-download `google-services.json` (see §4.7) and `flutter clean`. On Windows, confirm with `.\gradlew signingReport` or `keytool -list -v`. For release, verify `android/key.properties` `keyAlias`/`storeFile` match the registered fingerprint. |
 | **`google-services.json` has empty `oauth_client: []`** | File downloaded before SHA fingerprints were saved. | Not a valid config. Re-download after fingerprints show in Console, verify `oauth_client` is populated, then `flutter clean && flutter run`. Propagation can take 1-2 minutes. |
 | **Release build fails: "Release signing is not configured"** | `android/key.properties` missing or incomplete. | Create `android/key.properties` with all four keys (`storePassword`, `keyPassword`, `keyAlias`, `storeFile`). Keystore file itself must exist at the `storeFile` path (also gitignored). In CI, secrets are injected by `configure_signing.py`. |
+| **CI release build fails: "Missing Google Services credential"** | `GOOGLE_SERVICES_JSON_BASE64` (or `GOOGLE_SERVICES_JSON`) GitHub Secret not set. | Set the secret in GitHub → Settings → Secrets and variables → Actions → `GOOGLE_SERVICES_JSON_BASE64` = `base64 -w 0 android/app/google-services.json` (Linux/macOS) or PowerShell `[Convert]::ToBase64String([IO.File]::ReadAllBytes("android/app/google-services.json"))` (Windows). The workflow step `Configure Google Services` (`configure_google_services.py`) decodes it to `android/app/google-services.json` before the APK build. Without it, CI aborts with `Missing Google Services credential: set GOOGLE_SERVICES_JSON_BASE64 ...`. |
+| **CI release build fails: "File google-services.json is missing. The Google Services Plugin cannot function without it."** | Same as above — secret not set or script not run. | Verify the `Configure Google Services` step is present between signing and build in `.github/workflows/release.yml` and that the secret is set. Re-run the workflow; the step must write `android/app/google-services.json` before `flutter build apk`. |
 | **Workmanager periodic task not firing** | `BackupInterval.off`, no network, or OS battery optimization. | Check `SharedPreferences backup_interval` is not `off`. Scheduler clamps to min 15m (`BackupScheduler._frequency`). Workmanager requires `NetworkType.connected`; test on a real device with battery optimization disabled for the app. |
 
 ### Where to find logs

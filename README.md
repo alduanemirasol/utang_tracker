@@ -115,7 +115,9 @@ Google Drive backup requires Android-side OAuth configuration. Without it, sign-
 
 ### Required files (NOT committed — contain secrets)
 
-1. **`android/app/google-services.json`** — Download from [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Android OAuth 2.0 client. The file must match `applicationId = com.example.utang_tracker`. Gitignored (`android/app/google-services.json` in `.gitignore:52`). After adding SHA fingerprints, re-download — `oauth_client[]` must be populated or auth fails with `DEVELOPER_ERROR 10`.
+1. **`android/app/google-services.json`** — Download from [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Android OAuth 2.0 client. The file must match `applicationId = com.example.utang_tracker`. Gitignored (`android/app/google-services.json` in `.gitignore:52`, `android/.gitignore:16-17`). After adding SHA fingerprints, re-download — `oauth_client[]` must be populated or auth fails with `DEVELOPER_ERROR 10`.
+
+   **CI:** Release builds require the GitHub Secret `GOOGLE_SERVICES_JSON_BASE64` (= `base64 -w 0 android/app/google-services.json` on Linux/macOS, or `[Convert]::ToBase64String([IO.File]::ReadAllBytes("android/app/google-services.json"))` in PowerShell / `certutil -encode` on Windows). The workflow step `Configure Google Services` (`.github/scripts/configure_google_services.py`, runs after signing and before the APK build) decodes this secret to `android/app/google-services.json`. If neither `GOOGLE_SERVICES_JSON_BASE64` nor `GOOGLE_SERVICES_JSON` is set, the workflow fails with `Missing Google Services credential: set GOOGLE_SERVICES_JSON_BASE64 ...`. See [`docs/SETUP.md` §4.4.1](docs/SETUP.md#44-download-and-place-google-servicesjson). Local `flutter analyze` / `flutter test` pass without the file — the `com.google.gms.google-services` plugin is only required at APK build time.
 
 2. **SHA-1 and SHA-256 certificate fingerprints** — Register both debug and release fingerprints in the Cloud Console OAuth client:
     ```sh
@@ -159,7 +161,7 @@ The app uses `https://www.googleapis.com/auth/drive.file` (file-level access onl
 
 1. Bump `version` in **both** `pubspec.yaml` and `assets/release_notes/current.json`
 2. Tag `v<version>` - CI fails if `tag != pubspec != notes`
-3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (5 helpers in `.github/scripts/`)
+3. Push tag -> `.github/workflows/release.yml` runs: `verify_version.py` (tag = pubspec = notes) -> `test_release_scripts.py` (validates note generation) -> `flutter analyze` -> `flutter test` -> `configure_signing.py` (GH secrets -> keystore) -> `configure_google_services.py` (GH secret `GOOGLE_SERVICES_JSON_BASE64` -> `android/app/google-services.json`, fails with clear message if missing) -> `flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64` -> `prepare_release.py` + `generate_release_notes.py` -> GitHub Release with `RELEASE_NOTES.md` (6 helpers in `.github/scripts/`)
 
 ```sh
 # example
