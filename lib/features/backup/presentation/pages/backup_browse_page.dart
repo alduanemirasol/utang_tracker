@@ -40,7 +40,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
     final confirmed = await showConfirmationDialog(
       context: context,
       title: 'Restore backup?',
-      message: 'This will overwrite your current data. Are you sure? A pre-restore backup will be created before restoring.',
+      message: 'Overwrite current data? A backup will be created first.',
       confirmLabel: 'Restore',
       cancelLabel: 'Cancel',
       isDestructive: true,

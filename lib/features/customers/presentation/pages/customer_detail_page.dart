@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:utang_tracker/core/error/app_exception.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
 import 'package:utang_tracker/core/theme/app_spacing.dart';
 import 'package:utang_tracker/core/utils/date_time_display.dart';
-import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
-import 'package:utang_tracker/core/widgets/app_snackbar.dart';
-import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
 import 'package:utang_tracker/core/widgets/empty_state.dart';
 import 'package:utang_tracker/core/widgets/error_view.dart';
 import 'package:utang_tracker/core/widgets/loading_indicator.dart';
 import 'package:utang_tracker/core/widgets/money_text.dart';
 import 'package:utang_tracker/core/widgets/status_badge.dart';
-import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/features/customers/domain/usecases/get_customer_detail.dart';
 import 'package:utang_tracker/features/customers/presentation/providers/customer_providers.dart';
 import 'package:utang_tracker/features/debts/domain/entities/debt.dart';
@@ -61,33 +56,6 @@ class CustomerDetailPage extends ConsumerWidget {
                   tooltip: 'Edit',
                   icon: const Icon(Icons.edit_outlined),
                   onPressed: () => context.push('/customers/$customerId/edit'),
-                ),
-                IconButton(
-                  tooltip: 'Delete',
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () async {
-                    final confirmed = await showConfirmationDialog(
-                      context: context,
-                      title: 'Delete customer?',
-                      message:
-                          'The customer will be hidden from customer lists. Paid debt and payment history will remain visible. Customers with unpaid debts cannot be deleted.',
-                      confirmLabel: 'Delete',
-                      isDestructive: true,
-                    );
-                    if (!confirmed || !context.mounted) return;
-                    try {
-                      await ref
-                          .read(customerRepositoryProvider)
-                          .delete(customerId);
-                      invalidateBusinessData(ref);
-                      if (!context.mounted) return;
-                      AppSnackBar.success(context, 'Customer deleted');
-                      context.pop();
-                    } on AppException catch (appException) {
-                      if (!context.mounted) return;
-                      AppSnackBar.error(context, appException.message);
-                    }
-                  },
                 ),
               ],
             ),

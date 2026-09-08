@@ -164,6 +164,36 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isEditing ? 'Edit customer' : 'Add customer'),
+          actions: [
+            if (widget.isEditing)
+              IconButton(
+                tooltip: 'Delete',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () async {
+                  final confirmed = await showConfirmationDialog(
+                    context: context,
+                    title: 'Delete customer?',
+                    message:
+                        'Hide this customer from lists? Customers with unpaid debts cannot be deleted.',
+                    confirmLabel: 'Delete',
+                    isDestructive: true,
+                  );
+                  if (!confirmed || !mounted) return;
+                  try {
+                    await ref
+                        .read(customerRepositoryProvider)
+                        .delete(widget.customerId!);
+                    invalidateBusinessData(ref);
+                    if (!mounted) return;
+                    AppSnackBar.success(context, 'Customer deleted');
+                    context.pop();
+                  } on AppException catch (appException) {
+                    if (!mounted) return;
+                    AppSnackBar.error(context, appException.message);
+                  }
+                },
+              ),
+          ],
         ),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
