@@ -9,11 +9,12 @@ import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
 import 'package:utang_tracker/core/widgets/confirmation_dialog.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_connection_details.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_history_entry.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_meta.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/presentation/providers/backup_providers.dart';
-import 'package:utang_tracker/features/backup/utils/backup_error_mapper.dart';
+import 'package:utang_tracker/core/error/backup_error_mapper.dart';
 
 class BackupBrowsePage extends ConsumerStatefulWidget {
   const BackupBrowsePage({super.key});
@@ -137,12 +138,12 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
               variant: AppButtonVariant.secondary,
               icon: Icons.login_rounded,
               onPressed: () async {
-                final auth = ref.read(googleAuthDatasourceProvider);
-                final acc = await auth.signIn();
+                final auth = ref.read(backupAuthRepositoryProvider);
+                final email = await auth.signIn();
                 ref.invalidate(backupConnectionDetailsProvider);
                 if (!mounted) return;
-                if (acc != null) {
-                  AppSnackBar.success(context, 'Signed in: ${acc.email}');
+                if (email != null) {
+                  AppSnackBar.success(context, 'Signed in: $email');
                 } else {
                   AppSnackBar.info(context, 'Sign-in not completed');
                 }

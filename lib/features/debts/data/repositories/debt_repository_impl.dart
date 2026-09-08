@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
-import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/features/debts/data/repositories/debt_mappers.dart';
 import 'package:utang_tracker/core/utils/date_time_utils.dart';
 import 'package:utang_tracker/core/utils/debt_math.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';

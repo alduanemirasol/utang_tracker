@@ -1,8 +1,7 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:utang_tracker/app/coordination.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
 import 'package:utang_tracker/core/theme/app_colors.dart';
@@ -11,14 +10,13 @@ import 'package:utang_tracker/core/widgets/app_button.dart';
 import 'package:utang_tracker/core/widgets/app_card.dart';
 import 'package:utang_tracker/core/widgets/app_dropdown.dart';
 import 'package:utang_tracker/core/widgets/app_snackbar.dart';
-import 'package:utang_tracker/features/backup/data/datasources/backup_prefs_keys.dart';
-import 'package:utang_tracker/features/backup/data/services/backup_queue_service.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_connection_details.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_history_entry.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_status.dart';
 import 'package:utang_tracker/features/backup/domain/entities/storage_quota.dart';
 import 'package:utang_tracker/features/backup/presentation/providers/backup_providers.dart';
-import 'package:utang_tracker/features/backup/utils/backup_error_mapper.dart';
+import 'package:utang_tracker/core/error/backup_error_mapper.dart';
 
 class BackupSettingsPage extends ConsumerStatefulWidget {
   const BackupSettingsPage({super.key});
@@ -46,63 +44,16 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
       _progress = 0;
     });
     try {
-      final repo = ref.read(backupRepositoryProvider);
-      final connectivity = await Connectivity().checkConnectivity();
-      final isOffline =
-          connectivity.contains(ConnectivityResult.none) || connectivity.isEmpty;
-      if (isOffline) {
-        final queue = BackupQueueService();
-        await queue.enqueue('manual');
-        ref.invalidate(backupQueueCountProvider);
-        ref.invalidate(backupHasQueuedProvider);
-        if (mounted) {
-          AppSnackBar.info(context, 'No internet connection. Backup queued.');
-        }
-        return;
-      }
-      int attempts = 0;
-      while (attempts < 3) {
-        try {
-          await repo.createBackup();
-          break;
-        } catch (caughtError) {
-          final msg = caughtError.toString().toLowerCase();
-          if (msg.contains('network') || msg.contains('socket')) {
-            attempts++;
-            if (attempts >= 3) rethrow;
-            final delay = [
-              const Duration(minutes: 1),
-              const Duration(minutes: 5),
-              const Duration(minutes: 30),
-            ][attempts - 1];
-            await Future.delayed(delay);
-            continue;
-          }
-          rethrow;
-        }
-      }
+      final performBackup = ref.read(performBackupProvider);
+      await performBackup();
       if (mounted) AppSnackBar.success(context, 'Backup completed!');
-      ref.invalidate(backupLastSuccessfulProvider);
-      ref.invalidate(backupNextScheduledProvider);
-      ref.invalidate(backupHistoryProvider);
-      ref.invalidate(backupAuditLogProvider);
-      ref.invalidate(backupLastErrorProvider);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(BackupPrefsKeys.lastError);
+      invalidateBackupData(ref);
     } catch (caughtError) {
       final msg = BackupErrorMapper.toEnglish(caughtError);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(BackupPrefsKeys.lastError, caughtError.toString());
-      ref.invalidate(backupLastErrorProvider);
       if (caughtError.toString().toLowerCase().contains('duplicate')) {
         if (mounted) AppSnackBar.info(context, msg);
       } else {
         if (mounted) AppSnackBar.error(context, msg);
-      }
-      if (caughtError.toString().toLowerCase().contains('network')) {
-        final queue = BackupQueueService();
-        await queue.enqueue('manual');
-        ref.invalidate(backupQueueCountProvider);
       }
     } finally {
       if (mounted) {
@@ -264,18 +215,18 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
               ),
               TextButton(
                 onPressed: () async {
-                  final auth = ref.read(googleAuthDatasourceProvider);
+                  final auth = ref.read(backupAuthRepositoryProvider);
                   if (details.status == BackupConnectionStatus.signedIn) {
                     await auth.signOut();
                     ref.invalidate(backupConnectionDetailsProvider);
                     if (!mounted) return;
                     AppSnackBar.info(context, 'Signed out of Google Drive');
                   } else {
-                    final acc = await auth.signIn();
+                    final email = await auth.signIn();
                     ref.invalidate(backupConnectionDetailsProvider);
                     if (!mounted) return;
-                    if (acc != null) {
-                      AppSnackBar.success(context, 'Signed in: ${acc.email}');
+                    if (email != null) {
+                      AppSnackBar.success(context, 'Signed in: $email');
                     } else {
                       AppSnackBar.error(context, 'Sign-in not completed');
                     }

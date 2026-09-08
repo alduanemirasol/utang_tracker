@@ -1,12 +1,11 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:utang_tracker/core/utils/date_formatters.dart';
 import 'package:utang_tracker/core/providers/core_providers.dart';
-import 'package:utang_tracker/features/backup/data/datasources/backup_prefs_keys.dart';
-import 'package:utang_tracker/features/backup/data/datasources/backup_queue_entry.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_connection_details.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_interval.dart';
-import 'package:utang_tracker/features/backup/utils/backup_error_mapper.dart';
+import 'package:utang_tracker/features/backup/domain/entities/backup_queue_entry.dart';
+import 'package:utang_tracker/core/error/backup_error_mapper.dart';
 
 final backupAuditLogProvider = FutureProvider((ref) async {
   return ref.watch(auditLogRepositoryProvider).getEntries();
@@ -42,23 +41,17 @@ class BackupIntervalNotifier extends Notifier<BackupInterval> {
   }
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = BackupIntervalX.fromName(prefs.getString(BackupPrefsKeys.interval));
+    final prefs = ref.read(backupPrefsRepositoryProvider);
+    state = await prefs.getInterval();
   }
 
   Future<void> setInterval(BackupInterval value) async {
     state = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(BackupPrefsKeys.interval, value.name);
-    if (value == BackupInterval.off) {
-      await prefs.remove(BackupPrefsKeys.nextScheduledTime);
-    } else {
-      final lastMs = prefs.getInt(BackupPrefsKeys.lastBackupTime);
-      if (lastMs != null) {
-        final last = DateTime.fromMillisecondsSinceEpoch(lastMs, isUtc: true);
-        final next = last.add(value.duration!);
-        await prefs.setInt(BackupPrefsKeys.nextScheduledTime, next.millisecondsSinceEpoch);
-      }
+    final prefs = ref.read(backupPrefsRepositoryProvider);
+    await prefs.setInterval(value);
+    final last = await prefs.getLastSuccessful();
+    if (last != null) {
+      await prefs.updateLastSuccessful(last);
     }
     ref.invalidate(backupAutoEnabledProvider);
     ref.invalidate(backupNextScheduledProvider);
@@ -71,95 +64,49 @@ final backupAutoEnabledProvider = Provider<bool>((ref) {
 });
 
 final backupLastSuccessfulProvider = FutureProvider<DateTime?>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final milliseconds = prefs.getInt(BackupPrefsKeys.lastBackupTime);
-  if (milliseconds == null) return null;
-  return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
+  final prefs = ref.watch(backupPrefsRepositoryProvider);
+  return prefs.getLastSuccessful();
 });
 
 final backupNextScheduledProvider = FutureProvider<DateTime?>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final milliseconds = prefs.getInt(BackupPrefsKeys.nextScheduledTime);
-  if (milliseconds != null) {
-    return DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true);
-  }
-  final lastMs = prefs.getInt(BackupPrefsKeys.lastBackupTime);
-  final interval = BackupIntervalX.fromName(prefs.getString(BackupPrefsKeys.interval));
-  if (lastMs == null || interval == BackupInterval.off) return null;
-  final last = DateTime.fromMillisecondsSinceEpoch(lastMs, isUtc: true);
-  return last.add(interval.duration!);
+  final prefs = ref.watch(backupPrefsRepositoryProvider);
+  return prefs.getNextScheduled();
 });
 
 final backupLastErrorProvider = FutureProvider<String?>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final raw = prefs.getString(BackupPrefsKeys.lastError);
+  final prefs = ref.watch(backupPrefsRepositoryProvider);
+  final raw = await prefs.getLastError();
   if (raw == null || raw.isEmpty) return null;
   return BackupErrorMapper.toEnglish(raw);
 });
 
 final backupQueueCountProvider = FutureProvider<int>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final raw = prefs.getString(BackupPrefsKeys.queue);
-  if (raw == null || raw.isEmpty) return 0;
-  return BackupQueueEntry.decodeList(raw).length;
+  final queue = ref.watch(backupQueueRepositoryProvider);
+  return queue.getQueueCount();
 });
 
 final backupHasQueuedProvider = FutureProvider<bool>((ref) async {
-  final count = await ref.watch(backupQueueCountProvider.future);
-  return count > 0;
+  final queue = ref.watch(backupQueueRepositoryProvider);
+  return queue.hasQueued();
 });
 
 final backupQueueEntriesProvider = FutureProvider<List<BackupQueueEntry>>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final raw = prefs.getString(BackupPrefsKeys.queue);
-  if (raw == null || raw.isEmpty) return [];
-  return BackupQueueEntry.decodeList(raw);
+  final queue = ref.watch(backupQueueRepositoryProvider);
+  return queue.getQueue();
 });
 
 final backupConnectionDetailsProvider = FutureProvider<BackupConnectionDetails>((ref) async {
-  final auth = ref.watch(googleAuthDatasourceProvider);
-  final signedIn = await auth.isSignedIn();
-  if (!signedIn) {
-    return const BackupConnectionDetails(status: BackupConnectionStatus.signedOut);
-  }
-  try {
-    await auth.getAuthHeaders();
-    final email = auth.currentUser?.email ?? 'Signed in';
-    return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: email);
-  } catch (caughtError) {
-    final msg = caughtError.toString().toLowerCase();
-    if (msg.contains('auth') || msg.contains('401')) {
-      return const BackupConnectionDetails(status: BackupConnectionStatus.expired);
-    }
-    return BackupConnectionDetails(status: BackupConnectionStatus.signedIn, email: auth.currentUser?.email);
-  }
+  final connection = ref.watch(getConnectionDetailsProvider);
+  return connection.call();
 });
 
-enum BackupConnectionStatus { signedIn, signedOut, expired }
-
-class BackupConnectionDetails {
-  const BackupConnectionDetails({required this.status, this.email});
-  final BackupConnectionStatus status;
-  final String? email;
-}
-
 final backupAutoStatusProvider = FutureProvider<BackupAutoStatus>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final interval = BackupIntervalX.fromName(prefs.getString(BackupPrefsKeys.interval));
+  final prefs = ref.watch(backupPrefsRepositoryProvider);
+  final interval = await prefs.getInterval();
   if (interval == BackupInterval.off) {
     return const BackupAutoStatus(enabled: false);
   }
-  final nextMs = prefs.getInt(BackupPrefsKeys.nextScheduledTime);
-  DateTime? next;
-  if (nextMs != null) {
-    next = DateTime.fromMillisecondsSinceEpoch(nextMs, isUtc: true);
-  } else {
-    final lastMs = prefs.getInt(BackupPrefsKeys.lastBackupTime);
-    if (lastMs != null) {
-      final last = DateTime.fromMillisecondsSinceEpoch(lastMs, isUtc: true);
-      next = last.add(interval.duration!);
-    }
-  }
+  final next = await prefs.getNextScheduled();
   return BackupAutoStatus(enabled: true, nextRun: next, interval: interval);
 });
 
@@ -185,4 +132,3 @@ final formattedNextBackupProvider = FutureProvider<String?>((ref) async {
 final connectivityStatusProvider = StreamProvider<List<ConnectivityResult>>((ref) {
   return Connectivity().onConnectivityChanged;
 });
-

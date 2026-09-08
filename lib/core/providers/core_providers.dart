@@ -14,9 +14,19 @@ import 'package:utang_tracker/features/backup/data/datasources/google_drive_serv
 import 'package:utang_tracker/features/backup/data/repositories/audit_log_repository_impl.dart';
 import 'package:utang_tracker/features/backup/data/repositories/backup_history_repository_impl.dart';
 import 'package:utang_tracker/features/backup/data/repositories/backup_repository_impl.dart';
+import 'package:utang_tracker/features/backup/data/repositories/backup_auth_repository_impl.dart';
+import 'package:utang_tracker/features/backup/data/repositories/backup_prefs_repository_impl.dart';
+import 'package:utang_tracker/features/backup/data/repositories/backup_queue_repository_impl.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/audit_log_repository.dart';
+import 'package:utang_tracker/features/backup/domain/repositories/backup_auth_repository.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/backup_history_repository.dart';
+import 'package:utang_tracker/features/backup/domain/repositories/backup_prefs_repository.dart';
+import 'package:utang_tracker/features/backup/domain/repositories/backup_queue_repository.dart';
 import 'package:utang_tracker/features/backup/domain/repositories/backup_repository.dart';
+import 'package:utang_tracker/features/backup/domain/usecases/get_backup_status.dart';
+import 'package:utang_tracker/features/backup/domain/usecases/get_connection_details.dart';
+import 'package:utang_tracker/features/backup/domain/usecases/handle_backup_queue.dart';
+import 'package:utang_tracker/features/backup/domain/usecases/perform_backup.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:utang_tracker/features/backup/data/services/backup_queue_service.dart';
 import 'package:utang_tracker/features/backup/data/services/backup_scheduler.dart';
@@ -100,4 +110,32 @@ final connectivityProvider = Provider<Connectivity>((_) {
 
 final backupQueueServiceProvider = Provider<BackupQueueService>((_) {
   return BackupQueueService();
+});
+
+final backupPrefsRepositoryProvider = Provider<BackupPrefsRepository>((_) {
+  return BackupPrefsRepositoryImpl();
+});
+
+final backupQueueRepositoryProvider = Provider<BackupQueueRepository>((ref) {
+  return BackupQueueRepositoryImpl(queueService: ref.watch(backupQueueServiceProvider));
+});
+
+final backupAuthRepositoryProvider = Provider<BackupAuthRepository>((ref) {
+  return BackupAuthRepositoryImpl(auth: ref.watch(googleAuthDatasourceProvider));
+});
+
+final getBackupStatusProvider = Provider<GetBackupStatus>((ref) {
+  return GetBackupStatus(ref.watch(backupPrefsRepositoryProvider));
+});
+
+final handleBackupQueueProvider = Provider<HandleBackupQueue>((ref) {
+  return HandleBackupQueue(ref.watch(backupQueueRepositoryProvider));
+});
+
+final getConnectionDetailsProvider = Provider<GetConnectionDetails>((ref) {
+  return GetConnectionDetails(ref.watch(backupAuthRepositoryProvider));
+});
+
+final performBackupProvider = Provider<PerformBackup>((ref) {
+  return PerformBackup(ref.watch(backupRepositoryProvider));
 });

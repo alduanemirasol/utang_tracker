@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:utang_tracker/core/database/app_database.dart';
-import 'package:utang_tracker/core/database/mappers.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/features/customers/data/repositories/customer_mappers.dart';
 import 'package:utang_tracker/core/utils/string_utils.dart';
 import 'package:utang_tracker/features/customers/domain/entities/customer.dart';
 import 'package:utang_tracker/features/customers/domain/repositories/customer_repository.dart';
