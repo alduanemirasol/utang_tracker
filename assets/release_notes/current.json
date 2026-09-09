@@ -3,12 +3,7 @@
   "date": "2026-09-09",
   "notes": {
     "added": [],
-    "changed": [
-      "Backup error mapping — BackupErrorMapper now maps configuration errors to DEVELOPER_ERROR 10 guidance and cancellations to 'Sign-in cancelled', preserving Network and AuthExpired handling",
-      "Backup pages — BackupSettingsPage and BackupBrowsePage show info snackbar for cancelled sign-in instead of error"
-    ],
-    "fixed": [
-      "Backup — Google Drive sign-in cancel vs config error handling: sign_in_canceled now returns null and surfaces actionable 'Sign-in cancelled' message; DEVELOPER_ERROR / ApiException 10 / 12500 / INVALID_ACCOUNT now throw actionable BackupException with SHA fingerprint and google-services.json guidance (see docs/SETUP.md \u00a74.7), network_error maps to NetworkException and sign_in_failed to actionable guidance"
-    ]
+    "changed": ["UI cleanup"],
+    "fixed": []
   }
 }

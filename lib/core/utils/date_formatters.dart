@@ -55,24 +55,9 @@ class DateFormatters {
 
   static String dayKey(DateTime date) => _dayKey.format(date.toLocal());
 
-  static String backupFileName(DateTime localTime) =>
-      'database_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(localTime)}.zip';
-
-  static String preRestoreFileName(DateTime localTime) =>
-      'utang_tracker_pre_restore_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(localTime)}.sqlite';
-
   static String fullDate(DateTime date, {required String locale}) {
     final canonicalLocale = Intl.canonicalizedLocale(locale);
     return DateFormat.yMMMMd(canonicalLocale).format(date.toLocal());
-  }
-
-  static String backupDisplay(DateTime utcTime, {String? locale}) {
-    final local = utcTime.toLocal();
-    final effectiveLocale = locale != null ? Intl.canonicalizedLocale(locale) : null;
-    if (effectiveLocale != null) {
-      return DateFormat.yMMMd(effectiveLocale).add_jm().format(local);
-    }
-    return DateFormat.yMMMd().add_jm().format(local);
   }
 
   static bool isSameLocalDay(DateTime first, DateTime second) {

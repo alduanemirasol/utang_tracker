@@ -23,9 +23,8 @@
 
 ## Architecture
 
-- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` and `invalidateBackupData(ref)` from `lib/app/coordination.dart` (31-42) — NOT Drift reactive streams. Register new list/detail providers there (backup providers too).
-- DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart` (backup providers 56-103); repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
-- Backup: `lib/features/backup` (8 feature dirs total) — SharedPreferences JSON persistence (12 keys, no SQLite migration; see `rules/database_rules.md` Backup Audit); `lib/main.dart:19-44` inits `workmanager` + `connectivity_plus` queue
+- Data refresh is push-based: after writes call `invalidateBusinessData(ref)` from `lib/app/coordination.dart` (31-42) — NOT Drift reactive streams. Register new list/detail providers there.
+- DI: plain Riverpod `Provider`s in `lib/core/providers/core_providers.dart`; repo interfaces in `features/<f>/domain/repositories`, impls in `features/<f>/data/repositories`
 - Repo tests use `AppDatabase.forTesting()` (in-memory SQLite); migration tests seed legacy schemas via raw SQL
 - Android method channel (updater only, com.example.utang_tracker/updater) lives in `android/.../MainActivity.kt`; updater permission flow uses deprecated onActivityResult
 - `android/key.properties` + keystores are gitignored; CI signs from GH secrets

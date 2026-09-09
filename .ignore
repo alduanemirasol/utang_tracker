@@ -18,5 +18,4 @@ android/.kotlin/
 *.log
 
 # Secrets / local config (never search)
-android/app/google-services.json
 android/key.properties

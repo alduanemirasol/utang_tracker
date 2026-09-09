@@ -62,12 +62,6 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: python .github/scripts/configure_signing.py
 
-      - name: Configure Google Services
-        env:
-          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: python .github/scripts/configure_google_services.py
-
       - name: Build ARM64 and ARM32 APKs
         run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64
 
