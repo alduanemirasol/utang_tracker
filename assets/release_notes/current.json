@@ -1,14 +1,14 @@
 {
-  "version": "1.0.46",
-  "date": "2026-09-08",
+  "version": "1.0.47",
+  "date": "2026-09-09",
   "notes": {
-    "added": [
-      "CI Google Services credential handling — .github/scripts/configure_google_services.py materializes android/app/google-services.json from GOOGLE_SERVICES_JSON_BASE64/GOOGLE_SERVICES_JSON secrets"
-    ],
+    "added": [],
     "changed": [
-      "CI release workflow — insert Configure Google Services step between signing and build in .github/workflows/release.yml",
-      "Docs — docs/SETUP 4.4.1 and README document base64 secret generation (base64 -w 0 / PowerShell) and CI failure handling for google-services.json"
+      "Backup error mapping — BackupErrorMapper now maps configuration errors to DEVELOPER_ERROR 10 guidance and cancellations to 'Sign-in cancelled', preserving Network and AuthExpired handling",
+      "Backup pages — BackupSettingsPage and BackupBrowsePage show info snackbar for cancelled sign-in instead of error"
     ],
-    "fixed": []
+    "fixed": [
+      "Backup — Google Drive sign-in cancel vs config error handling: sign_in_canceled now returns null and surfaces actionable 'Sign-in cancelled' message; DEVELOPER_ERROR / ApiException 10 / 12500 / INVALID_ACCOUNT now throw actionable BackupException with SHA fingerprint and google-services.json guidance (see docs/SETUP.md \u00a74.7), network_error maps to NetworkException and sign_in_failed to actionable guidance"
+    ]
   }
 }
