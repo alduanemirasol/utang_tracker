@@ -215,7 +215,8 @@ class _BackupSettingsPageState extends ConsumerState<BackupSettingsPage> {
                       if (email != null) {
                         AppSnackBar.success(context, 'Signed in: $email');
                       } else {
-                        AppSnackBar.error(context, 'Sign-in not completed');
+                        // signIn() returns null when user cancels — show info, not error.
+                        AppSnackBar.info(context, 'Sign-in cancelled');
                       }
                     } catch (caughtError) {
                       ref.invalidate(backupConnectionDetailsProvider);

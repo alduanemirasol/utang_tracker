@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:utang_tracker/core/error/app_exception.dart';
+import 'package:utang_tracker/core/error/backup_error_mapper.dart';
 import 'package:utang_tracker/features/backup/data/datasources/google_auth_datasource.dart';
 import 'package:utang_tracker/features/backup/data/repositories/backup_auth_repository_impl.dart';
 import 'package:utang_tracker/features/backup/domain/entities/backup_connection_details.dart';
@@ -176,6 +177,222 @@ void main() {
         ),
       );
       expect(() => ds.signIn(), throwsA(isA<NetworkException>()));
+    });
+
+    test('returns null when PlatformException is sign_in_canceled', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('sign_in_canceled'),
+        ),
+      );
+      // Cancellation should return null, not throw.
+      final result = await ds.signIn();
+      expect(result, isNull);
+    });
+
+    test('returns null when signIn returns null (user cancels silently)', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(), // signIn returns null
+      );
+      final result = await ds.signIn();
+      expect(result, isNull);
+    });
+
+    test('maps DEVELOPER_ERROR to BackupException with config guidance', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('DEVELOPER_ERROR'),
+        ),
+      );
+      expect(
+        () => ds.signIn(),
+        throwsA(
+          isA<BackupException>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('DEVELOPER_ERROR'),
+              contains('SHA fingerprint'),
+              contains('docs/SETUP.md'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('maps ApiException 10 to BackupException with config guidance', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('ApiException: 10'),
+        ),
+      );
+      expect(
+        () => ds.signIn(),
+        throwsA(
+          isA<BackupException>().having(
+            (e) => e.message,
+            'message',
+            contains('DEVELOPER_ERROR'),
+          ),
+        ),
+      );
+    });
+
+    test('maps error code 12500 to BackupException with config guidance', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('StatusCode: 12500'),
+        ),
+      );
+      expect(
+        () => ds.signIn(),
+        throwsA(
+          isA<BackupException>().having(
+            (e) => e.message,
+            'message',
+            contains('DEVELOPER_ERROR'),
+          ),
+        ),
+      );
+    });
+
+    test('maps sign_in_failed to BackupException with guidance', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('sign_in_failed'),
+        ),
+      );
+      expect(
+        () => ds.signIn(),
+        throwsA(
+          isA<BackupException>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('sign_in_failed'),
+              contains('Google account'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('maps network_error to NetworkException', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('network_error'),
+        ),
+      );
+      expect(() => ds.signIn(), throwsA(isA<NetworkException>()));
+    });
+
+    test('maps INVALID_ACCOUNT to BackupException with config guidance', () async {
+      final ds = GoogleAuthDatasource(
+        googleSignIn: _FakeGoogleSignIn(
+          throwOnSignIn: Exception('INVALID_ACCOUNT'),
+        ),
+      );
+      expect(
+        () => ds.signIn(),
+        throwsA(
+          isA<BackupException>().having(
+            (e) => e.message,
+            'message',
+            contains('DEVELOPER_ERROR'),
+          ),
+        ),
+      );
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // BackupErrorMapper.toEnglish — regression + new mappings
+  // -----------------------------------------------------------------------
+  group('BackupErrorMapper.toEnglish', () {
+    test('maps NetworkException to network message', () {
+      const error = NetworkException('No internet');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        contains('No internet connection'),
+      );
+    });
+
+    test('maps AuthExpiredException to expired message', () {
+      const error = AuthExpiredException('Token expired');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        contains('expired'),
+      );
+    });
+
+    test('maps sign_in_canceled fallback to info message', () {
+      // Raw string fallback path (if somehow not caught as typed exception).
+      final error = Exception('sign_in_canceled');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        equals('Sign-in cancelled'),
+      );
+    });
+
+    test('maps DEVELOPER_ERROR BackupException to config guidance', () {
+      const error = BackupException(
+        'Sign-in failed — configuration error (DEVELOPER_ERROR). '
+        'Check SHA fingerprint and google-services.json. '
+        'See docs/SETUP.md §4.7 for troubleshooting. Some error',
+      );
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        allOf(
+          contains('DEVELOPER_ERROR 10'),
+          contains('SHA fingerprint'),
+          contains('docs/SETUP.md'),
+        ),
+      );
+    });
+
+    test('maps sign_in_failed BackupException to guidance', () {
+      const error = BackupException('Sign-in failed: sign_in_failed');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        allOf(
+          contains('Sign-in failed'),
+          contains('Google account'),
+          contains('device Settings'),
+        ),
+      );
+    });
+
+    test('maps DEVELOPER_ERROR in raw string to config guidance', () {
+      final error = Exception('DEVELOPER_ERROR');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        allOf(
+          contains('DEVELOPER_ERROR'),
+          contains('SHA fingerprint'),
+        ),
+      );
+    });
+
+    test('maps ApiException 10 in raw string to config guidance', () {
+      final error = Exception('ApiException: 10');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        allOf(
+          contains('DEVELOPER_ERROR'),
+          contains('SHA fingerprint'),
+        ),
+      );
+    });
+
+    test('maps error 12500 in raw string to config guidance', () {
+      final error = Exception('StatusCode: 12500');
+      expect(
+        BackupErrorMapper.toEnglish(error),
+        allOf(
+          contains('DEVELOPER_ERROR'),
+          contains('SHA fingerprint'),
+        ),
+      );
     });
   });
 }

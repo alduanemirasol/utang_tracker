@@ -145,7 +145,7 @@ class _BackupBrowsePageState extends ConsumerState<BackupBrowsePage> {
                 if (email != null) {
                   AppSnackBar.success(context, 'Signed in: $email');
                 } else {
-                  AppSnackBar.info(context, 'Sign-in not completed');
+                  AppSnackBar.info(context, 'Sign-in cancelled');
                 }
               },
             ),
