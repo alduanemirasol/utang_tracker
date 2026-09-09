@@ -49,3 +49,32 @@ app.*.map.json
 android/key.properties
 android/app/*.jks
 android/app/*.keystore
+
+# Gradle / Kotlin caches
+android/.gradle/
+android/.gradle
+android/.kotlin/
+android/.kotlin
+.gradle/
+.gradle
+.kotlin/
+.kotlin
+build/
+build
+coverage/
+coverage
+
+# Release artifacts
+release-assets/
+release-assets
+RELEASE_NOTES.md
+*.apk
+*.aab
+*.ipa
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+__pycache__/
+__pycache__

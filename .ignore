@@ -6,6 +6,9 @@ android/.gradle/
 android/.kotlin/
 .gradle/
 .kotlin/
+.pub-cache/
+__pycache__/
+release-assets/
 
 # Generated code (committed, but noise in searches)
 **/*.g.dart
@@ -19,3 +22,4 @@ android/.kotlin/
 
 # Secrets / local config (never search)
 android/key.properties
+RELEASE_NOTES.md
